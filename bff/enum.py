@@ -2,28 +2,27 @@ from enum import Enum
 
 class BaseEnum(Enum):
     
-    @classmethod # Allows the method to be called on the class itself, not just on an instance.
+    @classmethod #Method called on the class itself, not just on an instance.
     def get_value(cls, key: str): #Retrieve the enumeration value based on its key name
         try:
             return cls[key].value
         except KeyError:
-            raise ValueError(f"{key} is not a valid {cls.__name__} key") #If the provided key does not exist within the enum
+            raise ValueError(f"{key} is not a valid {cls.__name__} key") #If given key does not exist within enum
 
     @classmethod
     def get_key(cls, value: str): #Retrieve the enumeration key name based on its value
         for member in cls:
             if member.value == value:
                 return member.name
-        raise ValueError(f"'{value}' is not a valid {cls.__name__} value.") #If the provided value does not exist within the enum
+        raise ValueError(f"'{value}' is not a valid {cls.__name__} value.") #If given value does not exist within the enum
 
     @classmethod
     def list_values(cls):
-        # Loops through every item (member) in the class (e.g. each enum option)
-        # and collects them into a list.
+        # Loops through every item (enum option) in the class and collects them into a list.
         return[key.value for key in cls]
-        # Returns a list containing all values defined in the class.
+        # Returns list containing all values defined in the class
 
-#---PLAYER ROLE & TYPE ENUMS---#
+#PLAYER ROLE & TYPE ENUMS
 class PlayerRole(BaseEnum):
     BATTER = "BATTER"
     BOWLER = "BOWLER"
@@ -50,7 +49,7 @@ class SpinBowlingStyle(BaseEnum):
 
 
 
-#---PERFORMANCE METRIC ENUMS---#
+#PERFORMANCE METRIC ENUMS
 
 class BatterMetric(BaseEnum):
     RUNS = "RUNS"
@@ -71,6 +70,7 @@ class TimePeriod(BaseEnum):
     LAST_MONTH = "LAST MONTH"
     LAST_THREE_MONTHS = "LAST 3 MONTHS"
     LAST_FIVE_MONTHS = "LAST 5 MONTHS"
+    LAST_YEAR = "LAST YEAR"
 
 #---MATCH FILTER ENUMS---#
 class MatchType(BaseEnum):
@@ -88,7 +88,7 @@ class Venue(BaseEnum):
     AWAY = "AWAY"
     NEUTRAL = "NEUTRAL"
 
-#---MATCH RECORD ENUMS---#
+#MATCH RECORD ENUMS
 class HowOut(BaseEnum):
     BOWLED = "BOWLED"
     LBW = "LBW"
@@ -102,6 +102,15 @@ class HowOut(BaseEnum):
     FIELD_OBSTRUCTION = "FIELD OBSTRUCTION"
     OTHER = "OTHER"
 
+class TossResult(BaseEnum):
+    LOST_BOWL = "LOST THE TOSS & BOWLED"
+    LOST_BAT = "LOST THE TOSS & BATTED"
+    WON_BOWL = "WON THE TOSS & BOWLED"
+    WON_BAT = "WON THE TOSS & BATTED"
 
-
-
+class Result(BaseEnum):
+    WON = "WON"
+    LOST = "LOST"
+    TIE = "TIE"
+    ABANDONED = "ABANDONED"
+    CANCELLED = "CANCELLED"
