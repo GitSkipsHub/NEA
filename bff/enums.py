@@ -14,7 +14,7 @@ class BaseEnum(Enum):
         for member in cls:
             if member.value == value:
                 return member.name
-        raise ValueError(f"'{value}' is not a valid {cls.__name__} value.") #If given value does not exist within the enum
+        raise ValueError(f"{value} is not a valid {cls.__name__} value.") #If given value does not exist within the enum
 
     @classmethod
     def list_values(cls):
@@ -95,7 +95,7 @@ class HowOut(BaseEnum):
     CAUGHT = "CAUGHT"
     RUNOUT = "RUNOUT"
     STUMPED = "STUMPED"
-    NOt_OUT = "NOT OUT"
+    NOT_OUT = "NOT OUT"
     RETIRED = "RETIRED"
     HIT_WICKET = "HIT WICKET"
     TIMED_OUT = "TIMED OUT"
@@ -114,3 +114,16 @@ class Result(BaseEnum):
     TIE = "TIE"
     ABANDONED = "ABANDONED"
     CANCELLED = "CANCELLED"
+
+
+#TESTING
+
+#print(PlayerRole.get_value("WICKET_KEEPER"))
+
+#print(HowOut.get_key("FIELD OBSTRUCTION"))
+
+#print(TossResult.get_value("LOST_BOWL"))
+
+#print(Result.list_values())
+
+
