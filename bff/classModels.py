@@ -6,8 +6,6 @@ import bcrypt
 from bff.enums import (BattingStyle, BowlingStyle, PlayerRole, TimePeriod,
                        HowOut, MatchType, MatchFormat, Venue, TossResult, Result)
 
-
-
 @dataclass
 class Account:
     username: str
@@ -21,6 +19,21 @@ class Account:
     @staticmethod
     def verify_password(password: str, hash_password: str) -> bool:
         return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
+
+    def to_database(self):
+        return {
+            "username": self.username,
+            "password": self.password,
+            "hashed_password": self.hashed_password
+        }
+
+    @classmethod
+    def from_database(cls, data:Dict) -> 'Account':
+        return cls(
+            username=data.get("username"),
+            password=data.get("password"),
+            hashed_password=data.get("hashed_password")
+        )
 
 @dataclass
 class Player:
@@ -52,7 +65,6 @@ class Player:
     #Logs
     created_date: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
-
 
     def to_database(self) -> Dict: #Turns Python Object to Dictionary --> Key: Value
         return{
@@ -219,8 +231,6 @@ class Fielding:
             stumpings=data.get("stumpings")
         )
 
-
-
 @dataclass
 class Scorecard:
     subtotal: int
@@ -266,7 +276,6 @@ class Scorecard:
             fielding=[Fielding.from_database(x) for x in data.get("fielding")]
         )
 
-
 @dataclass
 class Match:
     username: str
@@ -282,8 +291,6 @@ class Match:
     scorecard: Scorecard
     created_date: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
-
-
 
     def to_database(self) -> Dict:
         return{
@@ -323,6 +330,7 @@ class Match:
 
 @dataclass
 class TeamGenerator:
+    time_period: TimePeriod
     no_of_batters: int
     no_of_pacers: int
     no_of_spinners: int
@@ -353,8 +361,6 @@ class TeamGenerator:
             return False, "WARNING Team must have 1 Wicket Keeper"
 
         return True, ""
-
-
 
 @dataclass
 class SelectedTeam:
