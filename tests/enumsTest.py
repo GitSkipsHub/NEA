@@ -3,6 +3,8 @@ from bff.enums import (BattingStyle, BowlingStyle, PlayerRole, TimePeriod,
 
 print(PlayerRole.get_value("WICKET_KEEPER"))
 
+print(PlayerRole.get_key("BATTER"))
+
 print(HowOut.get_key("FIELD OBSTRUCTION"))
 
 print(TossResult.get_value("LOST_BOWL"))
