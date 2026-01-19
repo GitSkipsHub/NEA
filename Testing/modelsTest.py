@@ -1,4 +1,4 @@
-from bff.classModels import (Match, Account, TeamGenerator)
+from bff.models import (Match, Account, TeamGenerator)
 
 from datetime import datetime
 

@@ -1,40 +1,52 @@
-from platformdirs import user_log_dir
 from pymongo import mongo_client, MongoClient
-from typing import Dict, List, Optional
+from pymongo.errors import ConnectionFailure, DuplicateKeyError
 from datetime import datetime
+from typing import Optional, List, Dict
 
-db_uri = "mongodb://localhost:27017/"
+#client = MongoClient("mongodb://localhost:27017/")
 
-db_name = "smart_skipper_db"
+#DB NAME
+my_db = "smart_skipper_db"
+
+#Local Host URI
+mongo_db_uri = "mongodb://localhost:27017/"
+
 
 class Database:
-
+    #Initialise all as None
     instance = None
     client = None
     db = None
 
+    #Creates New Database if Instance = None
     def __new__(cls, *args, **kwargs):
         if cls.instance is None:
             cls.instance = super(Database, cls).__new__(cls)
         return cls.instance
 
+    #Calls Connect function if client = None
     def __init__(self):
-        if self.client is None:
-            self.connect()
+        self.client = None
+        self.connect()
 
+    #Connect Database Function
     def connect(self):
         try:
-            self.client = MongoClient(db_uri)
-            self.db = self.client[db_name]
+            self.client = MongoClient(mongo_db_uri)
+            self.db = self.client[my_db]
+            #Ping Test --> Checks if Database is up-and-running
             self.client.admin.command("ping")
             print("Successfully connected to MongoDB")
-        except Exception as e:
-            print(f"Failed to connect to MongoDB {e}")
+
+        except ConnectionFailure as e:
+            print(f"Failed to connect to MongoDB as {e}")
             raise
 
+    #Gets Tables stored within Database (e.g. Account)
     def get_collection(self, collection_name: str):
         return self.db[collection_name]
 
+    #Closes Connection to Database
     def close(self):
         if self.client:
             self.client.close()
@@ -47,7 +59,7 @@ class AccountDB:
         self.db = Database()
         self.collection = self.db.get_collection("account")
 
-    def create_account(self, username: str, hashed_password: str) -> bool:
+    def create_account(self, username: str, hashed_password: str):
         try:
             account = {
                 "username": username,
@@ -56,14 +68,20 @@ class AccountDB:
             }
             self.collection.insert_one(account)
             return True
-        except:
+        #Prevents Duplicate Accounts Created
+        except DuplicateKeyError:
             return False
 
-    def find_account(self, username: str) -> bool:
+    #Self Explanatory - Finds Account
+    def find_account(self, username: str) -> Optional[Dict]:
         return self.collection.find_one({"username": username})
 
-    def username_exists(self, username: str) -> bool:
-        return self.collection.find_one({"username": username})
+
+    def username_exists(self, username: str) -> Optional[Dict]:
+        return self.collection.find_one({"username": username})is not None
+        #Returns True if account found and False is account not found
+        #Account is not None = True | None is not None = False
+
 
 class PlayerDB:
 
@@ -71,10 +89,7 @@ class PlayerDB:
         self.db = Database()
         self.collection = self.db.get_collection("player")
 
-
-
-
-
+    #   def create_player(self, username: str, player_data: Dict) -> bool:
 
 
 
