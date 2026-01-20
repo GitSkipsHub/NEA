@@ -24,7 +24,7 @@ class BaseWindow:
         start_header_frame = tk.Frame(
             parent,
             height=80,
-            highlightbackground="dim gray",
+            highlightbackground="dodger blue",
             highlightthickness=5,
         )
         start_header_frame.pack(fill=tk.X)
@@ -43,8 +43,8 @@ class BaseWindow:
         header_frame = tk.Frame(
             parent,
             height=80,
-            highlightbackground="grey",
-            highlightthickness=5,
+            highlightbackground="dim gray",
+            highlightthickness=6,
         )
         header_frame.pack(fill=tk.X)
         header_frame.pack_propagate(True)

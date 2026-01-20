@@ -27,16 +27,19 @@ class RegistrationWindow(BaseWindow):
         #USERNAME INPUT
         tk.Label(form, text="USERNAME : ", ).grid(column=0, row=0, pady=10, sticky="e")
         self.username_input = tk.Entry(form)
+        self.username_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.username_input.grid(column=1, row=0, pady=10)
 
         #PASSWORD INPUT
         tk.Label(form, text="PASSWORD : ", ).grid(column=0, row=1, pady=10, sticky="e")
         self.password_input = tk.Entry(form, show="*")
+        self.password_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.password_input.grid(column=1, row=1, pady=10)
 
         #CONFIRM PASSWORD INPUT
         tk.Label(form, text="CONFIRM PASSWORD : ", ).grid(column=0, row=2, pady=10, sticky="e")
         self.confirm_password_input = tk.Entry(form, show="*")
+        self.confirm_password_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.confirm_password_input.grid(column=1, row=2, pady=10)
 
         #Footer Created to Position Back Button at Bottom of Screen
@@ -115,10 +118,12 @@ class LoginWindow(BaseWindow):
 
         tk.Label(form, text="USERNAME : ").grid(column=0, row=0, pady=10, sticky="e")
         self.username_input = tk.Entry(form)
+        self.username_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.username_input.grid(column=1, row=0, pady=10)
 
         tk.Label(form, text="PASSWORD : ").grid(column=0, row=1, pady=10, sticky="e")
         self.password_input = tk.Entry(form, show="*")
+        self.password_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.password_input.grid(column=1, row=1, pady=10, )
 
         footer = tk.Frame(main_frame)
@@ -164,4 +169,3 @@ class LoginWindow(BaseWindow):
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
-

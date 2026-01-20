@@ -1,7 +1,7 @@
 from enum import Enum
 
 class BaseEnum(Enum):
-    
+
     @classmethod #Method called on the class itself, not just on an instance.
     def get_value(cls, key: str): #Retrieve the enumeration value based on its key name
         try:
@@ -34,14 +34,8 @@ class BattingStyle(BaseEnum):
     RIGHT_HAND = "RIGHT HAND"
 
 class BowlingStyle(BaseEnum):
-    PACE = "PACE"
-    SPIN = "SPIN"
-
-class PaceBowlingStyle(BaseEnum):
     LEFT_ARM_PACE = "LEFT ARM PACE"
     RIGHT_ARM_PACE = "RIGHT ARM PACE"
-
-class SpinBowlingStyle(BaseEnum):
     LEFT_ARM_OFF_SPIN = "LEFT ARM OFF SPIN"
     LEFT_ARM_LEG_SPIN = "LEFT ARM LEG SPIN"
     RIGHT_ARM_OFF_SPIN = "RIGHT ARM OFF SPIN"
@@ -114,16 +108,3 @@ class Result(BaseEnum):
     TIE = "TIE"
     ABANDONED = "ABANDONED"
     CANCELLED = "CANCELLED"
-
-
-#TESTING
-
-#print(PlayerRole.get_value("WICKET_KEEPER"))
-
-#print(HowOut.get_key("FIELD OBSTRUCTION"))
-
-#print(TossResult.get_value("LOST_BOWL"))
-
-#print(Result.list_values())
-
-

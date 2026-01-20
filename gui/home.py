@@ -20,7 +20,7 @@ class HomePage(BaseWindow):
                  text=f"Welcome Back {self.current_user}!",
                  underline=0,
                  font=("Arial", 20  , "bold"),
-                 fg="medium spring green",
+                 fg="purple2",
                  borderwidth=5,
                  ).pack(fill=tk.BOTH, expand= True, pady=5, padx=10)
 

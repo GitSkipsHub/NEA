@@ -89,7 +89,26 @@ class PlayerDB:
         self.db = Database()
         self.collection = self.db.get_collection("player")
 
-    #   def create_player(self, username: str, player_data: Dict) -> bool:
+    def create_player(self, username: str, player_data: Dict) -> bool:
+        try:
+            player_data["username"] = username,
+            player_data["created_date"] = datetime.now(),
+            player_data["last_updated"] = datetime.now()
+
+            stats_fields = ["matches", "innings", "runs_scored", "balls", "fours",
+                            "sixes", "wickets", "overs", "maidens", "runs_given",
+                            "wides", "no_balls", "catches","runouts", "stumpings"]
+            for field in stats_fields:
+                player_data[field] = 0
+
+            result = self.collection.insert_one(player_data)
+            return result.__inserted_id is not None
+
+        except Exception as e:
+            print(f"Error creating Player: {e}")
+
+
+
 
 
 

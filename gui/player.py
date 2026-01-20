@@ -77,14 +77,17 @@ class CreatePlayerWindow(BaseWindow):
 
         tk.Label(form, text="FIRST NAME : ").grid(column=0, row=0, pady=10, sticky="e")
         self.first_name_input = tk.Entry(form)
+        self.first_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.first_name_input.grid(column=1, row=0, pady=10)
 
         tk.Label(form, text="LAST NAME : ").grid(column=0, row=1, pady=10, sticky="e")
         self.last_name_input = tk.Entry(form)
+        self.last_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.last_name_input.grid(column=1, row=1, pady=10)
 
         tk.Label(form, text="DATE OF BIRTH (YYYY-MM-DD): ").grid(column=0, row=2, pady=10, sticky="e")
         self.dob_input = tk.Entry(form)
+        self.dob_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.dob_input.grid(column=1, row=2, pady=10)
 
         # tk.Label(form, text="PLAYER ROLE: ").grid(column=0, row=3, pady=10, sticky="e")
@@ -121,7 +124,7 @@ class CreatePlayerWindow(BaseWindow):
         self.player_role_var = tk.StringVar()
         self.create_dropdown(
             parent=form,
-            text="PLAYER ROLE",
+            text="PLAYER ROLE: ",
             variable=self.player_role_var,
             values=PlayerRole.list_values(),
             row=3,
@@ -131,7 +134,7 @@ class CreatePlayerWindow(BaseWindow):
         self.batting_style_var = tk.StringVar()
         self.create_dropdown(
             parent=form,
-            text="BATTING STYLE",
+            text="BATTING STYLE: ",
             variable=self.batting_style_var,
             values=BattingStyle.list_values(),
             row=4,
@@ -140,7 +143,7 @@ class CreatePlayerWindow(BaseWindow):
         self.bowling_style_var = tk.StringVar()
         self.create_dropdown(
             parent=form,
-            text="BOWLING STYLE",
+            text="BOWLING STYLE: ",
             variable=self.bowling_style_var,
             values=BowlingStyle.list_values(),
             row=5,
@@ -150,7 +153,17 @@ class CreatePlayerWindow(BaseWindow):
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
 
-        tk.Button(footer, text="SUBMIT", width=15,).pack(side=tk.RIGHT, padx=20, pady=20)
+        #tk.Button(footer, text="SAVE", width=15,).pack(side=tk.RIGHT, padx=20, pady=20)
+
+        save_btn = tk.Button(footer, text="SAVE", command="",width=15 )
+        save_btn.pack(side=tk.RIGHT, padx=20, pady=20)
+
+    #def save_player(self):
+     #   first_name = self.first_name_input.get().strip()
+      #  last_name = self.last_name_input.get().strip()
+
+
+
 
     def go_back(self):
         self.window.destroy()

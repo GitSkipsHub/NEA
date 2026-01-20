@@ -20,7 +20,7 @@ class Account:
     def verify_password(password: str, hash_password: str) -> bool:
         return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
 
-    def to_database(self):
+    def to_dict(self):
         return {
             "username": self.username,
             "password": self.password,
@@ -28,7 +28,7 @@ class Account:
         }
 
     @classmethod
-    def from_database(cls, data:Dict) -> 'Account':
+    def from_dict(cls, data:Dict) -> 'Account':
         return cls(
             username=data.get("username"),
             password=data.get("password"),
@@ -66,7 +66,7 @@ class Player:
     created_date: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
 
-    def to_database(self) -> Dict: #Turns Python Object to Dictionary --> Key: Value
+    def to_dict(self) -> Dict: #Turns Python Object to Dictionary --> Key: Value
         return{
             "username": self.username,
             "player_id": self.player_id,
@@ -96,7 +96,7 @@ class Player:
         }
 
     @classmethod
-    def from_database(cls, data: Dict) -> 'Player': #Gets Player Data from Database and converts to Player object
+    def from_dict(cls, data: Dict) -> 'Player': #Gets Player Data from Database and converts to Player object
         return cls(
             username=data.get("username"),
             player_id=data.get("player_id"),
@@ -138,7 +138,7 @@ class Batting:
     fours: int
     sixes: int
 
-    def to_database(self):
+    def to_dict(self):
         return{
             "player_id": self.player_id,
             "player_name": self.player_name,
@@ -152,7 +152,7 @@ class Batting:
             "sixes": self.sixes
         }
     @classmethod
-    def from_database(cls, data:Dict) -> 'Batting':
+    def from_dict(cls, data:Dict) -> 'Batting':
         return cls(
             player_id=data.get("player_id"),
             player_name=data.get("player_name"),
@@ -178,7 +178,7 @@ class Bowling:
     wides: int
     no_balls: int
 
-    def to_database(self):
+    def to_dict(self):
         return{
             "player_id": self.player_id,
             "player_name": self.player_name,
@@ -191,7 +191,7 @@ class Bowling:
             "no_balls": self.no_balls
         }
     @classmethod
-    def from_database(cls, data:Dict) -> 'Bowling':
+    def from_dict(cls, data:Dict) -> 'Bowling':
         return cls(
             player_id=data.get("player_id"),
             player_name=data.get("player_name"),
@@ -212,7 +212,7 @@ class Fielding:
     runouts: int
     stumpings: int
 
-    def to_database(self):
+    def to_dict(self):
         return{
             "player_id": self.player_id,
             "player_name": self.player_name,
@@ -222,7 +222,7 @@ class Fielding:
         }
 
     @classmethod
-    def from_database(cls, data:Dict) -> 'Fielding':
+    def from_dict(cls, data:Dict) -> 'Fielding':
         return cls(
             player_id=data.get("player_id"),
             player_name=data.get("player_name"),
@@ -245,7 +245,7 @@ class Scorecard:
     bowling: List[Bowling]
     fielding: List[Fielding]
 
-    def to_database(self):
+    def to_dict(self):
         return{
             "subtotal": self.subtotal,
             "extras": self.extras,
@@ -255,13 +255,13 @@ class Scorecard:
             "penalties_conceded": self.penalties_conceded,
             "batting_overs": self.batting_overs,
             "bowling_overs": self.bowling_overs,
-            "batting": [b.to_database() for b in self.batting],
-            "bowling": [b.to_database() for b in self.bowling],
-            "fielding": [f.to_database() for f in self.fielding]
+            "batting": [b.to_dict() for b in self.batting],
+            "bowling": [b.to_dict() for b in self.bowling],
+            "fielding": [f.to_dict() for f in self.fielding]
         }
 
     @classmethod
-    def from_database(cls, data:Dict) -> 'Scorecard':
+    def from_dict(cls, data:Dict) -> 'Scorecard':
         return cls(
             subtotal=data.get("subtotal"),
             extras=data.get("extras"),
@@ -271,9 +271,9 @@ class Scorecard:
             penalties_conceded=data.get("penalties_conceded"),
             batting_overs=data.get("batting_overs"),
             bowling_overs=data.get("bowling_overs"),
-            batting=[Batting.from_database(x) for x in data.get("batting")],
-            bowling=[Bowling.from_database(x) for x in data.get("bowling")],
-            fielding=[Fielding.from_database(x) for x in data.get("fielding")]
+            batting=[Batting.from_dict(x) for x in data.get("batting")],
+            bowling=[Bowling.from_dict(x) for x in data.get("bowling")],
+            fielding=[Fielding.from_dict(x) for x in data.get("fielding")]
         )
 
 @dataclass
@@ -292,7 +292,7 @@ class Match:
     created_date: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
 
-    def to_database(self) -> Dict:
+    def to_dict(self) -> Dict:
         return{
             "username": self.username,
             "match_id": self.match_id,
@@ -304,14 +304,14 @@ class Match:
             "opposition": self.opposition,
             "toss": self.toss,
             "result": self.result,
-            "scorecard": self.scorecard.to_database(),
+            "scorecard": self.scorecard.to_dict(),
             "created_date": self.created_date,
             "last_updated": self.last_updated,
 
         }
 
     @classmethod
-    def from_database(cls, data: Dict) -> 'Match':
+    def from_dict(cls, data: Dict) -> 'Match':
         return cls(
             username=data.get("username"),
             match_id=data.get("match_id"),
@@ -323,7 +323,7 @@ class Match:
             opposition=data.get("opposition"),
             toss=TossResult[data.get("toss")],
             result=Result[data.get("result")],
-            scorecard=Scorecard.from_database(data.get("scorecard")),
+            scorecard=Scorecard.from_dict(data.get("scorecard")),
             created_date=data.get("created_date"),
             last_updated=data.get("last_updated"),
         )
@@ -382,7 +382,7 @@ class SelectedTeam:
     stumpings: int
     runouts: int
 
-    def to_database(self):
+    def to_dict(self):
         return {
             "username": self.username,
             "team_id": self.team_id,
@@ -404,7 +404,7 @@ class SelectedTeam:
         }
 
     @classmethod
-    def from_database(cls, data:Dict) -> 'SelectedTeam':
+    def from_dict(cls, data:Dict) -> 'SelectedTeam':
         return cls(
             username=data.get("username"),
             team_id=data.get("team_id"),

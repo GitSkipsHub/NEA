@@ -69,7 +69,7 @@ class CreateMatchDetailsPage(BaseWindow):
         self.create_sub_header(main_frame, "MATCH DETAILS")
 
         form = tk.Frame(main_frame)
-        form.pack(pady=20)
+        form.pack(pady=10)
 
         self.match_type_var = tk.StringVar()
         self.create_dropdown(
@@ -109,16 +109,18 @@ class CreateMatchDetailsPage(BaseWindow):
 
         tk.Label(form, text="GROUND NAME: ").grid(column=0, row=4, pady=10, sticky="e")
         self.ground_name_input = tk.Entry(form)
+        self.ground_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.ground_name_input.grid(column=1, row=4, pady=10)
 
         tk.Label(form, text="OPPOSITION: ").grid(column=0, row=5, pady=10, sticky="e")
         self.opposition_input = tk.Entry(form)
+        self.opposition_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.opposition_input.grid(column=1, row=5, pady=10)
 
         tk.Label(form, text="DATE (YYYY-MM-DD): ").grid(column=0, row=6, pady=10, sticky="e")
         self.date_input = tk.Entry(form)
+        self.date_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.date_input.grid(column=1, row=6, pady=10)
-
 
 
         footer = tk.Frame(main_frame)
