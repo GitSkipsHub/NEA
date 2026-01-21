@@ -1,18 +1,19 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from gui.baseWindow import BaseWindow
+from bff.database import PlayerDB
 from bff.enums import PlayerRole, BattingStyle, BowlingStyle
 
 
 class PlayerManagementWindow(BaseWindow):
-    def __init__(self, window, parent):
+    def __init__(self, window, parent, username):
         super().__init__(window)
+        self.current_user = username
         self.window = window
         self.parent = parent
 
         self.window.title("SS - PLAYER MANAGEMENT")
         self.center_window(800, 600)
-
         self.create_widgets()
 
     def create_widgets(self):
@@ -45,7 +46,7 @@ class PlayerManagementWindow(BaseWindow):
 
     def open_create_player_page(self):
         self.window.withdraw()
-        CreatePlayerWindow(tk.Toplevel(self.window), self.window)
+        CreatePlayerWindow(tk.Toplevel(self.window), self.window, self.current_user)
 
 
 
@@ -56,12 +57,14 @@ class PlayerManagementWindow(BaseWindow):
 
 
 class CreatePlayerWindow(BaseWindow):
-    def __init__(self, window, parent):
+    def __init__(self, window, parent, username):
         super().__init__(window)
         self.window = window
         self.parent = parent
         self.window.title("SS - CREATE PLAYER")
         self.center_window(800, 600)
+        self.current_user = username
+        self.player_db = PlayerDB()
         self.create_widgets()
 
     def create_widgets(self):
@@ -155,12 +158,37 @@ class CreatePlayerWindow(BaseWindow):
 
         #tk.Button(footer, text="SAVE", width=15,).pack(side=tk.RIGHT, padx=20, pady=20)
 
-        save_btn = tk.Button(footer, text="SAVE", command="",width=15 )
+        save_btn = tk.Button(footer, text="SAVE", command= self.save_player,width=15 )
         save_btn.pack(side=tk.RIGHT, padx=20, pady=20)
 
-    #def save_player(self):
-     #   first_name = self.first_name_input.get().strip()
-      #  last_name = self.last_name_input.get().strip()
+    def save_player(self):
+        first_name = self.first_name_input.get().strip()
+        last_name = self.last_name_input.get().strip()
+        dob = self.dob_input.get().strip()
+        player_role = self.player_role_var.get().strip()
+        batting_style = self.batting_style_var.get().strip()
+        bowling_style = self.bowling_style_var.get().strip()
+
+        if not first_name or not last_name or not dob or not player_role or not bowling_style or not batting_style:
+            messagebox.showerror("Error", "Please fill in all required fields")
+            return
+
+        player_data = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "date_of_birth": dob,
+            "player_role": player_role,
+            "batting_style": batting_style,
+            "bowling_style": bowling_style,
+        }
+
+        if self.player_db.create_player(self.current_user, player_data):
+            messagebox.showinfo("SUCCESS", "Player Created")
+            self.go_back()
+            return
+        else:
+            messagebox.showerror("ERROR", "Failed to Create Player")
+            return
 
 
 

@@ -7,7 +7,6 @@ class HomePage(BaseWindow):
         self.current_user = username
         self.window = window
         self.parent = parent
-
         self.window.title("SS - HOME PAGE")
         self.center_window(800, 550)
 
@@ -61,7 +60,7 @@ class HomePage(BaseWindow):
     def open_player_management_page(self):
         from gui.player import PlayerManagementWindow
         self.window.withdraw()
-        PlayerManagementWindow(tk.Toplevel(self.window), self.window)
+        PlayerManagementWindow(tk.Toplevel(self.window), self.window, self.current_user)
 
     def open_match_management_page(self):
         from gui.match import MatchManagementPage

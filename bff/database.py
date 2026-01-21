@@ -89,9 +89,17 @@ class PlayerDB:
         self.db = Database()
         self.collection = self.db.get_collection("player")
 
-    def create_player(self, username: str, player_data: Dict) -> bool:
+    def create_player(self, username: str, first_name: str, last_name: str, dob: str, batting_style: str,
+                      bowling_style: str, player_role: str, player_data: Dict) -> bool:
         try:
             player_data["username"] = username,
+            player_data["first_name"] = first_name,
+            player_data["last_name"] = last_name,
+            player_data["date_of_birth"] = dob,
+            player_data["batting_style"] = batting_style,
+            player_data["bowling_style"] = bowling_style,
+            player_data["player_role"] = player_role,
+
             player_data["created_date"] = datetime.now(),
             player_data["last_updated"] = datetime.now()
 
@@ -99,10 +107,11 @@ class PlayerDB:
                             "sixes", "wickets", "overs", "maidens", "runs_given",
                             "wides", "no_balls", "catches","runouts", "stumpings"]
             for field in stats_fields:
-                player_data[field] = 0
+                if field not in player_data:
+                    player_data[field] = 0
 
             result = self.collection.insert_one(player_data)
-            return result.__inserted_id is not None
+            return result.inserted_id is not None
 
         except Exception as e:
             print(f"Error creating Player: {e}")
