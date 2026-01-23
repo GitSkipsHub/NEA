@@ -1,6 +1,6 @@
 import tkinter as tk
 from gui.baseWindow import BaseWindow
-from bff.enums import MatchType, MatchFormat, Venue, Result, TossResult
+from bff.enums import MatchType, MatchFormat, Venue, Result
 
 class MatchManagementPage(BaseWindow):
     def __init__(self, window, parent):
@@ -58,7 +58,7 @@ class CreateMatchDetailsPage(BaseWindow):
         self.window = window
         self.parent = parent
 
-        self.window.title("SS - MATCH DETAILS")
+        self.window.title("SS - MATCH CREATION")
         self.center_window(850,650)
 
         self.create_widgets()

@@ -72,7 +72,7 @@ class BaseWindow:
         label = tk.Label(
             sub_header_frame,
             text=text,
-            font=("Arial", 20,)
+            font=("Arial", 15,)
         )
         label.pack(pady=20)
         return sub_header_frame

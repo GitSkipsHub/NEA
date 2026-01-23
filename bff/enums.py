@@ -17,7 +17,7 @@ class BaseEnum(Enum):
         raise ValueError(f"{value} is not a valid {cls.__name__} value.") #If given value does not exist within the enum
 
     @classmethod
-    def list_values(cls):
+    def list_values(cls): #cls denotes which specific enum it is e.g. PlayerRole, TimePeriod etc.
         # Loops through every item (enum option) in the class and collects them into a list.
         return[key.value for key in cls]
         # Returns list containing all values defined in the class

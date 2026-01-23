@@ -16,10 +16,10 @@ class HomePage(BaseWindow):
         main_frame = self.create_main_frame()
 
         tk.Label(main_frame,
-                 text=f"Welcome Back {self.current_user}!",
+                 text=f"WELCOME BACK {self.current_user} !",
                  underline=0,
                  font=("Arial", 20  , "bold"),
-                 fg="purple2",
+                 fg="dodger Blue",
                  borderwidth=5,
                  ).pack(fill=tk.BOTH, expand= True, pady=5, padx=10)
 
@@ -40,6 +40,7 @@ class HomePage(BaseWindow):
                   text="TEAM GENERATION",
                   width=15,
                   height=3,
+                  command=self.open_team_generation_page,
                   ).pack(pady=12)
 
         tk.Button(content_frame,
@@ -53,6 +54,7 @@ class HomePage(BaseWindow):
                   text="LOGOUT",
                   width=15,
                   height=3,
+                  command=self.log_out,
                   ).pack(pady=12)
 
 
@@ -62,10 +64,18 @@ class HomePage(BaseWindow):
         self.window.withdraw()
         PlayerManagementWindow(tk.Toplevel(self.window), self.window, self.current_user)
 
+    def open_team_generation_page(self):
+        from gui.teamGen import FixtureDetailsPage
+        self.window.withdraw()
+        FixtureDetailsPage(tk.Toplevel(self.window), self.window, self.current_user)
+
     def open_match_management_page(self):
         from gui.match import MatchManagementPage
         self.window.withdraw()
         MatchManagementPage(tk.Toplevel(self.window), self.window)
+
+    def log_out(self):
+        pass
 
 
 

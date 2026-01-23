@@ -37,6 +37,7 @@ class PlayerManagementWindow(BaseWindow):
                   text="UPDATE PLAYER",
                   width=15,
                   height=3,
+                  command=self.open_update_player_window
                   ).pack(pady=20)
         tk.Button(main_frame,
                   text="DELETE PLAYER",
@@ -48,8 +49,9 @@ class PlayerManagementWindow(BaseWindow):
         self.window.withdraw()
         CreatePlayerWindow(tk.Toplevel(self.window), self.window, self.current_user)
 
-
-
+    def open_update_player_window(self):
+        self.window.withdraw()
+        UpdatePlayerWindow(tk.Toplevel(self.window), self.window, self.current_user)
 
     def go_back(self):
         self.window.destroy()
@@ -133,7 +135,6 @@ class CreatePlayerWindow(BaseWindow):
             row=3,
         )
 
-
         self.batting_style_var = tk.StringVar()
         self.create_dropdown(
             parent=form,
@@ -191,11 +192,67 @@ class CreatePlayerWindow(BaseWindow):
             return
 
 
+    def go_back(self):
+        self.window.destroy()
+        self.parent.deiconify()
 
+
+class UpdatePlayerWindow(BaseWindow):
+    def __init__(self, window, parent, username):
+        super().__init__(window)
+        self.window = window
+        self.parent = parent
+        self.current_user = username
+        self.player_db = PlayerDB
+        self.window.title("SS - PLAYER MANAGEMENT")
+        self.center_window(800, 600)
+        self.create_widgets()
+
+
+    def create_widgets(self):
+
+        main_frame = self.create_main_frame()
+        self.create_header(main_frame, "UPDATE PLAYER")
+        self.create_sub_header(main_frame, "SEARCH PLAYER")
+
+        search_frame = tk.Frame(main_frame)
+        search_frame.pack(pady=40)
+
+
+
+        tk.Label(search_frame, text="FIRST NAME: ").grid(row=0, column=0)
+        self.search__fname_var = tk.StringVar()
+        self.first_name_input = tk.Entry(search_frame, textvariable=self.search__fname_var)
+        self.first_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
+        self.first_name_input.grid(row=0, column=1, pady=10)
+
+        tk.Label(search_frame, text="LAST NAME: ").grid(row=0, column=0)
+        self.search_lname_var = tk.StringVar()
+        self.last_name_input = tk.Entry(search_frame, textvariable=self.search_lname_var)
+        self.last_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
+        self.last_name_input.grid(row=0, column=1, pady=10)
+
+
+
+
+
+
+        footer = tk.Frame(main_frame)
+        footer.pack(fill=tk.X, side=tk.BOTTOM)
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
 
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
+
+
+
+
+
+
+
 
 
 
