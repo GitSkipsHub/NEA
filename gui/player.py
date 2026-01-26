@@ -159,7 +159,7 @@ class CreatePlayerWindow(BaseWindow):
 
         #tk.Button(footer, text="SAVE", width=15,).pack(side=tk.RIGHT, padx=20, pady=20)
 
-        save_btn = tk.Button(footer, text="SAVE", command= self.save_player,width=15 )
+        save_btn = tk.Button(footer, text="SAVE", command= self.save_player, width=15 )
         save_btn.pack(side=tk.RIGHT, padx=20, pady=20)
 
     def save_player(self):
@@ -205,7 +205,7 @@ class UpdatePlayerWindow(BaseWindow):
         self.current_user = username
         self.player_db = PlayerDB
         self.window.title("SS - PLAYER MANAGEMENT")
-        self.center_window(800, 600)
+        self.center_window(900, 700)
         self.create_widgets()
 
 
@@ -215,10 +215,23 @@ class UpdatePlayerWindow(BaseWindow):
         self.create_header(main_frame, "UPDATE PLAYER")
         self.create_sub_header(main_frame, "SEARCH PLAYER")
 
+        footer = tk.Frame(main_frame)
+        footer.pack(fill=tk.X, side=tk.BOTTOM)
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+
+        update_button = tk.Button(footer, text="UPDATE PLAYER", command=self.update_player, width=15)
+        update_button.pack(side=tk.RIGHT, pady=10, padx=10)
+
+        search_button = tk.Button(footer, text="SEARCH", command=self.search_player, width=15)
+        search_button.pack(side=tk.BOTTOM, padx=10, pady=10)
+
         search_frame = tk.Frame(main_frame)
         search_frame.pack(pady=40)
 
-
+        buttons_frame = tk.Frame(search_frame)
+        buttons_frame.grid(row=1, column=3, padx=100, pady=20, sticky=tk.E)
 
         tk.Label(search_frame, text="FIRST NAME: ").grid(row=0, column=0)
         self.search__fname_var = tk.StringVar()
@@ -226,22 +239,58 @@ class UpdatePlayerWindow(BaseWindow):
         self.first_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.first_name_input.grid(row=0, column=1, pady=10)
 
-        tk.Label(search_frame, text="LAST NAME: ").grid(row=0, column=0)
+        tk.Label(search_frame, text="LAST NAME: ").grid(row=1, column=0)
         self.search_lname_var = tk.StringVar()
         self.last_name_input = tk.Entry(search_frame, textvariable=self.search_lname_var)
         self.last_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
-        self.last_name_input.grid(row=0, column=1, pady=10)
+        self.last_name_input.grid(row=1, column=1, pady=10)
+
+        self.tree = ttk.Treeview(main_frame, columns=("Created Date", "First Name", "Last Name", "Player Role"))
+        self.tree.grid(row=2, column=0, columnspan=3, pady=10, padx=10)
+
+        self.tree.heading("create_date", text="Created Date")
+        self.tree.heading("first_name", text="First Name")
+        self.tree.heading("last_name", text="Last Name")
+        self.tree.heading("player_role", text="Player Role")
+
+        self.tree.column("created_date", width=90)
+        self.tree.column("first_name", width=120)
+        self.tree.column("last_name", width=150)
+        self.tree.column("player_role", width=100)
+
+
+
+
+    def search_player(self):
+        self.tree.delete(*self.tree.get_children())
+        fname_query = {"first_name": {"$regex": self.search__fname_var.get(), "$options": "i"}}
+        lname_query = {"last_name": {"$regex": self.search_lname_var.get(), "$options": "i"}}
+
+        query = {}
+        if self.search__fname_var.get():
+            query.update(fname_query)
+        if self.search_lname_var.get():
+            query.update(lname_query)
+
+        if query:
+            sort_criteria = [("first_name", 1)]
+
+        projection = {"id": 1, "first_name": 1, "last_name": 1 }
+
+
+
+
+
+    def update_player(self):
+        pass
 
 
 
 
 
 
-        footer = tk.Frame(main_frame)
-        footer.pack(fill=tk.X, side=tk.BOTTOM)
 
-        back_btn = self.create_back_btn(footer, self.go_back)
-        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+
 
     def go_back(self):
         self.window.destroy()

@@ -111,6 +111,17 @@ class PlayerDB:
             print(f"Error creating Player: {e}")
 
 
+    def search_player(self, username: str, search_term: str = "") -> List[Dict]:
+        query = {"username": username}
+        if search_term:
+            players = self.collection.find(query)
+            for player in players:
+                created_date = player.get("created_date", "")
+
+
+
+
+
     def update_player(self):
         pass
 

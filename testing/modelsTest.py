@@ -13,7 +13,7 @@ dummy_account = {
     "hashed_password": ""
 }
 #Returns all the values stored in Account Object as strings
-account_test01 = Account.from_database(dummy_account)
+account_test01 = Account.from_dict(dummy_account)
 #Assigns password in dummy_account dict to attribute password in Account Class
 password = account_test01.password
 #Hashes Password Method
@@ -45,7 +45,7 @@ dummy_match = {
 }
 }
 #Returns all the values stored in Match Object as strings
-match_test01 = Match.from_database(dummy_match)
+match_test01 = Match.from_dict(dummy_match)
 #Returns runs scored from Scorecard Dictionary & Batting List
 print(match_test01.scorecard.batting[0].runs_scored)
 #Returns Dismissal Type
