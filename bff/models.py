@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import List, Dict, Tuple
 import bcrypt
@@ -21,19 +21,11 @@ class Account:
         return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
 
     def to_dict(self):
-        return {
-            "username": self.username,
-            "password": self.password,
-            "hashed_password": self.hashed_password
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data:Dict) -> 'Account':
-        return cls(
-            username=data.get("username"),
-            password=data.get("password"),
-            hashed_password=data.get("hashed_password")
-        )
+        return cls(**data)
 
 @dataclass
 class Player:
@@ -67,63 +59,11 @@ class Player:
     last_updated: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> Dict: #Turns Python Object to Dictionary --> Key: Value
-        return{
-            "username": self.username,
-            "player_id": self.player_id,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "date_of_birth": self.date_of_birth,
-            "player_role": self.player_role,
-            "batting_style": self.batting_style,
-            "bowling_style": self.bowling_style,
-            "matches": self.matches,
-            "innings": self.innings,
-            "runs_scored": self.runs_scored,
-            "balls": self.balls ,
-            "fours": self.fours,
-            "sixes": self.sixes,
-            "overs": self.overs,
-            "maidens": self.maidens,
-            "runs_conceded": self.runs_conceded,
-            "wickets": self.wickets,
-            "wides": self.wides,
-            "no_balls": self.no_balls,
-            "catches": self.catches,
-            "runouts": self.runouts,
-            "stumpings": self.stumpings,
-            "created_date": self.created_date,
-            "last_updated": self.last_updated
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data: Dict) -> 'Player': #Gets Player Data from Database and converts to Player object
-        return cls(
-            username=data.get("username"),
-            player_id=data.get("player_id"),
-            first_name=data.get("first_name"),
-            last_name=data.get("last_name"),
-            date_of_birth=data.get("date_of_birth"),
-            player_role=PlayerRole[data.get("player_role")],
-            batting_style=BattingStyle[data.get("batting_style")],
-            bowling_style=BowlingStyle[data.get("bowling_style")],
-            matches=data.get("matches", 0),
-            innings=data.get("innings", 0),
-            runs_scored=data.get("runs_scored", 0), #Default value set as 0
-            balls=data.get("balls", 0),
-            fours=data.get("fours", 0),
-            sixes=data.get("sixes", 0),
-            overs=data.get("overs", 0),
-            maidens=data.get("maidens", 0),
-            runs_conceded=data.get("runs_conceded", 0),
-            wickets=data.get("wickets", 0),
-            wides=data.get("wides", 0),
-            no_balls=data.get("no_balls", 0),
-            catches=data.get("catches", 0),
-            runouts=data.get("runouts", 0),
-            stumpings=data.get("stumpings", 0),
-            created_date=data.get("created_date"),
-            last_updated=data.get("last_updated")
-        )
+        return cls(**data)
 
 @dataclass
 class Batting:
@@ -139,32 +79,11 @@ class Batting:
     sixes: int
 
     def to_dict(self):
-        return{
-            "player_id": self.player_id,
-            "player_name": self.player_name,
-            "pos": self.pos,
-            "how_out": self.how_out,
-            "fielder": self.fielder,
-            "bowler": self.bowler,
-            "runs_scored": self.runs_scored,
-            "balls": self.balls,
-            "fours": self.fours,
-            "sixes": self.sixes
-        }
+        return asdict(self)
+
     @classmethod
     def from_dict(cls, data:Dict) -> 'Batting':
-        return cls(
-            player_id=data.get("player_id"),
-            player_name=data.get("player_name"),
-            pos=data.get("pos"),
-            how_out=HowOut[data.get("how_out")],
-            fielder=data.get("fielder"),
-            bowler=data.get("bowler"),
-            runs_scored=data.get("runs_scored"),
-            balls=data.get("balls"),
-            fours=data.get("fours"),
-            sixes=data.get("sixes"),
-        )
+        return cls(**data)
 
 @dataclass
 class Bowling:

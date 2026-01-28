@@ -148,3 +148,21 @@ class PlayerDB:
             print(f"Error deleting player {e}")
             return False
 
+class MatchDB:
+    def __init__(self):
+        self.db = Database()
+        self.collection = self.db.get_collection("match")
+
+    def create_match(self, username: str, match_data: Dict) -> Optional[str]:
+        try:
+            match_data["username"] = username
+            match_data["create_date"] = datetime.now()
+            match_data["last_updated"] = datetime.now()
+            result = self.collection.insert_one(match_data)
+            return str(result.inserted_id)
+        except Exception as e:
+            print(f"Error creating match {e}")
+            return None
+
+
+

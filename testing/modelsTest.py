@@ -1,4 +1,4 @@
-from bff.models import (Match, Account, TeamGenerator)
+from bff.models import (Match, Player, Account, TeamGenerator)
 
 from datetime import datetime
 
@@ -22,6 +22,24 @@ hashed_password = Account.hash_password(password)
 print(f'Password = {password} | Hashed Password = {hashed_password}')
 
 
+dummy_player = {
+    "username": "dummy_username",
+    "player_id": "01",
+    "first_name": "dummy_first_name",
+    "last_name": "dummy_last_name",
+    "date_of_birth": "dummy_dob",
+    "player_role": "BATTER",
+    "batting_style": "LEFT_HAND",
+    "bowling_style":"LEFT_ARM_PACE",
+}
+
+
+player_test01 = Player.from_dict(dummy_player)
+
+print(player_test01.username)
+print(player_test01.player_role)
+
+
 
 #CREATED DUMMY MATCH
 dummy_match = {
@@ -35,12 +53,14 @@ dummy_match = {
     "ground_name": "Oval",
     "toss": "WON_BAT",
     "result": "LOST",
-    "period": "LAST_MONTH",
     "scorecard": {
-        "batting": [{"player_id": "id-01", "player_name": "name_test01",
-                     "runs_scored": 50, "how_out": "BOWLED", }],
+        "batting": [{"player_id": "id-01", "player_name": "name_test01", "pos": "1",
+                     "how_out": "BOWLED", "fielder": "mid-off", "bowler": "Bowler No.1",
+                     "runs_scored": 50, "balls": 50, "fours": 3, "sixes": 0 }],
+
         "bowling": [{"player_id": "id-01", "player_name": "name_test01",
                      "overs": 23.4, "maidens": 3, "wickets": 5}],
+
         "fielding": []
 }
 }
@@ -58,6 +78,7 @@ print(match_test01.scorecard.bowling[0].overs)
 print(match_test01.scorecard.bowling[0].wickets)
 #Returns data created
 print(match_test01.match_date)
+
 
 
 

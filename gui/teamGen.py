@@ -185,7 +185,7 @@ class PerformanceMetricsPage(BaseWindow):
             parent=form,
             text="WICKET-KEEPER METRIC",
             variable = self.wicket_keeper_metric_var,
-            values = WicketKeeperMetric.list_values(),
+            values = WicketKeeperMetric.list_values() + BatterMetric.list_values(),
             row=2
         )
 

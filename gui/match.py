@@ -3,10 +3,11 @@ from gui.baseWindow import BaseWindow
 from bff.enums import MatchType, MatchFormat, Venue, Result
 
 class MatchManagementPage(BaseWindow):
-    def __init__(self, window, parent):
+    def __init__(self, window, parent, username):
         super().__init__(window)
         self.window = window
         self.parent = parent
+        self.current_user = username
 
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(800, 600)
@@ -18,7 +19,7 @@ class MatchManagementPage(BaseWindow):
         self.create_header(main_frame, "MATCH MANAGEMENT")
 
         footer = tk.Frame(main_frame)
-        footer.pack(fill=tk.X, side=tk.BOTTOM)
+        footer.pack(fill="x", side="bottom")
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
@@ -44,7 +45,7 @@ class MatchManagementPage(BaseWindow):
 
     def open_create_match_details_page(self):
         self.window.withdraw()
-        CreateMatchDetailsPage(tk.Toplevel(self.window), self.window)
+        CreateMatchDetailsPage(tk.Toplevel(self.window), self.window, self.current_user)
 
 
     def go_back(self):
@@ -53,10 +54,11 @@ class MatchManagementPage(BaseWindow):
 
 
 class CreateMatchDetailsPage(BaseWindow):
-    def __init__(self, window, parent):
+    def __init__(self, window, parent, username):
         super().__init__(window)
         self.window = window
         self.parent = parent
+        self.current_user = username
 
         self.window.title("SS - MATCH CREATION")
         self.center_window(850,650)
@@ -124,13 +126,40 @@ class CreateMatchDetailsPage(BaseWindow):
 
 
         footer = tk.Frame(main_frame)
-        footer.pack(fill=tk.X, side=tk.BOTTOM)
+        footer.pack(fill="x", side="bottom")
+
+        save_btn = tk.Button(footer, text="SAVE", command=self.open_select_team_page)
+        save_btn.pack(side="right", padx=20, pady=20)
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+
+    def open_select_team_page(self):
+        self.window.withdraw()
+        SelectTeamPage(tk.Toplevel(self.window), self.window, self.current_user)
+
+
 
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
 
+
+class SelectTeamPage(BaseWindow):
+    def __init__(self, window, parent, username):
+        super().__init__(window)
+        self.window = window
+        self.parent = parent
+        self.current_user = username
+
+        self.window.title("SS - MATCH MANAGEMENT")
+        self.center_window(800, 700)
+
+        self.create_widgets()
+
+    def create_widgets(self):
+
+        main_frame = self.create_main_frame()
+        self.create_header(main_frame, "CREATE MATCH")
+        self.create_sub_header(main_frame, "SELECT TEAM")
 
