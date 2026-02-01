@@ -98,30 +98,11 @@ class Bowling:
     no_balls: int
 
     def to_dict(self):
-        return{
-            "player_id": self.player_id,
-            "player_name": self.player_name,
-            "pos": self.pos,
-            "overs": self.overs,
-            "maidens": self.maidens,
-            "runs_conceded": self.runs_conceded,
-            "wickets": self.wickets,
-            "wides": self.wides,
-            "no_balls": self.no_balls
-        }
+        return asdict(self)
+
     @classmethod
     def from_dict(cls, data:Dict) -> 'Bowling':
-        return cls(
-            player_id=data.get("player_id"),
-            player_name=data.get("player_name"),
-            pos=data.get("pos"),
-            overs=data.get("overs"),
-            maidens=data.get("maidens"),
-            runs_conceded=data.get("runs_conceded"),
-            wickets=data.get("wickets"),
-            wides=data.get("wides"),
-            no_balls=data.get("no_balls"),
-        )
+        return cls(**data)
 
 @dataclass
 class Fielding:
@@ -132,23 +113,11 @@ class Fielding:
     stumpings: int
 
     def to_dict(self):
-        return{
-            "player_id": self.player_id,
-            "player_name": self.player_name,
-            "catches": self.catches,
-            "runouts": self.runouts,
-            "stumpings": self.stumpings
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data:Dict) -> 'Fielding':
-        return cls(
-            player_id=data.get("player_id"),
-            player_name=data.get("player_name"),
-            catches=data.get("catches"),
-            runouts=data.get("runouts"),
-            stumpings=data.get("stumpings")
-        )
+        return cls(**data)
 
 @dataclass
 class Scorecard:
@@ -165,35 +134,14 @@ class Scorecard:
     fielding: List[Fielding]
 
     def to_dict(self):
-        return{
-            "subtotal": self.subtotal,
-            "extras": self.extras,
-            "total": self.total,
-            "byes_conceded": self.byes_conceded,
-            "leg_byes_conceded": self.leg_byes_conceded,
-            "penalties_conceded": self.penalties_conceded,
-            "batting_overs": self.batting_overs,
-            "bowling_overs": self.bowling_overs,
-            "batting": [b.to_dict() for b in self.batting],
-            "bowling": [b.to_dict() for b in self.bowling],
-            "fielding": [f.to_dict() for f in self.fielding]
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data:Dict) -> 'Scorecard':
-        return cls(
-            subtotal=data.get("subtotal"),
-            extras=data.get("extras"),
-            total=data.get("total"),
-            byes_conceded=data.get("byes_conceded"),
-            leg_byes_conceded=data.get("leg_byes_conceded"),
-            penalties_conceded=data.get("penalties_conceded"),
-            batting_overs=data.get("batting_overs"),
-            bowling_overs=data.get("bowling_overs"),
-            batting=[Batting.from_dict(x) for x in data.get("batting")],
-            bowling=[Bowling.from_dict(x) for x in data.get("bowling")],
-            fielding=[Fielding.from_dict(x) for x in data.get("fielding")]
-        )
+        data["batting"]=[Batting.from_dict(x) for x in data["batting"]]
+        data["bowling"]=[Bowling.from_dict(x) for x in data["bowling"]]
+        data["fielding"]=[Fielding.from_dict(x) for x in data["fielding"]]
+        return cls(**data)
 
 @dataclass
 class Match:
@@ -212,40 +160,12 @@ class Match:
     last_updated: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> Dict:
-        return{
-            "username": self.username,
-            "match_id": self.match_id,
-            "match_date": self.match_date,
-            "match_format": self.match_format,
-            "match_type": self.match_type,
-            "venue": self.venue,
-            "ground_name": self.ground_name,
-            "opposition": self.opposition,
-            "toss": self.toss,
-            "result": self.result,
-            "scorecard": self.scorecard.to_dict(),
-            "created_date": self.created_date,
-            "last_updated": self.last_updated,
-
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data: Dict) -> 'Match':
-        return cls(
-            username=data.get("username"),
-            match_id=data.get("match_id"),
-            match_date=data.get("match_date"),
-            match_format=MatchFormat[data.get("match_format")],
-            match_type=MatchType[data.get("match_type")],
-            venue=Venue[data.get("venue")],
-            ground_name=data.get("ground_name"),
-            opposition=data.get("opposition"),
-            toss=TossResult[data.get("toss")],
-            result=Result[data.get("result")],
-            scorecard=Scorecard.from_dict(data.get("scorecard")),
-            created_date=data.get("created_date"),
-            last_updated=data.get("last_updated"),
-        )
+        data["scorecard"] = Scorecard.from_dict(data["scorecard"])
+        return cls(**data)
 
 @dataclass
 class TeamGenerator:
@@ -302,47 +222,11 @@ class SelectedTeam:
     runouts: int
 
     def to_dict(self):
-        return {
-            "username": self.username,
-            "team_id": self.team_id,
-            "player_name": self.player_name,
-            "player_role": self.player_role,
-            "matches":  self.matches,
-            "batting_runs": self.batting_runs,
-            "batting_avg": self.batting_avg,
-            "batting_sr": self.batting_sr,
-            "overs": self.overs,
-            "bowling_runs": self.bowling_runs,
-            "wickets": self.wickets,
-            "economy_rate": self.economy_rate,
-            "bowling_avg": self.bowling_avg,
-            "bowling_sr": self.bowling_sr,
-            "catches": self.catches,
-            "stumpings": self.stumpings,
-            "runouts": self.runouts,
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data:Dict) -> 'SelectedTeam':
-        return cls(
-            username=data.get("username"),
-            team_id=data.get("team_id"),
-            player_name=data.get("player_name"),
-            player_role=PlayerRole[data.get("player_role")],
-            matches=data.get("matches"),
-            batting_runs=data.get("batting_runs"),
-            batting_avg=data.get("batting_avg"),
-            batting_sr=data.get("batting_sr"),
-            overs=data.get("overs"),
-            bowling_runs=data.get("bowling_runs"),
-            wickets=data.get("wickets"),
-            economy_rate=data.get("economy_rate"),
-            bowling_avg=data.get("bowling_avg"),
-            bowling_sr=data.get("bowling_sr"),
-            catches=data.get("catches"),
-            stumpings=data.get("stumpings"),
-            runouts=data.get("runouts"),
-        )
+        return cls(**data)
 
 
 

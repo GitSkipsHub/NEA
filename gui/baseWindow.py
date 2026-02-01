@@ -66,7 +66,7 @@ class BaseWindow:
             highlightthickness=2,
         )
 
-        sub_header_frame.pack(fill=tk.X, pady=20, padx=20,)
+        sub_header_frame.pack(fill="x", pady=20, padx=20,)
         sub_header_frame.pack_propagate(True)
 
         label = tk.Label(

@@ -19,8 +19,8 @@ class StartWindow(BaseWindow):
                                              "Let's create your winning team!")
 
         #Content Frame Created to divide page into different parts clearly
-        content_frame = tk.Frame(main_frame, borderwidth=3, relief="solid")
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=30)
+        content_frame = tk.Frame(main_frame, highlightbackground="dodger blue", highlightthickness=3)
+        content_frame.pack(fill="both", expand=True, padx=30, pady=30)
 
         title_label = tk.Label(
             content_frame, text="SMART SKIPPER",

@@ -53,13 +53,15 @@ dummy_match = {
     "ground_name": "Oval",
     "toss": "WON_BAT",
     "result": "LOST",
-    "scorecard": {
-        "batting": [{"player_id": "id-01", "player_name": "name_test01", "pos": "1",
+    "scorecard": {"subtotal": 100, "extras": 50, "total": 150, "byes_conceded": 20, "leg_byes_conceded": 30,
+                  "penalties_conceded": 0, "batting_overs": 20, "bowling_overs": 18,
+
+        "batting": [{"player_id": "id-01", "player_name": "name_test01", "pos": 1,
                      "how_out": "BOWLED", "fielder": "mid-off", "bowler": "Bowler No.1",
                      "runs_scored": 50, "balls": 50, "fours": 3, "sixes": 0 }],
 
-        "bowling": [{"player_id": "id-01", "player_name": "name_test01",
-                     "overs": 23.4, "maidens": 3, "wickets": 5}],
+        "bowling": [{"player_id": "id-01", "player_name": "name_test01", "pos": 1,
+                     "overs": 23.4, "maidens": 3, "runs_conceded": 95, "wickets": 5, "wides": 4, "no_balls": 0}],
 
         "fielding": []
 }
@@ -124,4 +126,4 @@ print(f"VALID & UNBALANCED TEAM COMPOSITION --> {result}")
 
 
 
-
+print(type(match_test01.scorecard.batting))

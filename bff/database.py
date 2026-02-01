@@ -143,7 +143,7 @@ class PlayerDB:
                 "username": username,
                 "_id": ObjectId(player_id)
             })
-            return result.deleted_count == 0
+            return result.deleted_count == 1
         except Exception as e:
             print(f"Error deleting player {e}")
             return False
@@ -156,13 +156,18 @@ class MatchDB:
     def create_match(self, username: str, match_data: Dict) -> Optional[str]:
         try:
             match_data["username"] = username
-            match_data["create_date"] = datetime.now()
+            match_data["created_date"] = datetime.now()
             match_data["last_updated"] = datetime.now()
             result = self.collection.insert_one(match_data)
             return str(result.inserted_id)
         except Exception as e:
             print(f"Error creating match {e}")
             return None
+
+    def update_match(self):
+        pass
+
+
 
 
 

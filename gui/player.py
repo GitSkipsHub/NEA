@@ -174,21 +174,27 @@ class CreatePlayerWindow(BaseWindow):
         first_name = self.first_name_input.get().strip()
         last_name = self.last_name_input.get().strip()
         dob = self.dob_input.get().strip()
-        player_role = self.player_role_var.get().strip()
-        batting_style = self.batting_style_var.get().strip()
-        bowling_style = self.bowling_style_var.get().strip()
+        player_role_value = self.player_role_var.get().strip()
+        batting_style_value = self.batting_style_var.get().strip()
+        bowling_style_value = self.bowling_style_var.get().strip()
 
-        if not first_name or not last_name or not dob or not player_role or not bowling_style or not batting_style:
+        if not first_name or not last_name or not dob or not player_role_value or not bowling_style_value or not batting_style_value:
             messagebox.showerror("Error", "Please fill in all required fields")
+            return
+
+        try:
+            datetime.strptime(dob, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
         player_data = {
             "first_name": first_name,
             "last_name": last_name,
             "date_of_birth": dob,
-            "player_role": player_role,
-            "batting_style": batting_style,
-            "bowling_style": bowling_style,
+            "player_role": PlayerRole.get_key(player_role_value),
+            "batting_style": BattingStyle.get_key(batting_style_value),
+            "bowling_style": BowlingStyle.get_key(bowling_style_value),
         }
 
         if self.player_db.create_player(self.current_user, player_data):
@@ -224,14 +230,14 @@ class UpdatePlayerWindow(BaseWindow):
         search_frame = tk.Frame(main_frame)
         search_frame.pack(pady=10)
 
-        tk.Label(search_frame, text="SEARCH NAME: ", font=("Arial", 15, "bold")).grid(row=0, column=0, padx=10, pady=30, sticky="e")
+        tk.Label(search_frame, text="SEARCH NAME: ", font=("Arial", 15, "bold")).grid(row=0, column=1, padx=30, pady=20)
         self.search_var = tk.StringVar()
         search_entry = tk.Entry(search_frame, textvariable=self.search_var, width=30)
         search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
-        search_entry.grid(row=0, column=1, padx=10, pady=10)
+        search_entry.grid(row=0, column=2, padx=10, pady=10)
 
         table_frame = tk.Frame(main_frame)
-        table_frame.pack(fill="both", expand=True, padx=30, pady=10)
+        table_frame.pack(fill="both", expand=True, padx=30, pady=5)
 
         player_columns = ("player_id", "created_date", "first_name", "last_name", "date_of_birth", "player_role",
                           "batting_style", "bowling_style")
@@ -350,6 +356,7 @@ class UpdatePlayerWindow(BaseWindow):
             formatted_date = player.get("created_date")
             if isinstance(formatted_date, datetime):
                 formatted_date =formatted_date.strftime("%Y-%m-%d %H:%M:%S") #Formats date in human-readable format
+
             self.tree.insert(
                 "", #"" = insert at root level, not nested
                 "end", # adds row to bottom of the table
@@ -359,9 +366,9 @@ class UpdatePlayerWindow(BaseWindow):
                     player.get("first_name", ""), #index 2
                     player.get("last_name", ""),
                     player.get("date_of_birth", ""),
-                    player.get("player_role", ""),
-                    player.get("batting_style", ""),
-                    player.get("bowling_style", ""), #index 7
+                    PlayerRole.get_value(player.get("player_role", "")),
+                    BattingStyle.get_value(player.get("batting_style", "")),
+                    BowlingStyle.get_value(player.get("bowling_style", "")), #index 7
                 )
             )
 
@@ -390,21 +397,27 @@ class UpdatePlayerWindow(BaseWindow):
         fname = self.first_name_edit.get().strip()
         lname = self.last_name_edit.get().strip()
         dob = self.dob_edit.get().strip()
-        p_role = self.player_role_edit.get().strip()
-        bat_style = self.batting_style_edit.get().strip()
-        bowl_style = self.bowling_style_edit.get().strip()
+        p_role_value = self.player_role_edit.get().strip()
+        bat_style_value = self.batting_style_edit.get().strip()
+        bowl_style_value = self.bowling_style_edit.get().strip()
 
-        if not fname or not lname or not dob or not p_role or not bat_style or not bowl_style:
+        if not fname or not lname or not dob or not p_role_value or not bat_style_value or not bowl_style_value:
             messagebox.showerror("ERROR", "FILL IN ALL REQUIRED FIELDS")
+            return
+
+        try:
+            datetime.strptime(dob, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
         update_data = {
             "first_name": fname,
             "last_name": lname,
             "date_of_birth": dob,
-            "player_role": p_role,
-            "batting_style": bat_style,
-            "bowling_style": bowl_style,
+            "player_role": PlayerRole.get_key(p_role_value),
+            "batting_style": BattingStyle.get_key(bat_style_value),
+            "bowling_style": BowlingStyle.get_key(bowl_style_value),
         }
 
         updated_record = self.player_db.update_player(self.current_user, self.selected_player_id, update_data)
@@ -515,7 +528,7 @@ class DeletePlayerWindow(BaseWindow):
         for player in players:
             formatted_date = player.get("created_date")
             if isinstance(formatted_date, datetime):
-                formatted_date =formatted_date.strftime("%Y-%m-%d %H:%M:%S") #Formats date in human-readable format
+                formatted_date = formatted_date.strftime("%Y-%m-%d %H:%M:%S") #Formats date in human-readable format
             self.tree.insert(
                 "", #"" = insert at root level, not nested
                 "end", # adds row to bottom of the table
@@ -525,9 +538,9 @@ class DeletePlayerWindow(BaseWindow):
                     player.get("first_name", ""), #index 2
                     player.get("last_name", ""),
                     player.get("date_of_birth", ""),
-                    player.get("player_role", ""),
-                    player.get("batting_style", ""),
-                    player.get("bowling_style", ""), #index 7
+                    PlayerRole.get_value(player.get("player_role", "")),
+                    BattingStyle.get_value(player.get("batting_style", "")),
+                    BowlingStyle.get_value(player.get("bowling_style", "")), #index 7
                 )
             )
 
@@ -557,6 +570,7 @@ class DeletePlayerWindow(BaseWindow):
             messagebox.showinfo("SUCCESS", "PLAYER DELETED SUCCESSFULLY")
             self.search_player()
             self.selected_player_id = None
+
         else:
             messagebox.showerror("ERROR", "PLAYER DELETION FAILED")
 

@@ -1,6 +1,9 @@
 import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime
 from gui.baseWindow import BaseWindow
-from bff.enums import MatchType, MatchFormat, Venue, Result
+from bff.database import MatchDB, PlayerDB
+from bff.enums import PlayerRole, BowlingStyle, BattingStyle, MatchFormat, Venue, Result, MatchType
 
 class MatchManagementPage(BaseWindow):
     def __init__(self, window, parent, username):
@@ -62,6 +65,9 @@ class CreateMatchDetailsPage(BaseWindow):
 
         self.window.title("SS - MATCH CREATION")
         self.center_window(850,650)
+
+        self.match_db = MatchDB()
+        self.created_match_id = None
 
         self.create_widgets()
 
@@ -128,13 +134,51 @@ class CreateMatchDetailsPage(BaseWindow):
         footer = tk.Frame(main_frame)
         footer.pack(fill="x", side="bottom")
 
-        save_btn = tk.Button(footer, text="SAVE", command=self.open_select_team_page)
+        save_btn = tk.Button(footer, text="SAVE", command=self.save_match_details_and_continue, width=15)
         save_btn.pack(side="right", padx=20, pady=20)
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
 
-    def open_select_team_page(self):
+
+    def save_match_details_and_continue(self):
+
+        match_type_value = self.match_type_var.get().strip()
+        match_format_value = self.match_format_var.get().strip()
+        venue_value = self.venue_var.get().strip()
+        result = self.result_var.get().strip()
+        ground_name = self.ground_name_input.get().strip()
+        opposition = self.opposition_input.get().strip()
+        date = self.date_input.get().strip()
+
+        if (not match_type_value or not match_format_value or not venue_value or not result or not ground_name or not
+        opposition or not date):
+                messagebox.showerror("Error", "Please fill in all required fields")
+                return
+
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
+            return
+
+        match_data = {
+            "match_type": MatchType.get_key(match_type_value),
+            "match_format": MatchFormat.get_key(match_format_value),
+            "venue": Venue.get_key(venue_value),
+            "result": result,
+            "ground_name": ground_name,
+            "opposition": opposition,
+            "date": date,
+        }
+
+        match_id = self.match_db.create_match(self.current_user, match_data)
+
+        if match_id is None:
+            messagebox.showerror("ERROR", "FAILED TO CREATE MATCH")
+
+        self.created_match_id = match_id
+
         self.window.withdraw()
         SelectTeamPage(tk.Toplevel(self.window), self.window, self.current_user)
 
@@ -151,9 +195,15 @@ class SelectTeamPage(BaseWindow):
         self.window = window
         self.parent = parent
         self.current_user = username
-
+        self.match_db = MatchDB()
+        self.player_db = PlayerDB()
+        self.all_players = self.player_db.get_all_players(username)
+        self.selected_team = []
         self.window.title("SS - MATCH MANAGEMENT")
-        self.center_window(800, 700)
+        self.center_window(1600, 900)
+        self.batting_scorecard = {}
+        self.bowling_scorecard = {}
+        self.fielding_scorecard = {}
 
         self.create_widgets()
 
@@ -162,4 +212,173 @@ class SelectTeamPage(BaseWindow):
         main_frame = self.create_main_frame()
         self.create_header(main_frame, "CREATE MATCH")
         self.create_sub_header(main_frame, "SELECT TEAM")
+
+        footer = tk.Frame(main_frame)
+        footer.pack(fill="x", side="bottom")
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=10, pady=10)
+
+        save_btn = tk.Button(footer, text="SAVE TEAM", width=15 )
+        save_btn.pack(side="right", padx=20, pady=20)
+
+        content_frame = tk.Frame(main_frame, highlightbackground="dodger blue", highlightthickness=4)
+        content_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        left_frame = tk.Frame(content_frame, highlightbackground="white", highlightthickness=2)
+        left_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+
+        clear_btn = tk.Button(left_frame, text="CLEAR TEAM", width=15, command=self.clear_team)
+        clear_btn.pack(side="bottom", padx=20, pady=20)
+
+        team_frame = tk.Frame(left_frame)
+        team_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        team_columns = ("position", "player_name", "captain", "wicket-keeper")
+
+        self.team_tree = ttk.Treeview(team_frame, columns=team_columns, show="headings", height=12,)
+        self.team_tree.pack(fill="both", expand=True)
+
+        self.team_tree.heading("position", text="POS")
+        self.team_tree.heading("player_name", text="Player Name")
+        self.team_tree.heading("captain", text="*")
+        self.team_tree.heading("wicket-keeper", text="†")
+
+
+
+        self.team_tree.column("position", width=50, anchor="center")
+        self.team_tree.column("player_name", width=200, anchor="center")
+        self.team_tree.column("captain", width=40, anchor="center")
+        self.team_tree.column("wicket-keeper", width=50, anchor="center")
+
+        self.team_tree.bind("<Button-1>") #(self.team_tree_click)
+
+        right_frame = tk.Frame(content_frame, highlightbackground="white", highlightthickness=2)
+        right_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+
+        tk.Label(right_frame, text="PLAYER SELECTION", font=("Arial", 15, "bold")).pack(padx=25, pady=20, side="top")
+
+        search_frame = tk.Frame(right_frame)
+        search_frame.pack(pady=10)
+
+        tk.Label(search_frame, text="SEARCH NAME: ", font=("Arial", 15)).grid(row=1, column=0, padx=10, pady=30, sticky="e")
+        self.search_var = tk.StringVar()
+        search_entry = tk.Entry(search_frame, textvariable=self.search_var, width=30)
+        search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+        search_entry.grid(row=1, column=1, padx=10, pady=10)
+
+        search_button = tk.Button(search_frame, text="SEARCH", width=15, command=self.search_player)
+        search_button.grid(row=1, column=2, padx=30, pady=10)
+
+        table_frame = tk.Frame(right_frame)
+        table_frame.pack(fill="both", expand=True, padx=30, pady=5)
+
+        player_columns = ("player_id", "player_name", "player_role", "batting_style", "bowling_style")
+
+        y_scrollbar = ttk.Scrollbar(table_frame, orient="vertical")
+        y_scrollbar.pack(side="right", fill="y")
+
+        x_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal")
+        x_scrollbar.pack(side="bottom", fill="x")
+
+        self.players_tree = ttk.Treeview(table_frame, columns=player_columns, show="headings",
+                                 height=10, yscrollcommand=y_scrollbar.set, xscrollcommand=x_scrollbar.set)
+
+        self.players_tree.pack(side="right", fill="both", expand=True)
+
+        x_scrollbar.config(command=self.players_tree.xview)
+        y_scrollbar.config(command=self.players_tree.yview)
+
+        self.players_tree.heading("player_id", text="ID")
+        self.players_tree.heading("player_name", text="Player Name")
+        self.players_tree.heading("player_role", text="Player Role")
+        self.players_tree.heading("batting_style", text="Batting Style")
+        self.players_tree.heading("bowling_style", text="Bowling Style")
+
+        self.players_tree.column("player_id", width=190, anchor="center")
+        self.players_tree.column("player_name", width=200, anchor="center")
+        self.players_tree.column("player_role", width=100, anchor="center")
+        self.players_tree.column("batting_style", width=100, anchor="center")
+        self.players_tree.column("bowling_style", width=120, anchor="center")
+
+        self.players_tree.bind("<<TreeviewSelect>>")
+
+        add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command=self.add_player_to_team)
+        add_player_btn.pack(side="right", padx=10, pady=10)
+
+        remove_player_btn = tk.Button(right_frame, text="REMOVE PLAYER", width=15, command=self.remove_player_from_team)
+        remove_player_btn.pack(side="left", padx=10, pady=10)
+
+        self.search_player()
+
+    def clear_tree(self):
+        for item in self.players_tree.get_children():
+            self.players_tree.delete(item)
+
+    def search_player(self):
+        self.clear_tree() #Removes all existing rows on tree
+        term = self.search_var.get() #reads text entered in search box
+        players = self.player_db.search_player(self.current_user, term) #Calls database function passing parameters
+
+        for player in players:
+            self.players_tree.insert(
+                "", #"" = insert at root level, not nested
+                "end", # adds row to bottom of the table
+                values=(
+                    str(player.get("_id", "")),
+                    player.get("first_name") + " " + player.get("last_name"),
+                    PlayerRole.get_value(player.get("player_role", "")),
+                    BattingStyle.get_value(player.get("batting_style", "")),
+                    BowlingStyle.get_value(player.get("bowling_style", "")), #index 7
+                )
+            )
+
+    def add_player_to_team(self):
+        selected = self.players_tree.selection()
+        if not selected:
+            return
+
+        player_id = selected[0]
+
+        if player_id in self.team_tree.get_children():
+            messagebox.showerror("ERROR", "PLAYER ALREADY IN TEAM")
+            return
+
+        vals = self.players_tree.item(player_id, "values")
+        player_name = f"{vals[1]}"
+
+        if len(self.team_tree.get_children()) >=11:
+            messagebox.showerror("ERROR", "TEAM IS FULL")
+            return
+
+        used_positions = {
+            int(self.team_tree.item(i, "values")[0])
+            for i in self.team_tree.get_children()
+        }
+        for position in range(1, 12):
+            if position not in used_positions:
+                next_position = position
+                break
+
+        self.team_tree.insert(
+            "",
+            "end",
+            iid = player_id,
+            values=(next_position, player_name, "", "",),
+        )
+
+    def remove_player_from_team(self):
+        selected = self.team_tree.selection()
+        if not selected:
+            return
+        self.team_tree.delete(selected[0])
+
+    def clear_team(self):
+        self.team_tree.delete(*self.team_tree.get_children())
+
+    def go_back(self):
+        self.window.destroy()
+        self.parent.deiconify()
+
+
 

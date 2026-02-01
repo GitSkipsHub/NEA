@@ -21,11 +21,11 @@ class HomePage(BaseWindow):
                  font=("Arial", 20  , "bold"),
                  fg="dodger Blue",
                  borderwidth=5,
-                 ).pack(fill=tk.BOTH, expand= True, pady=5, padx=10)
+                 ).pack(fill="both", expand= True, pady=5, padx=10)
 
 
         content_frame = tk.Frame(main_frame, borderwidth=1, relief="solid")
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=12)
+        content_frame.pack(fill="both", expand=True, padx=15, pady=12)
 
         self.create_header(content_frame, text="HOME PAGE")
 
@@ -72,7 +72,7 @@ class HomePage(BaseWindow):
     def open_match_management_page(self):
         from gui.match import MatchManagementPage
         self.window.withdraw()
-        MatchManagementPage(tk.Toplevel(self.window), self.window)
+        MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
     def log_out(self):
         pass
