@@ -200,10 +200,11 @@ class SelectTeamPage(BaseWindow):
         self.all_players = self.player_db.get_all_players(username)
         self.selected_team = []
         self.window.title("SS - MATCH MANAGEMENT")
-        self.center_window(1600, 900)
-        self.batting_scorecard = {}
-        self.bowling_scorecard = {}
-        self.fielding_scorecard = {}
+        self.center_window(1500, 900)
+
+        #self.batting_scorecard = {}
+        #self.bowling_scorecard = {}
+        #self.fielding_scorecard = {}
 
         self.create_widgets()
 
@@ -219,8 +220,8 @@ class SelectTeamPage(BaseWindow):
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=10, pady=10)
 
-        save_btn = tk.Button(footer, text="SAVE TEAM", width=15 )
-        save_btn.pack(side="right", padx=20, pady=20)
+        save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command=self.save_team_and_continue)
+        save_team_btn.pack(side="right", padx=20, pady=20)
 
         content_frame = tk.Frame(main_frame, highlightbackground="dodger blue", highlightthickness=4)
         content_frame.pack(fill="both", expand=True, padx=10, pady=10)
@@ -232,24 +233,32 @@ class SelectTeamPage(BaseWindow):
         clear_btn.pack(side="bottom", padx=20, pady=20)
 
         team_frame = tk.Frame(left_frame)
-        team_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        team_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
-        team_columns = ("position", "player_name", "captain", "wicket-keeper")
+        team_columns = ("position", "player_name")
 
         self.team_tree = ttk.Treeview(team_frame, columns=team_columns, show="headings", height=12,)
         self.team_tree.pack(fill="both", expand=True)
 
         self.team_tree.heading("position", text="POS")
         self.team_tree.heading("player_name", text="Player Name")
-        self.team_tree.heading("captain", text="*")
-        self.team_tree.heading("wicket-keeper", text="†")
-
-
 
         self.team_tree.column("position", width=50, anchor="center")
         self.team_tree.column("player_name", width=200, anchor="center")
-        self.team_tree.column("captain", width=40, anchor="center")
-        self.team_tree.column("wicket-keeper", width=50, anchor="center")
+
+        self.captain_var = tk.StringVar()
+
+        tk.Label(left_frame, text="Captain: ", anchor="e").pack(side="left", padx=10, pady=60)
+        self.captain_dropdown = ttk.Combobox(left_frame, textvariable=self.captain_var, width=20)
+        self.captain_dropdown.pack(side="left", padx=5, pady=60)
+
+        self.wk_var = tk.StringVar()
+
+        tk.Label(left_frame, text="Wicket-Keeper", anchor="e").pack(side="left", padx=10, pady=40)
+        self.wk_dropdown = ttk.Combobox(left_frame, textvariable=self.wk_var, width=20)
+        self.wk_dropdown.pack(side="left", padx=5, pady=40)
+
+        self.display_to_player_id = {}
 
         self.team_tree.bind("<Button-1>") #(self.team_tree_click)
 
@@ -333,24 +342,46 @@ class SelectTeamPage(BaseWindow):
                 )
             )
 
+    def refresh_leadership_dropdowns(self):
+        options = []
+        self.display_to_player_id.clear()
+
+        for player_id in self.team_tree.get_children():
+            row = self.team_tree.item(player_id, "values")
+            player_name = row[1]
+            display = f"{player_name}"
+            options.append(display)
+            self.display_to_player_id[display] = player_id
+
+        self.captain_dropdown["values"] = options
+        self.wk_dropdown["values"] = options
+
+        if self.captain_var.get() not in options:
+            self.captain_var.set("")
+        if self.wk_var.get() not in options:
+            self.wk_var.set("")
+
+
     def add_player_to_team(self):
         selected = self.players_tree.selection()
         if not selected:
             return
 
-        player_id = selected[0]
+        tree_iid = selected[0]
+        values = self.players_tree.item(tree_iid, "values")
 
-        if player_id in self.team_tree.get_children():
+        mongo_player_id = str(values[0])
+        player_name = values[1]
+
+        if mongo_player_id in self.team_tree.get_children():
             messagebox.showerror("ERROR", "PLAYER ALREADY IN TEAM")
             return
-
-        vals = self.players_tree.item(player_id, "values")
-        player_name = f"{vals[1]}"
 
         if len(self.team_tree.get_children()) >=11:
             messagebox.showerror("ERROR", "TEAM IS FULL")
             return
 
+        next_position = None
         used_positions = {
             int(self.team_tree.item(i, "values")[0])
             for i in self.team_tree.get_children()
@@ -363,9 +394,11 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.insert(
             "",
             "end",
-            iid = player_id,
-            values=(next_position, player_name, "", "",),
+            iid = mongo_player_id,
+            values=(next_position, player_name, "", "",)
         )
+
+        self.refresh_leadership_dropdowns()
 
     def remove_player_from_team(self):
         selected = self.team_tree.selection()
@@ -373,8 +406,40 @@ class SelectTeamPage(BaseWindow):
             return
         self.team_tree.delete(selected[0])
 
+        self.refresh_leadership_dropdowns()
+
     def clear_team(self):
         self.team_tree.delete(*self.team_tree.get_children())
+        self.captain_var.set("")
+        self.wk_var.set("")
+        self.refresh_leadership_dropdowns()
+
+    def save_team_and_continue(self):
+        team_ids = list(self.team_tree.get_children())
+
+        if len(team_ids) != 11:
+            messagebox.showerror("ERROR", "SELECT EXACTLY 11 PLAYERS")
+            return
+
+        captain_id = self.display_to_player_id.get(self.captain_var.get(), "")
+        wk_id= self.display_to_player_id.get(self.wk_var.get(), "")
+
+        if not captain_id:
+            messagebox.showerror("ERROR", "SELECT A CAPTAIN")
+            return
+
+        if not wk_id:
+            messagebox.showerror("ERROR", "SELECT A WICKET-KEEPER")
+
+        team_data = {
+            "selected_team": team_ids,
+            "captain_id": captain_id,
+            "wk_id": wk_id
+        }
+
+        print(team_data)
+
+
 
     def go_back(self):
         self.window.destroy()
