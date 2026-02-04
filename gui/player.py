@@ -213,7 +213,7 @@ class CreatePlayerWindow(BaseWindow):
 class UpdatePlayerWindow(BaseWindow):
     def __init__(self, window, parent, username):
         super().__init__(window)
-        self.selected_player_id = None
+        self. selected_player_id = None
         self.window = window
         self.parent = parent
         self.current_user = username
@@ -358,7 +358,7 @@ class UpdatePlayerWindow(BaseWindow):
                 formatted_date =formatted_date.strftime("%Y-%m-%d %H:%M:%S") #Formats date in human-readable format
 
             self.tree.insert(
-                "", #"" = insert at root level, not nested
+                "", #insert at root level, not nested
                 "end", # adds row to bottom of the table
                 values=(
                     str(player.get("_id", "")), #index 0

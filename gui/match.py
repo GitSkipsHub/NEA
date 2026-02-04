@@ -1,9 +1,11 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, Canvas
 from datetime import datetime
 from gui.baseWindow import BaseWindow
 from bff.database import MatchDB, PlayerDB
 from bff.enums import PlayerRole, BowlingStyle, BattingStyle, MatchFormat, Venue, Result, MatchType
+from bff.models import Batting, Bowling, Fielding
+
 
 class MatchManagementPage(BaseWindow):
     def __init__(self, window, parent, username):
@@ -27,6 +29,7 @@ class MatchManagementPage(BaseWindow):
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
 
+        #Navigation Buttons
         tk.Button(main_frame,
                   text="CREATE MATCH",
                   width=15,
@@ -143,6 +146,7 @@ class CreateMatchDetailsPage(BaseWindow):
 
     def save_match_details_and_continue(self):
 
+        #Strips all inputs
         match_type_value = self.match_type_var.get().strip()
         match_format_value = self.match_format_var.get().strip()
         venue_value = self.venue_var.get().strip()
@@ -156,6 +160,7 @@ class CreateMatchDetailsPage(BaseWindow):
                 messagebox.showerror("Error", "Please fill in all required fields")
                 return
 
+        #Datetime validation
         try:
             datetime.strptime(date, "%Y-%m-%d")
         except ValueError:
@@ -163,7 +168,7 @@ class CreateMatchDetailsPage(BaseWindow):
             return
 
         match_data = {
-            "match_type": MatchType.get_key(match_type_value),
+            "match_type": MatchType.get_key(match_type_value), #stores enum key into mongo
             "match_format": MatchFormat.get_key(match_format_value),
             "venue": Venue.get_key(venue_value),
             "result": result,
@@ -177,10 +182,10 @@ class CreateMatchDetailsPage(BaseWindow):
         if match_id is None:
             messagebox.showerror("ERROR", "FAILED TO CREATE MATCH")
 
-        self.created_match_id = match_id
+        self.created_match_id = match_id #stores id of match for it to be used later in update or delete functions
 
         self.window.withdraw()
-        SelectTeamPage(tk.Toplevel(self.window), self.window, self.current_user)
+        SelectTeamPage(tk.Toplevel(self.window), self.window, self.current_user, self.created_match_id)
 
 
 
@@ -190,21 +195,18 @@ class CreateMatchDetailsPage(BaseWindow):
 
 
 class SelectTeamPage(BaseWindow):
-    def __init__(self, window, parent, username):
+    def __init__(self, window, parent, username, created_match_id):
         super().__init__(window)
         self.window = window
         self.parent = parent
         self.current_user = username
+        self.match_id = created_match_id
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
         self.all_players = self.player_db.get_all_players(username)
-        self.selected_team = []
+        self.selected_team = [] #list of all selected players (team)
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(1500, 900)
-
-        #self.batting_scorecard = {}
-        #self.bowling_scorecard = {}
-        #self.fielding_scorecard = {}
 
         self.create_widgets()
 
@@ -246,21 +248,19 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.column("position", width=50, anchor="center")
         self.team_tree.column("player_name", width=200, anchor="center")
 
-        self.captain_var = tk.StringVar()
+        self.captain_var = tk.StringVar() #stores what the user selected in the dropdown
 
-        tk.Label(left_frame, text="Captain: ", anchor="e").pack(side="left", padx=10, pady=60)
-        self.captain_dropdown = ttk.Combobox(left_frame, textvariable=self.captain_var, width=20)
-        self.captain_dropdown.pack(side="left", padx=5, pady=60)
+        tk.Label(left_frame, text="Captain: ", anchor="e").pack(side="left", padx=10, pady=40)
+        self.captain_dropdown = ttk.Combobox(left_frame, textvariable=self.captain_var, width=20, state="readonly")
+        self.captain_dropdown.pack(side="left", padx=5, pady=40)
 
-        self.wk_var = tk.StringVar()
+        self.wk_var = tk.StringVar() #stores what the user selected in the dropdown
 
         tk.Label(left_frame, text="Wicket-Keeper", anchor="e").pack(side="left", padx=10, pady=40)
-        self.wk_dropdown = ttk.Combobox(left_frame, textvariable=self.wk_var, width=20)
+        self.wk_dropdown = ttk.Combobox(left_frame, textvariable=self.wk_var, width=20, state="readonly")
         self.wk_dropdown.pack(side="left", padx=5, pady=40)
 
-        self.display_to_player_id = {}
-
-        self.team_tree.bind("<Button-1>") #(self.team_tree_click)
+        self.name_to_player_id = {} #dictionary used to translate from dropdown player name to player id
 
         right_frame = tk.Frame(content_frame, highlightbackground="white", highlightthickness=2)
         right_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
@@ -310,8 +310,6 @@ class SelectTeamPage(BaseWindow):
         self.players_tree.column("batting_style", width=100, anchor="center")
         self.players_tree.column("bowling_style", width=120, anchor="center")
 
-        self.players_tree.bind("<<TreeviewSelect>>")
-
         add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command=self.add_player_to_team)
         add_player_btn.pack(side="right", padx=10, pady=10)
 
@@ -334,7 +332,7 @@ class SelectTeamPage(BaseWindow):
                 "", #"" = insert at root level, not nested
                 "end", # adds row to bottom of the table
                 values=(
-                    str(player.get("_id", "")),
+                    str(player.get("_id", "")), # Mongo's primary key ObjectId enters GUI and replaces treeview_id
                     player.get("first_name") + " " + player.get("last_name"),
                     PlayerRole.get_value(player.get("player_role", "")),
                     BattingStyle.get_value(player.get("batting_style", "")),
@@ -343,19 +341,21 @@ class SelectTeamPage(BaseWindow):
             )
 
     def refresh_leadership_dropdowns(self):
-        options = []
-        self.display_to_player_id.clear()
+        options = [] #builds fresh list of dropdown options from current team
+        self.name_to_player_id.clear()
 
-        for player_id in self.team_tree.get_children():
-            row = self.team_tree.item(player_id, "values")
+        for player_id in self.team_tree.get_children(): #returns iids of team tree items
+            row = self.team_tree.item(player_id, "values") #(position, player_name)
             player_name = row[1]
-            display = f"{player_name}"
+            display = f"{player_name}" #what the user sees in the dropdown
             options.append(display)
-            self.display_to_player_id[display] = player_id
+            self.name_to_player_id[display] = player_id #translates dropdown player_name to player_id
 
+        #updates combobox options
         self.captain_dropdown["values"] = options
         self.wk_dropdown["values"] = options
 
+        #clears invalid captains & wks that are no longer in selected team
         if self.captain_var.get() not in options:
             self.captain_var.set("")
         if self.wk_var.get() not in options:
@@ -367,7 +367,7 @@ class SelectTeamPage(BaseWindow):
         if not selected:
             return
 
-        tree_iid = selected[0]
+        tree_iid = selected[0] #treeview iid
         values = self.players_tree.item(tree_iid, "values")
 
         mongo_player_id = str(values[0])
@@ -421,8 +421,8 @@ class SelectTeamPage(BaseWindow):
             messagebox.showerror("ERROR", "SELECT EXACTLY 11 PLAYERS")
             return
 
-        captain_id = self.display_to_player_id.get(self.captain_var.get(), "")
-        wk_id= self.display_to_player_id.get(self.wk_var.get(), "")
+        captain_id = self.name_to_player_id.get(self.captain_var.get(), "")
+        wk_id= self.name_to_player_id.get(self.wk_var.get(), "")
 
         if not captain_id:
             messagebox.showerror("ERROR", "SELECT A CAPTAIN")
@@ -430,6 +430,13 @@ class SelectTeamPage(BaseWindow):
 
         if not wk_id:
             messagebox.showerror("ERROR", "SELECT A WICKET-KEEPER")
+            return
+
+        if not captain_id in team_ids:
+            messagebox.showerror("ERROR", "CAPTAIN MUST BE IN SELECTED TEAM")
+
+        if not wk_id in team_ids:
+            messagebox.showerror("ERROR", "WICKET-KEEPER MUST BE IN SELECTED TEAM")
 
         team_data = {
             "selected_team": team_ids,
@@ -437,13 +444,75 @@ class SelectTeamPage(BaseWindow):
             "wk_id": wk_id
         }
 
-        print(team_data)
+        #print(team_data)
 
+        match_id = self.match_id
+        updated_match = self.match_db.update_match(self.current_user, match_id, team_data)
+
+        if not updated_match:
+            messagebox.showerror("ERROR", "TEAM SELECTION FAILED")
+
+        messagebox.showinfo("SUCCESS", "TEAM SELECTION SUCCESSFUL")
+        self.window.withdraw()
+        MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, match_id, team_data)
 
 
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
+
+
+
+class MatchScorecard(BaseWindow):
+    def __init__(self, window, parent, username, match_id, team_data):
+        super().__init__(window)
+        self.window = window
+        self.parent = parent
+        self.current_user = username
+        self.match_id = match_id
+        self.selected_team = team_data
+        self.match_db = MatchDB()
+        self.player_db = PlayerDB()
+        self.all_players = self.player_db.get_all_players(username)
+        self.window.title("SS - MATCH MANAGEMENT")
+        self.center_window(1100, 900)
+
+        self.batting_scorecard = {}
+        self.bowling_scorecard = {}
+        self.fielding_scorecard = {}
+
+        self.create_widgets()
+
+
+    def create_widgets(self):
+
+        main_frame = self.create_main_frame()
+
+        canvas = Canvas(main_frame)
+        canvas.pack(side="left", fill="both", expand=1)
+
+        self.create_header(canvas, "MATCH SCORECARD")
+
+        scrollbar = tk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+
+        self.create_sub_header(canvas, "BATTING SCORECARD")
+        self.create_sub_header(canvas, "BOWLING SCORECARD")
+        self.create_sub_header(canvas, "FIELDING SCORECARD")
+
+        footer = tk.Frame(canvas)
+        footer.pack(fill="x", side="bottom")
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side="left", padx=10, pady=10)
+
+
+    def go_back(self):
+        self.window.destroy()
+        self.parent.deiconify()
+
+
+
 
 
 

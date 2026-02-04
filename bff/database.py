@@ -2,7 +2,7 @@ from bson.errors import InvalidId
 from pymongo import mongo_client, MongoClient
 from pymongo.errors import ConnectionFailure, DuplicateKeyError, PyMongoError
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from bson.objectid import ObjectId
 
 #client = MongoClient("mongodb://localhost:27017/")
@@ -130,7 +130,7 @@ class PlayerDB:
                 {"username": username, "_id": ObjectId(player_id)},
                 {"$set": update_data}
             )
-            return result.matched_count == 1
+            return result.modified_count == 1
         except InvalidId:
             return False
         except PyMongoError as e:
@@ -164,10 +164,57 @@ class MatchDB:
             print(f"Error creating match {e}")
             return None
 
-    def update_match(self):
-        pass
+    def update_match(self, username: str, match_id, update_data):
+        try:
+            update_data["last_updated"] = datetime.now()
+            result = self.collection.update_one(
+                {"username": username, "_id": ObjectId(match_id)},
+                {"$set": update_data}
+            )
+            return result.modified_count == 1
+        except InvalidId:
+            return False
+        except PyMongoError as e:
+            print(f"Database error as {e}")
+            return False
+
+    def search_match(self, username: str, filters: Dict[str, Any] ) -> List[Dict]:
+        query: Dict[str, Any] = {"username": username}
+
+        if filters.get("date"):
+            query["date"] = filters["date"]
+        if filters.get("venue"):
+            query["venue"] = filters["venue"]
+        if filters.get("result"):
+            query["result"] = filters["result"]
+        if filters.get("match_type"):
+            query["match_type"] = filters["match_type"]
+        if filters.get("match_format"):
+            query["match_format"] = filters["match_format"]
+        if filters.get("opposition"):
+            query["opposition"] = {"$regex" : filters["opposition"], "$options": "i"}
+
+        return list(self.collection.find(query).sort("date", -1))
+
+    def find_match(self, username: str, match_id: str):
+        try:
+            return self.collection.find_one(
+                {"username": username, "_id": ObjectId(match_id)}
+            )
+        except InvalidId:
+            return None
 
 
+    def get_all_matches(self, username:str) -> List[Dict]:
+        return list(self.collection.find({"username": username}))
 
-
+    def delete_match(self, username: str, match_id: str) -> bool:
+        try:
+            result = self.collection.delete_one(
+                {"username": username, "_id": ObjectId(match_id)}
+            )
+            return result.deleted_count == 1
+        except Exception as e:
+            print(f"Error deleting match {e}")
+            return False
 

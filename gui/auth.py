@@ -164,7 +164,7 @@ class LoginWindow(BaseWindow):
         username = self.username_input.get().strip() #Need username for HomePage Welcome
         self.window.destroy()
         new = tk.Toplevel(self.parent) #Creates new TopLevel Window from previous page
-        HomePage(new, None, username) #
+        HomePage(new, None, username)
 
     def go_back(self):
         self.window.destroy()
