@@ -11,10 +11,10 @@ class BaseEnum(Enum):
 
     @classmethod
     def get_key(cls, value: str): #Retrieve the enumeration key name based on its value
-        for member in cls:
-            if member.value == value:
-                return member.name
-        raise ValueError(f"{value} is not a valid {cls.__name__} value.") #If given value does not exist within the enum
+        try:
+            return cls(value).name
+        except:
+            raise ValueError(f"{value} is not a valid {cls.__name__} value.") #If given value does not exist within the enum
 
     @classmethod
     def list_values(cls): #cls denotes which specific enum it is e.g. PlayerRole, TimePeriod etc.

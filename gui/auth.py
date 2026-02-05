@@ -44,13 +44,13 @@ class RegistrationWindow(BaseWindow):
 
         #Footer Created to Position Back Button at Bottom of Screen
         footer = tk.Frame(main_frame)
-        footer.pack(fill=tk.X, side=tk.BOTTOM)
+        footer.pack(fill="x", side="bottom")
 
         #Calls create_back_btn function from BaseWindow
         back_btn = self.create_back_btn(footer, self.go_back) #Takes footer as parent to show where to position Back Btn
         back_btn.pack(side=tk.LEFT, padx=20, pady=20, )
 
-        tk.Button(footer, text="REGISTER", width=15, command=self.register, ).pack(side=tk.RIGHT, padx=20, pady=20)
+        tk.Button(footer, text="REGISTER", width=15, command=self.register, ).pack(side="right", padx=20, pady=20)
 
     def register(self):
         username = self.username_input.get().strip() #Removes white spaces in username
@@ -127,12 +127,12 @@ class LoginWindow(BaseWindow):
         self.password_input.grid(column=1, row=1, pady=10, )
 
         footer = tk.Frame(main_frame)
-        footer.pack(fill=tk.X, side=tk.BOTTOM)
+        footer.pack(fill="x", side="bottom")
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
 
-        tk.Button(footer, text="LOGIN", width=15, command=self.login, ).pack(side=tk.RIGHT, padx=20, pady=20)
+        tk.Button(footer, text="LOGIN", width=15, command=self.login, ).pack(side="right", padx=20, pady=20)
 
     #LOGIN FUNCTION VALIDATION CHECKS
     def login(self):

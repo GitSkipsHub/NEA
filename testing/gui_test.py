@@ -5,6 +5,6 @@ from gui.match import CreateMatchDetailsPage, SelectTeamPage, MatchScorecard
 from gui.start import StartWindow
 
 root=tk.Tk()
-#StartWindow(root)
-MatchScorecard(root, SelectTeamPage, "kaushal")
+StartWindow(root)
+#MatchScorecard(root, SelectTeamPage, "kaushal", match_id="", team_data="")
 root.mainloop()

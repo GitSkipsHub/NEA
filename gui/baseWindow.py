@@ -16,7 +16,7 @@ class BaseWindow:
     #Creates Main Container to add widgets
     def create_main_frame(self):
         frame = tk.Frame(self.window)
-        frame.pack(fill=tk.BOTH, expand=True) #Stretches header border horizontally through the window
+        frame.pack(fill="both", expand=True) #Stretches header border horizontally through the window
         return frame
 
     #Creates Header on start Page
@@ -27,7 +27,7 @@ class BaseWindow:
             highlightbackground="dodger blue",
             highlightthickness=5,
         )
-        start_header_frame.pack(fill=tk.X)
+        start_header_frame.pack(fill="x")
         start_header_frame.pack_propagate(False) #Prevents header from shrinking or increasing depending on text size
 
         label = tk.Label(
@@ -43,10 +43,10 @@ class BaseWindow:
         header_frame = tk.Frame(
             parent,
             height=80,
-            highlightbackground="dim gray",
+            highlightbackground="gray35",
             highlightthickness=6,
         )
-        header_frame.pack(fill=tk.X)
+        header_frame.pack(fill="x")
         header_frame.pack_propagate(True)
 
         label = tk.Label(
@@ -62,8 +62,8 @@ class BaseWindow:
         sub_header_frame = tk.Frame(
             parent,
             height=50,
-            highlightbackground="white",
-            highlightthickness=2,
+            highlightbackground="dodger blue",
+            highlightthickness=3,
         )
 
         sub_header_frame.pack(fill="x", pady=20, padx=20,)
@@ -72,7 +72,7 @@ class BaseWindow:
         label = tk.Label(
             sub_header_frame,
             text=text,
-            font=("Arial", 15,)
+            font=("Arial", 15, "bold")
         )
         label.pack(pady=20)
         return sub_header_frame

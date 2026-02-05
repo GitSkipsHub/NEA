@@ -475,7 +475,7 @@ class MatchScorecard(BaseWindow):
         self.player_db = PlayerDB()
         self.all_players = self.player_db.get_all_players(username)
         self.window.title("SS - MATCH MANAGEMENT")
-        self.center_window(1100, 900)
+        self.center_window(1500, 900)
 
         self.batting_scorecard = {}
         self.bowling_scorecard = {}
@@ -491,20 +491,83 @@ class MatchScorecard(BaseWindow):
         canvas = Canvas(main_frame)
         canvas.pack(side="left", fill="both", expand=1)
 
-        self.create_header(canvas, "MATCH SCORECARD")
+        window_scrollbar = tk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+        window_scrollbar.pack(side="right", fill="y")
 
-        scrollbar = tk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
-        scrollbar.pack(side="right", fill="y")
+        self.create_header(canvas, "CREATE MATCH")
 
         self.create_sub_header(canvas, "BATTING SCORECARD")
-        self.create_sub_header(canvas, "BOWLING SCORECARD")
-        self.create_sub_header(canvas, "FIELDING SCORECARD")
+
+        #self.create_sub_header(canvas, "BOWLING SCORECARD")
+        #self.create_sub_header(canvas, "FIELDING SCORECARD")
 
         footer = tk.Frame(canvas)
         footer.pack(fill="x", side="bottom")
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side="left", padx=10, pady=10)
+
+        save_match_btn = tk.Button(footer,  text="SAVE TEAM", width=15)
+        save_match_btn.pack(side="right", padx=20, pady=20)
+
+        batting_scorecard_columns = ("position", "player_name", "how_out", "fielder",
+                                     "bowler", "runs", "balls", "fours", "sixes")
+
+        y_scrollbar = ttk.Scrollbar(canvas, orient="vertical")
+        y_scrollbar.pack(side="right", fill="y")
+
+        x_scrollbar = ttk.Scrollbar(canvas, orient="horizontal")
+        x_scrollbar.pack(side="bottom", fill="x")
+
+        self.bat_score_tree = ttk.Treeview(canvas, columns=batting_scorecard_columns, show="headings",
+                                 height=10, yscrollcommand=y_scrollbar.set, xscrollcommand=x_scrollbar.set)
+
+        self.bat_score_tree.pack(side="left", fill="both", expand=True)
+
+        self.bat_score_tree.heading("position", text="POS")
+        self.bat_score_tree.heading("player_name", text="Player Name")
+        self.bat_score_tree.heading("how_out", text="Dismissal Type")
+        self.bat_score_tree.heading("fielder", text="Fielder")
+        self.bat_score_tree.heading("bowler", text="Bowler")
+        self.bat_score_tree.heading("runs", text="Runs")
+        self.bat_score_tree.heading("balls", text="Balls")
+        self.bat_score_tree.heading("fours", text="fours")
+        self.bat_score_tree.heading("sixes", text="sixes")
+
+        self.bat_score_tree.column("position", width=50, anchor="center")
+        self.bat_score_tree.column("player_name", width=200, anchor="center")
+        self.bat_score_tree.column("how_out", width=200, anchor="center")
+        self.bat_score_tree.column("fielder", width=200, anchor="center")
+        self.bat_score_tree.column("bowler", width=200, anchor="center")
+        self.bat_score_tree.column("runs", width=100, anchor="center")
+        self.bat_score_tree.column("balls", width=100, anchor="center")
+        self.bat_score_tree.column("fours", width=100, anchor="center")
+        self.bat_score_tree.column("sixes", width=100, anchor="center")
+
+        x_scrollbar.config(command=self.bat_score_tree.xview)
+        y_scrollbar.config(command=self.bat_score_tree.yview)
+
+    def add_bat_scores(self):
+
+        next_position = None
+        used_positions = {
+            int(self.bat_score_tree.item(i, "values")[0])
+            for i in self.bat_score_tree.get_children()
+        }
+        for position in range(1, 12):
+            if position not in used_positions:
+                next_position = position
+                break
+
+        for player in self.selected_team:
+            self.bat_score_tree.insert(
+                "",
+                "end",
+                values = (next_position, player,)
+            )
+
+
+
 
 
     def go_back(self):
