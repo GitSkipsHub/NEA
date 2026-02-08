@@ -63,7 +63,7 @@ class BaseWindow:
             parent,
             height=50,
             highlightbackground="dodger blue",
-            highlightthickness=3,
+            highlightthickness=4,
         )
 
         sub_header_frame.pack(fill="x", pady=20, padx=20,)

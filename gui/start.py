@@ -60,24 +60,3 @@ class StartWindow(BaseWindow):
         from gui.auth import LoginWindow
         self.window.withdraw()
         LoginWindow(tk.Toplevel(self.window), self.window)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

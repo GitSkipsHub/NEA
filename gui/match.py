@@ -3,8 +3,7 @@ from tkinter import ttk, messagebox, Canvas
 from datetime import datetime
 from gui.baseWindow import BaseWindow
 from bff.database import MatchDB, PlayerDB
-from bff.enums import PlayerRole, BowlingStyle, BattingStyle, MatchFormat, Venue, Result, MatchType
-from bff.models import Batting, Bowling, Fielding
+from bff.enums import PlayerRole, BowlingStyle, BattingStyle, MatchFormat, Venue, Result, MatchType, HowOut
 
 
 class MatchManagementPage(BaseWindow):
@@ -41,17 +40,27 @@ class MatchManagementPage(BaseWindow):
                   text="UPDATE MATCH",
                   width=15,
                   height=3,
+                  command=self.open_update_match_page,
                   ).pack(pady=30)
 
         tk.Button(main_frame,
                   text="DELETE MATCH",
                   width=15,
                   height=3,
+                  command=self.open_delete_match_page
                   ).pack(pady=40)
 
     def open_create_match_details_page(self):
         self.window.withdraw()
         CreateMatchDetailsPage(tk.Toplevel(self.window), self.window, self.current_user)
+
+    def open_update_match_page(self):
+        self.window.withdraw()
+        UpdateMatchPage(tk.Toplevel(self.window), self.window, self.current_user)
+
+    def open_delete_match_page(self):
+        self.window.withdraw()
+        DeleteMatchPage(tk.Toplevel(self.window), self.window, self.current_user)
 
 
     def go_back(self):
@@ -153,16 +162,16 @@ class CreateMatchDetailsPage(BaseWindow):
         result = self.result_var.get().strip()
         ground_name = self.ground_name_input.get().strip()
         opposition = self.opposition_input.get().strip()
-        date = self.date_input.get().strip()
+        match_date = self.date_input.get().strip()
 
         if (not match_type_value or not match_format_value or not venue_value or not result or not ground_name or not
-        opposition or not date):
+        opposition or not match_date):
                 messagebox.showerror("Error", "Please fill in all required fields")
                 return
 
         #Datetime validation
         try:
-            datetime.strptime(date, "%Y-%m-%d")
+            datetime.strptime(match_date, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
@@ -174,7 +183,7 @@ class CreateMatchDetailsPage(BaseWindow):
             "result": result,
             "ground_name": ground_name,
             "opposition": opposition,
-            "date": date,
+            "match_date": match_date,
         }
 
         match_id = self.match_db.create_match(self.current_user, match_data)
@@ -195,12 +204,14 @@ class CreateMatchDetailsPage(BaseWindow):
 
 
 class SelectTeamPage(BaseWindow):
-    def __init__(self, window, parent, username, created_match_id):
+    def __init__(self, window, parent, username, created_match_id, edit_mode=False, existing_match=None):
         super().__init__(window)
         self.window = window
         self.parent = parent
         self.current_user = username
         self.match_id = created_match_id
+        self.edit_mode = edit_mode
+        self.existing_match = existing_match
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
         self.all_players = self.player_db.get_all_players(username)
@@ -363,12 +374,12 @@ class SelectTeamPage(BaseWindow):
 
 
     def add_player_to_team(self):
-        selected = self.players_tree.selection()
+        selected = self.players_tree.selection() #returns iid of selected player
         if not selected:
             return
 
-        tree_iid = selected[0] #treeview iid
-        values = self.players_tree.item(tree_iid, "values")
+        tree_iid = selected[0] #stores selected player_id  in tree_iid
+        values = self.players_tree.item(tree_iid, "values") #return values stored in that tree_iid
 
         mongo_player_id = str(values[0])
         player_name = values[1]
@@ -382,10 +393,12 @@ class SelectTeamPage(BaseWindow):
             return
 
         next_position = None
-        used_positions = {
-            int(self.team_tree.item(i, "values")[0])
-            for i in self.team_tree.get_children()
-        }
+        used_positions = set() #data structure where number can only appear once
+        for i in self.team_tree.get_children():
+            values = self.team_tree.item(i, "values")
+            pos = int(values[0])
+            used_positions.add(pos)
+
         for position in range(1, 12):
             if position not in used_positions:
                 next_position = position
@@ -405,7 +418,6 @@ class SelectTeamPage(BaseWindow):
         if not selected:
             return
         self.team_tree.delete(selected[0])
-
         self.refresh_leadership_dropdowns()
 
     def clear_team(self):
@@ -413,6 +425,36 @@ class SelectTeamPage(BaseWindow):
         self.captain_var.set("")
         self.wk_var.set("")
         self.refresh_leadership_dropdowns()
+
+    def load_existing_team(self, match_doc):
+        # Clear current UI
+        self.team_tree.delete(*self.team_tree.get_children())
+        self.captain_var.set("")
+        self.wk_var.set("")
+        self.name_to_player_id.clear()
+
+        team_players = match_doc.get("team_players", [])
+        captain_id = match_doc.get("captain_id", "")
+        wk_id = match_doc.get("wk_id", "")
+
+        # Insert players (iid must be player_id so your code stays consistent)
+        for p in team_players:
+            pid = str(p.get("player_id", ""))
+            pos = int(p.get("position", 0))
+            name = p.get("player_name", "")
+            self.team_tree.insert("", "end", iid=pid, values=(pos, name, "", ""))
+
+        self.refresh_leadership_dropdowns()
+
+        # Set dropdowns by translating id -> name
+        # name_to_player_id maps name -> id, so reverse it simply
+        id_to_name = {pid: name for name, pid in self.name_to_player_id.items()}
+
+        if captain_id in id_to_name:
+            self.captain_var.set(id_to_name[captain_id])
+        if wk_id in id_to_name:
+            self.wk_var.set(id_to_name[wk_id])
+
 
     def save_team_and_continue(self):
         team_ids = list(self.team_tree.get_children())
@@ -438,8 +480,19 @@ class SelectTeamPage(BaseWindow):
         if not wk_id in team_ids:
             messagebox.showerror("ERROR", "WICKET-KEEPER MUST BE IN SELECTED TEAM")
 
-        team_data = {
-            "selected_team": team_ids,
+        team_players = []
+        for player_id in team_ids:
+            pos, player_name = self.team_tree.item(player_id, "values")[0:2]
+            team_players.append({
+                "player_id": player_id,
+                "position": int(pos),
+                "player_name": player_name
+            })
+
+        team_players.sort(key=lambda p: p["position"])
+
+        selected_team = {
+            "team_players": team_players,
             "captain_id": captain_id,
             "wk_id": wk_id
         }
@@ -447,14 +500,16 @@ class SelectTeamPage(BaseWindow):
         #print(team_data)
 
         match_id = self.match_id
-        updated_match = self.match_db.update_match(self.current_user, match_id, team_data)
+        updated_match = self.match_db.update_match(self.current_user, match_id, selected_team)
 
         if not updated_match:
             messagebox.showerror("ERROR", "TEAM SELECTION FAILED")
 
-        messagebox.showinfo("SUCCESS", "TEAM SELECTION SUCCESSFUL")
+        else:
+            messagebox.showinfo("SUCCESS", "TEAM SELECTION SUCCESSFUL")
+
         self.window.withdraw()
-        MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, match_id, team_data)
+        MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, match_id, selected_team)
 
 
     def go_back(self):
@@ -464,110 +519,401 @@ class SelectTeamPage(BaseWindow):
 
 
 class MatchScorecard(BaseWindow):
-    def __init__(self, window, parent, username, match_id, team_data):
+    def __init__(self, window, parent, username, match_id, selected_team, edit_mode=False, existing_match=None):
         super().__init__(window)
         self.window = window
         self.parent = parent
         self.current_user = username
         self.match_id = match_id
-        self.selected_team = team_data
+        self.selected_team = selected_team
+        self.edit_mode = edit_mode
+        self.existing_match = existing_match
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
         self.all_players = self.player_db.get_all_players(username)
         self.window.title("SS - MATCH MANAGEMENT")
-        self.center_window(1500, 900)
+        self.center_window(1400, 900)
 
-        self.batting_scorecard = {}
-        self.bowling_scorecard = {}
-        self.fielding_scorecard = {}
+        self.batting_scorecard = [] #list[dict]
+        self.bowling_scorecard = [] #list[dict]
+        self.fielding_scorecard = [] #list[dict]
+
+        self.batting_entries = [] #list[dict]
+        self.bowling_entries = [] #list[dict]
+        self.fielding_entries = [] #list[dict]
 
         self.create_widgets()
+
+        if self.edit_mode and self.existing_match:
+            self.load_existing_scorecards(self.existing_match)
+
+    def load_existing_scorecards(self, match_doc):
+        bat = match_doc.get("batting_scorecard", [])
+        bowl = match_doc.get("bowling_scorecard", [])
+        field = match_doc.get("fielding_scorecard", [])
+
+        # Helper: build quick lookup by player_id
+        bat_by_id = {str(r.get("player_id", "")): r for r in bat}
+        bowl_by_id = {str(r.get("player_id", "")): r for r in bowl}
+        field_by_id = {str(r.get("player_id", "")): r for r in field}
+
+        for row in self.batting_entries:
+            pid = row["player_id"].get()
+            if pid in bat_by_id:
+                r = bat_by_id[pid]
+                row["how_out"].set(r.get("how_out", "NOT OUT"))
+                row["fielder"].set(r.get("fielder", ""))
+                row["bowler"].set(r.get("bowler", ""))
+                row["runs_scored"].set(str(r.get("runs_scored", 0)))
+                row["balls"].set(str(r.get("balls", 0)))
+                row["fours"].set(str(r.get("fours", 0)))
+                row["sixes"].set(str(r.get("sixes", 0)))
+
+        for row in self.bowling_entries:
+            pid = row["player_id"].get()
+            if pid in bowl_by_id:
+                r = bowl_by_id[pid]
+                row["overs"].set(str(r.get("overs", 0.0)))
+                row["maidens"].set(str(r.get("maidens", 0)))
+                row["runs_conceded"].set(str(r.get("runs_conceded", 0)))
+                row["wickets"].set(str(r.get("wickets", 0)))
+                row["wides"].set(str(r.get("wides", 0)))
+                row["no_balls"].set(str(r.get("no_balls", 0)))
+
+        for row in self.fielding_entries:
+            pid = row["player_id"].get()
+            if pid in field_by_id:
+                r = field_by_id[pid]
+                row["catches"].set(str(r.get("catches", 0)))
+                row["runouts"].set(str(r.get("runouts", 0)))
+                row["stumpings"].set(str(r.get("stumpings", 0)))
 
 
     def create_widgets(self):
 
         main_frame = self.create_main_frame()
 
-        canvas = Canvas(main_frame)
-        canvas.pack(side="left", fill="both", expand=1)
-
-        window_scrollbar = tk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
-        window_scrollbar.pack(side="right", fill="y")
-
-        self.create_header(canvas, "CREATE MATCH")
-
-        self.create_sub_header(canvas, "BATTING SCORECARD")
-
-        #self.create_sub_header(canvas, "BOWLING SCORECARD")
-        #self.create_sub_header(canvas, "FIELDING SCORECARD")
-
-        footer = tk.Frame(canvas)
+        footer = tk.Frame(main_frame)
         footer.pack(fill="x", side="bottom")
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side="left", padx=10, pady=10)
 
-        save_match_btn = tk.Button(footer,  text="SAVE TEAM", width=15)
+        save_match_btn = tk.Button(footer,  text="SAVE TEAM", width=15, command=self.save_scorecards)
         save_match_btn.pack(side="right", padx=20, pady=20)
 
-        batting_scorecard_columns = ("position", "player_name", "how_out", "fielder",
-                                     "bowler", "runs", "balls", "fours", "sixes")
+        canvas = Canvas(main_frame)
+        canvas.pack(side="left", fill="both", expand=True)
 
-        y_scrollbar = ttk.Scrollbar(canvas, orient="vertical")
+        y_scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
         y_scrollbar.pack(side="right", fill="y")
 
-        x_scrollbar = ttk.Scrollbar(canvas, orient="horizontal")
-        x_scrollbar.pack(side="bottom", fill="x")
+        canvas.configure(yscrollcommand=y_scrollbar.set)
 
-        self.bat_score_tree = ttk.Treeview(canvas, columns=batting_scorecard_columns, show="headings",
-                                 height=10, yscrollcommand=y_scrollbar.set, xscrollcommand=x_scrollbar.set)
+        content_frame = tk.Frame(canvas)
+        canvas_window = canvas.create_window((0, 0), window=content_frame, anchor="nw")
 
-        self.bat_score_tree.pack(side="left", fill="both", expand=True)
+        content_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))) #recalculates scrollable area
+        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(canvas_window, width=e.width)) #centers content
 
-        self.bat_score_tree.heading("position", text="POS")
-        self.bat_score_tree.heading("player_name", text="Player Name")
-        self.bat_score_tree.heading("how_out", text="Dismissal Type")
-        self.bat_score_tree.heading("fielder", text="Fielder")
-        self.bat_score_tree.heading("bowler", text="Bowler")
-        self.bat_score_tree.heading("runs", text="Runs")
-        self.bat_score_tree.heading("balls", text="Balls")
-        self.bat_score_tree.heading("fours", text="fours")
-        self.bat_score_tree.heading("sixes", text="sixes")
-
-        self.bat_score_tree.column("position", width=50, anchor="center")
-        self.bat_score_tree.column("player_name", width=200, anchor="center")
-        self.bat_score_tree.column("how_out", width=200, anchor="center")
-        self.bat_score_tree.column("fielder", width=200, anchor="center")
-        self.bat_score_tree.column("bowler", width=200, anchor="center")
-        self.bat_score_tree.column("runs", width=100, anchor="center")
-        self.bat_score_tree.column("balls", width=100, anchor="center")
-        self.bat_score_tree.column("fours", width=100, anchor="center")
-        self.bat_score_tree.column("sixes", width=100, anchor="center")
-
-        x_scrollbar.config(command=self.bat_score_tree.xview)
-        y_scrollbar.config(command=self.bat_score_tree.yview)
-
-    def add_bat_scores(self):
-
-        next_position = None
-        used_positions = {
-            int(self.bat_score_tree.item(i, "values")[0])
-            for i in self.bat_score_tree.get_children()
-        }
-        for position in range(1, 12):
-            if position not in used_positions:
-                next_position = position
-                break
-
-        for player in self.selected_team:
-            self.bat_score_tree.insert(
-                "",
-                "end",
-                values = (next_position, player,)
-            )
+        self.create_header(content_frame,  "MATCH SCORECARD")
 
 
+        #--------------------------------------------BATTING SCORECARD-------------------------------------------------#
 
+
+        self.create_sub_header(content_frame, "BATTING SCORECARD")
+
+        batting_table = tk.Frame(content_frame)
+        batting_table.pack(padx=20, pady=20, anchor="center")
+
+        bat_headers = ["POS", "PLAYER", "HOW OUT", "FIELDER", "BOWLER", "RUNS", "BALLS", "4s", "6s"]
+
+        for column_index, header_text in enumerate(bat_headers):
+            tk.Label( batting_table,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index, padx=10, pady=6)
+
+        team_players = self.selected_team["team_players"]
+        self.batting_entries.clear()
+
+        for index, player in enumerate(team_players):
+            r = index + 1
+
+            row = {
+                "player_id": tk.StringVar(value=str(player["player_id"])),
+                "position": tk.StringVar(value=str(player["position"])),
+                "player_name": tk.StringVar(value=str(player["player_name"])),
+
+                "how_out": tk.StringVar(value="NOT OUT"),
+                "fielder": tk.StringVar(value=""),
+                "bowler": tk.StringVar(value=""),
+
+                "runs_scored": tk.StringVar(value="0"),
+                "balls": tk.StringVar(value="0"),
+                "fours": tk.StringVar(value="0"),
+                "sixes": tk.StringVar(value="0")
+            }
+
+            self.batting_entries.append(row)
+
+            position = (tk.Label(batting_table, textvariable=row["position"], width=4, anchor="center"))
+            position.grid(row=r, column=0, padx=4, pady=3)
+            position.configure(background="dodger blue")
+
+
+            player_name = (tk.Label(batting_table, textvariable=row["player_name"], width=20, anchor="center",))
+            player_name.grid(row=r, column=1,padx=4, pady=3)
+            player_name.configure(background="dodger blue")
+
+
+            ttk.Combobox(
+                batting_table,
+                textvariable=row["how_out"],
+                values= HowOut.list_values(),
+                state="readonly",
+                width=12
+            ).grid(row=r, column=2, padx=4, pady=3)
+
+            fielder_entry = (tk.Entry(batting_table, textvariable=row["fielder"], width=15))
+            fielder_entry.grid(row=r, column=3, padx=4, pady=3)
+            fielder_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            bowler_entry = (tk.Entry(batting_table, textvariable=row["bowler"], width=15))
+            bowler_entry.grid(row=r, column=4, padx=4, pady=3)
+            bowler_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            runs_entry = (tk.Entry(batting_table, textvariable=row["runs_scored"], width=5))
+            runs_entry.grid(row=r, column=5, padx=4, pady=3)
+            runs_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            balls_entry = tk.Entry(batting_table, textvariable=row["balls"], width=5)
+            balls_entry.grid(row=r, column=6, padx=4, pady=3)
+            balls_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            fours_entry = (tk.Entry(batting_table, textvariable=row["fours"], width=5))
+            fours_entry.grid(row=r, column=7, padx=4, pady=3)
+            fours_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            sixes_entry = (tk.Entry(batting_table, textvariable=row["sixes"], width=5))
+            sixes_entry.grid(row=r, column=8, padx=4, pady=3)
+            sixes_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+
+        #--------------------------------------------BOWLING SCORECARD-------------------------------------------------#
+
+
+        self.create_sub_header(content_frame, "BOWLING SCORECARD")
+
+        bowling_table = tk.Frame(content_frame)
+        bowling_table.pack(padx=20, pady=20, anchor="center")
+
+        bowl_headers = ["POS", "PLAYER", "OVERS", "MAIDENS", "RUNS", "WICKETS", "WIDES", "NO BALLS"]
+
+        for column_index, header_text in enumerate(bowl_headers):
+            tk.Label(bowling_table,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index,
+                                                                                      padx=10, pady=6)
+
+        team_players = self.selected_team["team_players"]
+        self.batting_entries.clear()
+
+        for index, player in enumerate(team_players):
+            r = index + 1
+
+            row = {
+                "player_id": tk.StringVar(value=str(player["player_id"])),
+                "position": tk.StringVar(value=str(player["position"])),
+                "player_name": tk.StringVar(value=str(player["player_name"])),
+                "overs": tk.StringVar(value="0.0"),
+                "maidens": tk.StringVar(value="0"),
+                "runs_conceded": tk.StringVar(value="0"),
+                "wickets": tk.StringVar(value="0"),
+                "wides": tk.StringVar(value="0"),
+                "no_balls": tk.StringVar(value="0")
+            }
+
+            self.bowling_entries.append(row)
+
+            position = (tk.Label(bowling_table, textvariable=row["position"], width=4, anchor="center",))
+            position.grid(row=r, column=0, padx=4, pady=3)
+            position.configure(background="dodger blue")
+
+            player_name = (tk.Label(bowling_table, textvariable=row["player_name"], width=20, anchor="center",))
+            player_name.grid(row=r, column=1,padx=4, pady=3)
+            player_name.configure(background="dodger blue")
+
+            overs_entry = (tk.Entry(bowling_table, textvariable=row["overs"], width=5))
+            overs_entry.grid(row=r, column=2, padx=4, pady=3)
+            overs_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            maidens_entry = (tk.Entry(bowling_table, textvariable=row["maidens"], width=5))
+            maidens_entry.grid(row=r, column=3, padx=4, pady=3)
+            maidens_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            runs_entry = (tk.Entry(bowling_table, textvariable=row["runs_conceded"], width=5))
+            runs_entry.grid(row=r, column=4, padx=4, pady=3)
+            runs_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            wickets_entry = (tk.Entry(bowling_table, textvariable=row["wickets"], width=5))
+            wickets_entry.grid(row=r, column=5, padx=4, pady=3)
+            wickets_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            wides_entry = (tk.Entry(bowling_table, textvariable=row["wides"], width=5))
+            wides_entry.grid(row=r, column=6, padx=4, pady=3)
+            wides_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            no_balls_entry = (tk.Entry(bowling_table, textvariable=row["no_balls"], width=5))
+            no_balls_entry.grid(row=r, column=7, padx=4, pady=3)
+            no_balls_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+
+        #--------------------------------------------FIELDING SCORECARD-------------------------------------------------#
+
+
+        self.create_sub_header(content_frame, "FIELDING SCORECARD")
+
+        fielding_table = tk.Frame(content_frame)
+        fielding_table.pack(padx=20, pady=20, anchor="center")
+
+        field_headers = ["POS", "PLAYER", "CATCHES", "RUNOUTS", "STUMPINGS"]
+
+        for column_index, header_text in enumerate(field_headers):
+            tk.Label(fielding_table ,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index,
+                                                                                      padx=10, pady=6)
+
+        team_players = self.selected_team["team_players"]
+        self.fielding_entries.clear()
+
+        for index, player in enumerate(team_players):
+            r = index + 1
+
+            row = {
+                "player_id": tk.StringVar(value=str(player["player_id"])),
+                "position": tk.StringVar(value=str(player["position"])),
+                "player_name": tk.StringVar(value=str(player["player_name"])),
+                "catches": tk.StringVar(value="0"),
+                "runouts": tk.StringVar(value="0"),
+                "stumpings": tk.StringVar(value="0"),
+            }
+
+            self.fielding_entries.append(row)
+
+            position = (tk.Label(fielding_table, textvariable=row["position"], width=4, anchor="center",))
+            position.grid(row=r, column=0, padx=4, pady=3)
+            position.configure(background="dodger blue")
+
+            player_name = (tk.Label(fielding_table, textvariable=row["player_name"], width=20, anchor="center",))
+            player_name.grid(row=r, column=1,padx=4, pady=3)
+            player_name.configure(background="dodger blue")
+
+            catches_entry = (tk.Entry(fielding_table, textvariable=row["catches"], width=5))
+            catches_entry.grid(row=r, column=2, padx=4, pady=3)
+            catches_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            runouts_entry = (tk.Entry(fielding_table, textvariable=row["runouts"], width=5))
+            runouts_entry.grid(row=r, column=3, padx=4, pady=3)
+            runouts_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+            stumpings_entry = (tk.Entry(fielding_table, textvariable=row["stumpings"], width=5))
+            stumpings_entry.grid(row=r, column=4, padx=4, pady=3)
+            stumpings_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+
+
+    def save_scorecards(self):
+
+        batting_data = []
+        for row in self.batting_entries:
+            try:
+                runs_scored = int(row["runs"].get())
+                balls = int(row["balls"].get())
+                fours = int(row["fours"].get())
+                sixes = int(row["sixes"].get())
+
+            except ValueError:
+                messagebox.showerror("ERROR", "STATS MUST BE INTEGERS")
+                return
+
+            if min(runs_scored, balls, fours, sixes)<0:
+                messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+                return
+
+            batting_data.append({
+                "player_id": row["player_id"].get(),
+                "position": row["position"].get(),
+                "player_name": row["player_name"].get(),
+                "how_out": row["how_out"].get(),
+                "fielder": row["fielder"].get(),
+                "bowler": row["bowler"].get(),
+                "runs_scored": runs_scored,
+                "balls": balls,
+                "fours": fours,
+                "sixes": sixes
+            })
+
+
+        bowling_data = []
+        for row in self.bowling_entries:
+            try:
+                overs = float(row["overs"].get())
+                maidens = int(row["maidens"].get())
+                runs_conceded = int(row["runs_conceded"].get())
+                wickets = int(row["wickets"].get())
+                wides = int(row["wides"].get())
+                no_balls = int(row["no_balls"].get())
+
+            except ValueError:
+                messagebox.showerror("ERROR", "ALL STATS (EXCEPT OVERS) MUST BE INTEGERS")
+                return
+
+            if min(overs, maidens, runs_conceded, wickets, wides, no_balls) <0:
+                messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+                return
+
+            bowling_data.append({
+                "player_id": row["player_id"].get(),
+                "position": row["position"].get(),
+                "player_name": row["player_name"].get(),
+                "overs": overs,
+                "maidens": maidens,
+                "runs_conceded": runs_conceded,
+                "wickets": wickets,
+                "wides": wides,
+                "no_balls": no_balls,
+            })
+
+
+        fielding_data = []
+        for row in self.fielding_entries:
+            try:
+                catches = int(row["catches"].get())
+                runouts = int(row["runouts"].get())
+                stumpings = int(row["stumpings"].get())
+
+            except ValueError:
+                messagebox.showerror("ERROR", "STATS MUST BE INTEGERS")
+                return
+
+            if min(catches, runouts, stumpings)<0:
+                messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+                return
+
+            fielding_data.append({
+                "player_id": row["player_id"].get(),
+                "position": row["position"].get(),
+                "player_name": row["player_name"].get(),
+                "catches": catches,
+                "runouts": runouts,
+                "stumpings": stumpings
+            })
+
+        scorecard_data = self.match_db.update_match(self.current_user, self.match_id, {"batting_scorecard": batting_data,
+                                                                                       "bowling_scorecard": bowling_data,
+                                                                                     "fielding_scorecard": fielding_data})
+
+        if scorecard_data:
+            messagebox.showinfo("SUCCESS", "ALL SCORECARDS SAVED")
+
+        else:
+            messagebox.showerror("ERROR", "FAILED TO SAVE SCORECARD")
 
 
     def go_back(self):
@@ -575,7 +921,421 @@ class MatchScorecard(BaseWindow):
         self.parent.deiconify()
 
 
+class UpdateMatchPage(BaseWindow):
+    def __init__(self, window, parent, username):
+        super().__init__(window)
+        self.window = window
+        self.parent = parent
+        self.current_user = username
+
+        self.match_db = MatchDB()
+        self.selected_match_id = None
+
+        self.window.title("SS - UPDATE MATCH")
+        self.center_window(1250, 700)
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        main_frame = self.create_main_frame()
+        self.create_header(main_frame, "UPDATE MATCH")
+        self.create_sub_header(main_frame, "SELECT A MATCH")
+
+        # Footer
+        footer = tk.Frame(main_frame)
+        footer.pack(fill="x", side="bottom")
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+
+        btn_frame = tk.Frame(footer)
+        btn_frame.pack(side="right", padx=20, pady=20)
+
+        tk.Button(btn_frame, text="EDIT DETAILS", width=15, command=self.open_edit_details).pack(side="left", padx=6)
+        tk.Button(btn_frame, text="EDIT TEAM", width=15, command=self.open_edit_team).pack(side="left", padx=6)
+        tk.Button(btn_frame, text="EDIT SCORECARDS", width=15, command=self.open_edit_scorecards).pack(side="left", padx=6)
+
+        # Search (simple: opposition)
+        search_frame = tk.Frame(main_frame)
+        search_frame.pack(pady=10)
+
+        tk.Label(search_frame, text="SEARCH OPPOSITION: ").grid(row=0, column=0, padx=8, pady=8, sticky="e")
+        self.search_var = tk.StringVar()
+        search_entry = tk.Entry(search_frame, textvariable=self.search_var, width=30)
+        search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+        search_entry.grid(row=0, column=1, padx=8, pady=8)
+
+        tk.Button(search_frame, text="SEARCH", width=12, command=self.load_matches).grid(row=0, column=2, padx=10)
+
+        # Matches table
+        table_frame = tk.Frame(main_frame)
+        table_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+        cols = ("match_id", "match_date", "opposition", "venue", "match_type", "match_format", "result")
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical")
+        y_scroll.pack(side="right", fill="y")
+
+        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", yscrollcommand=y_scroll.set, height=14)
+        self.tree.pack(fill="both", expand=True)
+        y_scroll.config(command=self.tree.yview)
+
+        self.tree.heading("match_id", text="MATCH ID")
+        self.tree.heading("match_date", text="DATE")
+        self.tree.heading("opposition", text="OPPOSITION")
+        self.tree.heading("venue", text="VENUE")
+        self.tree.heading("match_type", text="TYPE")
+        self.tree.heading("match_format", text="FORMAT")
+        self.tree.heading("result", text="RESULT")
+
+        self.tree.column("match_id", width=230, anchor="center")
+        self.tree.column("match_date", width=110, anchor="center")
+        self.tree.column("opposition", width=200, anchor="center")
+        self.tree.column("venue", width=90, anchor="center")
+        self.tree.column("match_type", width=120, anchor="center")
+        self.tree.column("match_format", width=120, anchor="center")
+        self.tree.column("result", width=110, anchor="center")
+
+        self.tree.bind("<<TreeviewSelect>>", self.on_select)
+
+        self.load_matches()
+
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+    def load_matches(self):
+        self.clear_tree()
+
+        filters = {}
+        term = self.search_var.get().strip()
+        if term:
+            filters["opposition"] = term
+
+        matches = self.match_db.search_match(self.current_user, filters)
+
+        for m in matches:
+            match_id = str(m.get("_id", ""))
+            self.tree.insert(
+                "",
+                "end",
+                iid=match_id,
+                values=(
+                    match_id,
+                    m.get("match_date", ""),
+                    m.get("opposition", ""),
+                    Venue.get_value(m.get("venue", "")),
+                    MatchType.get_value(m.get("match_type", "")),
+                    MatchFormat.get_value(m.get("match_format", "")),
+                    m.get("result", "")
+                )
+            )
+
+        self.selected_match_id = None
+
+    def on_select(self, event=None):
+        selected = self.tree.selection()
+        if not selected:
+            self.selected_match_id = None
+            return
+        self.selected_match_id = selected[0]
+
+    def require_selected(self) -> bool:
+        if not self.selected_match_id:
+            messagebox.showerror("ERROR", "SELECT A MATCH FIRST")
+            return False
+        return True
+
+    def open_edit_details(self):
+        if not self.require_selected():
+            return
+        self.window.withdraw()
+        EditMatchDetailsPage(tk.Toplevel(self.window), self.window, self.current_user, self.selected_match_id)
+
+    def open_edit_team(self):
+        if not self.require_selected():
+            return
+
+        match_doc = self.match_db.find_match(self.current_user, self.selected_match_id)
+        if not match_doc:
+            messagebox.showerror("ERROR", "MATCH NOT FOUND")
+            return
+
+        self.window.withdraw()
+        # Pass edit_mode=True so SelectTeamPage loads team from DB and saves back to same match
+        SelectTeamPage(
+            tk.Toplevel(self.window),
+            self.window,
+            self.current_user,
+            self.selected_match_id,
+            edit_mode=True,
+            existing_match=match_doc
+        )
+
+    def open_edit_scorecards(self):
+        if not self.require_selected():
+            return
+
+        match_doc = self.match_db.find_match(self.current_user, self.selected_match_id)
+        if not match_doc:
+            messagebox.showerror("ERROR", "MATCH NOT FOUND")
+            return
+
+        # Build selected_team from stored team (so scorecard page can render players)
+        team_players = match_doc.get("team_players", [])
+        captain_id = match_doc.get("captain_id", "")
+        wk_id = match_doc.get("wk_id", "")
+
+        if not team_players or len(team_players) != 11:
+            messagebox.showerror("ERROR", "THIS MATCH HAS NO SAVED TEAM (SELECT TEAM FIRST)")
+            return
+
+        selected_team = {
+            "team_players": team_players,
+            "captain_id": captain_id,
+            "wk_id": wk_id
+        }
+
+        self.window.withdraw()
+        MatchScorecard(
+            tk.Toplevel(self.window),
+            self.window,
+            self.current_user,
+            self.selected_match_id,
+            selected_team,
+            edit_mode=True,
+            existing_match=match_doc
+        )
+
+    def go_back(self):
+        self.window.destroy()
+        self.parent.deiconify()
 
 
+class EditMatchDetailsPage(BaseWindow):
+    def __init__(self, window, parent, username, match_id):
+        super().__init__(window)
+        self.window = window
+        self.parent = parent
+        self.current_user = username
+        self.match_id = match_id
+        self.match_db = MatchDB()
+
+        self.window.title("SS - EDIT MATCH DETAILS")
+        self.center_window(850, 650)
+
+        self.match_doc = self.match_db.find_match(self.current_user, self.match_id)
+        if not self.match_doc:
+            messagebox.showerror("ERROR", "MATCH NOT FOUND")
+            self.window.destroy()
+            self.parent.deiconify()
+            return
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        main_frame = self.create_main_frame()
+        self.create_header(main_frame, "UPDATE MATCH")
+        self.create_sub_header(main_frame, "EDIT DETAILS")
+
+        form = tk.Frame(main_frame)
+        form.pack(pady=10)
+
+        self.match_type_var = tk.StringVar(value=MatchType.get_value(self.match_doc.get("match_type", "")))
+        self.create_dropdown(form, "MATCH TYPE: ", self.match_type_var, MatchType.list_values(), row=0)
+
+        self.match_format_var = tk.StringVar(value=MatchFormat.get_value(self.match_doc.get("match_format", "")))
+        self.create_dropdown(form, "MATCH FORMAT: ", self.match_format_var, MatchFormat.list_values(), row=1)
+
+        self.venue_var = tk.StringVar(value=Venue.get_value(self.match_doc.get("venue", "")))
+        self.create_dropdown(form, "VENUE: ", self.venue_var, Venue.list_values(), row=2)
+
+        self.result_var = tk.StringVar(value=self.match_doc.get("result", ""))
+        self.create_dropdown(form, "RESULT: ", self.result_var, Result.list_values(), row=3)
+
+        tk.Label(form, text="GROUND NAME: ").grid(column=0, row=4, pady=10, sticky="e")
+        self.ground_input = tk.Entry(form, width=30)
+        self.ground_input.configure(highlightthickness=3, highlightbackground="dodger blue")
+        self.ground_input.grid(column=1, row=4, pady=10)
+        self.ground_input.insert(0, self.match_doc.get("ground_name", ""))
+
+        tk.Label(form, text="OPPOSITION: ").grid(column=0, row=5, pady=10, sticky="e")
+        self.opp_input = tk.Entry(form, width=30)
+        self.opp_input.configure(highlightthickness=3, highlightbackground="dodger blue")
+        self.opp_input.grid(column=1, row=5, pady=10)
+        self.opp_input.insert(0, self.match_doc.get("opposition", ""))
+
+        tk.Label(form, text="DATE (YYYY-MM-DD): ").grid(column=0, row=6, pady=10, sticky="e")
+        self.date_input = tk.Entry(form, width=30)
+        self.date_input.configure(highlightthickness=3, highlightbackground="dodger blue")
+        self.date_input.grid(column=1, row=6, pady=10)
+        self.date_input.insert(0, self.match_doc.get("match_date", ""))
+
+        footer = tk.Frame(main_frame)
+        footer.pack(fill="x", side="bottom")
+
+        save_btn = tk.Button(footer, text="SAVE", width=15, command=self.save_changes)
+        save_btn.pack(side="right", padx=20, pady=20)
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+
+    def save_changes(self):
+        match_type_value = self.match_type_var.get().strip()
+        match_format_value = self.match_format_var.get().strip()
+        venue_value = self.venue_var.get().strip()
+        result_value = self.result_var.get().strip()
+        ground_name = self.ground_input.get().strip()
+        opposition = self.opp_input.get().strip()
+        match_date = self.date_input.get().strip()
+
+        if (not match_type_value or not match_format_value or not venue_value or not result_value
+                or not ground_name or not opposition or not match_date):
+            messagebox.showerror("ERROR", "FILL IN ALL FIELDS")
+            return
+
+        try:
+            datetime.strptime(match_date, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("ERROR", "DATE MUST BE YYYY-MM-DD")
+            return
+
+        update_data = {
+            "match_type": MatchType.get_key(match_type_value),
+            "match_format": MatchFormat.get_key(match_format_value),
+            "venue": Venue.get_key(venue_value),
+            "result": result_value,
+            "ground_name": ground_name,
+            "opposition": opposition,
+            "match_date": match_date
+        }
+
+        ok = self.match_db.update_match(self.current_user, self.match_id, update_data)
+        if not ok:
+            messagebox.showerror("ERROR", "UPDATE FAILED")
+            return
+
+        messagebox.showinfo("SUCCESS", "MATCH UPDATED")
+        self.go_back()
+
+    def go_back(self):
+        self.window.destroy()
+        self.parent.deiconify()
 
 
+class DeleteMatchPage(BaseWindow):
+    def __init__(self, window, parent, username):
+        super().__init__(window)
+        self.window = window
+        self.parent = parent
+        self.current_user = username
+        self.match_db = MatchDB()
+
+        self.window.title("SS - DELETE MATCH")
+        self.center_window(1100, 650)
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        main_frame = self.create_main_frame()
+        self.create_header(main_frame, "DELETE MATCH")
+        self.create_sub_header(main_frame, "SELECT A MATCH")
+
+        footer = tk.Frame(main_frame)
+        footer.pack(fill="x", side="bottom")
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+
+        delete_btn = tk.Button(footer, text="DELETE", width=15, command=self.delete_match)
+        delete_btn.pack(side="right", padx=20, pady=20)
+
+        # small search box (optional)
+        search_frame = tk.Frame(main_frame)
+        search_frame.pack(pady=10)
+
+        tk.Label(search_frame, text="SEARCH OPPOSITION: ").grid(row=0, column=0, padx=8, pady=8, sticky="e")
+        self.search_var = tk.StringVar()
+        search_entry = tk.Entry(search_frame, textvariable=self.search_var, width=30)
+        search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+        search_entry.grid(row=0, column=1, padx=8, pady=8)
+
+        tk.Button(search_frame, text="SEARCH", width=12, command=self.load_matches).grid(row=0, column=2, padx=10)
+
+        table_frame = tk.Frame(main_frame)
+        table_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+        cols = ("match_id", "date", "opposition", "venue")
+        y_scroll = ttk.Scrollbar(table_frame, orient="vertical")
+        y_scroll.pack(side="right", fill="y")
+
+        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", yscrollcommand=y_scroll.set, height=12)
+        self.tree.pack(fill="both", expand=True)
+        y_scroll.config(command=self.tree.yview)
+
+        self.tree.heading("match_id", text="MATCH ID")
+        self.tree.heading("date", text="DATE")
+        self.tree.heading("opposition", text="OPPOSITION")
+        self.tree.heading("venue", text="VENUE")
+
+        self.tree.column("match_id", width=260, anchor="center")
+        self.tree.column("date", width=120, anchor="center")
+        self.tree.column("opposition", width=250, anchor="center")
+        self.tree.column("venue", width=120, anchor="center")
+
+        self.load_matches()
+
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+    def load_matches(self):
+        self.clear_tree()
+        term = self.search_var.get().strip()
+        filters = {}
+        if term:
+            filters["opposition"] = term
+
+        matches = self.match_db.search_match(self.current_user, filters)
+
+        for m in matches:
+            match_id = str(m.get("_id", ""))
+            self.tree.insert(
+                "",
+                "end",
+                iid=match_id,
+                values=(
+                    match_id,
+                    m.get("match_date", ""),
+                    m.get("opposition", ""),
+                    Venue.get_value(m.get("venue", ""))
+                )
+            )
+
+    def delete_match(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showerror("ERROR", "SELECT A MATCH")
+            return
+
+        match_id = selected[0]
+        values = self.tree.item(match_id, "values")
+        match_date = values[1]
+        opposition = values[2]
+
+        confirm_deletion = messagebox.askyesno("CONFIRM DELETION?",
+                                               "ARE YOU SURE YOU WANT TO DELETE THIS MATCH")
+
+        if not confirm_deletion:
+            return
+
+        deleted = self.match_db.delete_match(self.current_user, match_id)
+        if not deleted:
+            messagebox.showerror("ERROR", "DELETE FAILED")
+            return
+
+        messagebox.showinfo("SUCCESS", "MATCH DELETED")
+        self.load_matches()
+
+    def go_back(self):
+        self.window.destroy()
+        self.parent.deiconify()

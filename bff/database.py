@@ -1,5 +1,5 @@
 from bson.errors import InvalidId
-from pymongo import mongo_client, MongoClient
+from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, DuplicateKeyError, PyMongoError
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -96,13 +96,14 @@ class PlayerDB:
             player_data["created_date"] = datetime.now()
             player_data["last_updated"] = datetime.now()
 
-            stats_fields = ["matches", "innings", "runs_scored", "balls", "fours",
-                            "sixes", "wickets", "overs", "maidens", "runs_given",
-                            "wides", "no_balls", "catches","runouts", "stumpings"]
+            stats_fields_defaults = {
+                "matches": 0, "innings": 0, "runs_scored": 0, "balls": 0, "fours": 0,
+                "sixes": 0, "overs": 0,"maidens": 0, "runs_conceded": 0, "wickets": 0, "wides": 0,
+                "no_balls": 0, "catches": 0, "runouts": 0, "stumpings": 0,
+            }
 
-            for field in stats_fields:
-                if field not in player_data:
-                    player_data[field] = 0
+            for j, k in stats_fields_defaults.items():
+                player_data.setdefault(j, k)
 
             result = self.collection.insert_one(player_data)
             return result.inserted_id is not None
@@ -181,8 +182,8 @@ class MatchDB:
     def search_match(self, username: str, filters: Dict[str, Any] ) -> List[Dict]:
         query: Dict[str, Any] = {"username": username}
 
-        if filters.get("date"):
-            query["date"] = filters["date"]
+        if filters.get("match_date"):
+            query["match_date"] = filters["match_date"]
         if filters.get("venue"):
             query["venue"] = filters["venue"]
         if filters.get("result"):
@@ -192,9 +193,9 @@ class MatchDB:
         if filters.get("match_format"):
             query["match_format"] = filters["match_format"]
         if filters.get("opposition"):
-            query["opposition"] = {"$regex" : filters["opposition"], "$options": "i"}
+            query["opposition"] = {"$regex" : filters["opposition"],"$options": "i"}
 
-        return list(self.collection.find(query).sort("date", -1))
+        return list(self.collection.find(query).sort("match_date", -1))
 
     def find_match(self, username: str, match_id: str):
         try:
@@ -203,7 +204,6 @@ class MatchDB:
             )
         except InvalidId:
             return None
-
 
     def get_all_matches(self, username:str) -> List[Dict]:
         return list(self.collection.find({"username": username}))
@@ -217,4 +217,3 @@ class MatchDB:
         except Exception as e:
             print(f"Error deleting match {e}")
             return False
-
