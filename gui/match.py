@@ -62,7 +62,6 @@ class MatchManagementPage(BaseWindow):
         self.window.withdraw()
         DeleteMatchPage(tk.Toplevel(self.window), self.window, self.current_user)
 
-
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
@@ -197,21 +196,18 @@ class CreateMatchDetailsPage(BaseWindow):
         SelectTeamPage(tk.Toplevel(self.window), self.window, self.current_user, self.created_match_id)
 
 
-
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
 
 
 class SelectTeamPage(BaseWindow):
-    def __init__(self, window, parent, username, created_match_id, edit_mode=False, existing_match=None):
+    def __init__(self, window, parent, username, created_match_id):
         super().__init__(window)
         self.window = window
         self.parent = parent
         self.current_user = username
         self.match_id = created_match_id
-        self.edit_mode = edit_mode
-        self.existing_match = existing_match
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
         self.all_players = self.player_db.get_all_players(username)
@@ -426,36 +422,6 @@ class SelectTeamPage(BaseWindow):
         self.wk_var.set("")
         self.refresh_leadership_dropdowns()
 
-    def load_existing_team(self, match_doc):
-        # Clear current UI
-        self.team_tree.delete(*self.team_tree.get_children())
-        self.captain_var.set("")
-        self.wk_var.set("")
-        self.name_to_player_id.clear()
-
-        team_players = match_doc.get("team_players", [])
-        captain_id = match_doc.get("captain_id", "")
-        wk_id = match_doc.get("wk_id", "")
-
-        # Insert players (iid must be player_id so your code stays consistent)
-        for p in team_players:
-            pid = str(p.get("player_id", ""))
-            pos = int(p.get("position", 0))
-            name = p.get("player_name", "")
-            self.team_tree.insert("", "end", iid=pid, values=(pos, name, "", ""))
-
-        self.refresh_leadership_dropdowns()
-
-        # Set dropdowns by translating id -> name
-        # name_to_player_id maps name -> id, so reverse it simply
-        id_to_name = {pid: name for name, pid in self.name_to_player_id.items()}
-
-        if captain_id in id_to_name:
-            self.captain_var.set(id_to_name[captain_id])
-        if wk_id in id_to_name:
-            self.wk_var.set(id_to_name[wk_id])
-
-
     def save_team_and_continue(self):
         team_ids = list(self.team_tree.get_children())
 
@@ -476,9 +442,11 @@ class SelectTeamPage(BaseWindow):
 
         if not captain_id in team_ids:
             messagebox.showerror("ERROR", "CAPTAIN MUST BE IN SELECTED TEAM")
+            return
 
         if not wk_id in team_ids:
             messagebox.showerror("ERROR", "WICKET-KEEPER MUST BE IN SELECTED TEAM")
+            return
 
         team_players = []
         for player_id in team_ids:
@@ -511,7 +479,6 @@ class SelectTeamPage(BaseWindow):
         self.window.withdraw()
         MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, match_id, selected_team)
 
-
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
@@ -519,15 +486,13 @@ class SelectTeamPage(BaseWindow):
 
 
 class MatchScorecard(BaseWindow):
-    def __init__(self, window, parent, username, match_id, selected_team, edit_mode=False, existing_match=None):
+    def __init__(self, window, parent, username, match_id, selected_team):
         super().__init__(window)
         self.window = window
         self.parent = parent
         self.current_user = username
         self.match_id = match_id
         self.selected_team = selected_team
-        self.edit_mode = edit_mode
-        self.existing_match = existing_match
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
         self.all_players = self.player_db.get_all_players(username)
@@ -544,51 +509,6 @@ class MatchScorecard(BaseWindow):
 
         self.create_widgets()
 
-        if self.edit_mode and self.existing_match:
-            self.load_existing_scorecards(self.existing_match)
-
-    def load_existing_scorecards(self, match_doc):
-        bat = match_doc.get("batting_scorecard", [])
-        bowl = match_doc.get("bowling_scorecard", [])
-        field = match_doc.get("fielding_scorecard", [])
-
-        # Helper: build quick lookup by player_id
-        bat_by_id = {str(r.get("player_id", "")): r for r in bat}
-        bowl_by_id = {str(r.get("player_id", "")): r for r in bowl}
-        field_by_id = {str(r.get("player_id", "")): r for r in field}
-
-        for row in self.batting_entries:
-            pid = row["player_id"].get()
-            if pid in bat_by_id:
-                r = bat_by_id[pid]
-                row["how_out"].set(r.get("how_out", "NOT OUT"))
-                row["fielder"].set(r.get("fielder", ""))
-                row["bowler"].set(r.get("bowler", ""))
-                row["runs_scored"].set(str(r.get("runs_scored", 0)))
-                row["balls"].set(str(r.get("balls", 0)))
-                row["fours"].set(str(r.get("fours", 0)))
-                row["sixes"].set(str(r.get("sixes", 0)))
-
-        for row in self.bowling_entries:
-            pid = row["player_id"].get()
-            if pid in bowl_by_id:
-                r = bowl_by_id[pid]
-                row["overs"].set(str(r.get("overs", 0.0)))
-                row["maidens"].set(str(r.get("maidens", 0)))
-                row["runs_conceded"].set(str(r.get("runs_conceded", 0)))
-                row["wickets"].set(str(r.get("wickets", 0)))
-                row["wides"].set(str(r.get("wides", 0)))
-                row["no_balls"].set(str(r.get("no_balls", 0)))
-
-        for row in self.fielding_entries:
-            pid = row["player_id"].get()
-            if pid in field_by_id:
-                r = field_by_id[pid]
-                row["catches"].set(str(r.get("catches", 0)))
-                row["runouts"].set(str(r.get("runouts", 0)))
-                row["stumpings"].set(str(r.get("stumpings", 0)))
-
-
     def create_widgets(self):
 
         main_frame = self.create_main_frame()
@@ -599,8 +519,8 @@ class MatchScorecard(BaseWindow):
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side="left", padx=10, pady=10)
 
-        save_match_btn = tk.Button(footer,  text="SAVE TEAM", width=15, command=self.save_scorecards)
-        save_match_btn.pack(side="right", padx=20, pady=20)
+        save_scorecard_btn = tk.Button(footer,  text="SAVE SCORECARDS", width=15, command=self.save_scorecards)
+        save_scorecard_btn.pack(side="right", padx=20, pady=20)
 
         canvas = Canvas(main_frame)
         canvas.pack(side="left", fill="both", expand=True)
@@ -713,7 +633,7 @@ class MatchScorecard(BaseWindow):
                                                                                       padx=10, pady=6)
 
         team_players = self.selected_team["team_players"]
-        self.batting_entries.clear()
+        self.bowling_entries.clear()
 
         for index, player in enumerate(team_players):
             r = index + 1
@@ -823,7 +743,7 @@ class MatchScorecard(BaseWindow):
         batting_data = []
         for row in self.batting_entries:
             try:
-                runs_scored = int(row["runs"].get())
+                runs_scored = int(row["runs_scored"].get())
                 balls = int(row["balls"].get())
                 fours = int(row["fours"].get())
                 sixes = int(row["sixes"].get())
@@ -911,6 +831,8 @@ class MatchScorecard(BaseWindow):
 
         if scorecard_data:
             messagebox.showinfo("SUCCESS", "ALL SCORECARDS SAVED")
+            self.window.withdraw()
+            MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
         else:
             messagebox.showerror("ERROR", "FAILED TO SAVE SCORECARD")
@@ -952,8 +874,6 @@ class UpdateMatchPage(BaseWindow):
         btn_frame.pack(side="right", padx=20, pady=20)
 
         tk.Button(btn_frame, text="EDIT DETAILS", width=15, command=self.open_edit_details).pack(side="left", padx=6)
-        tk.Button(btn_frame, text="EDIT TEAM", width=15, command=self.open_edit_team).pack(side="left", padx=6)
-        tk.Button(btn_frame, text="EDIT SCORECARDS", width=15, command=self.open_edit_scorecards).pack(side="left", padx=6)
 
         # Search (simple: opposition)
         search_frame = tk.Frame(main_frame)
@@ -1050,61 +970,6 @@ class UpdateMatchPage(BaseWindow):
             return
         self.window.withdraw()
         EditMatchDetailsPage(tk.Toplevel(self.window), self.window, self.current_user, self.selected_match_id)
-
-    def open_edit_team(self):
-        if not self.require_selected():
-            return
-
-        match_doc = self.match_db.find_match(self.current_user, self.selected_match_id)
-        if not match_doc:
-            messagebox.showerror("ERROR", "MATCH NOT FOUND")
-            return
-
-        self.window.withdraw()
-        # Pass edit_mode=True so SelectTeamPage loads team from DB and saves back to same match
-        SelectTeamPage(
-            tk.Toplevel(self.window),
-            self.window,
-            self.current_user,
-            self.selected_match_id,
-            edit_mode=True,
-            existing_match=match_doc
-        )
-
-    def open_edit_scorecards(self):
-        if not self.require_selected():
-            return
-
-        match_doc = self.match_db.find_match(self.current_user, self.selected_match_id)
-        if not match_doc:
-            messagebox.showerror("ERROR", "MATCH NOT FOUND")
-            return
-
-        # Build selected_team from stored team (so scorecard page can render players)
-        team_players = match_doc.get("team_players", [])
-        captain_id = match_doc.get("captain_id", "")
-        wk_id = match_doc.get("wk_id", "")
-
-        if not team_players or len(team_players) != 11:
-            messagebox.showerror("ERROR", "THIS MATCH HAS NO SAVED TEAM (SELECT TEAM FIRST)")
-            return
-
-        selected_team = {
-            "team_players": team_players,
-            "captain_id": captain_id,
-            "wk_id": wk_id
-        }
-
-        self.window.withdraw()
-        MatchScorecard(
-            tk.Toplevel(self.window),
-            self.window,
-            self.current_user,
-            self.selected_match_id,
-            selected_team,
-            edit_mode=True,
-            existing_match=match_doc
-        )
 
     def go_back(self):
         self.window.destroy()
@@ -1319,8 +1184,6 @@ class DeleteMatchPage(BaseWindow):
 
         match_id = selected[0]
         values = self.tree.item(match_id, "values")
-        match_date = values[1]
-        opposition = values[2]
 
         confirm_deletion = messagebox.askyesno("CONFIRM DELETION?",
                                                "ARE YOU SURE YOU WANT TO DELETE THIS MATCH")
