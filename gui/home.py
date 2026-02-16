@@ -78,7 +78,7 @@ class HomePage(BaseWindow):
         MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
     def log_out(self):
-        confirm = messagebox.askyesno("Logout", "Are you sure you want to log out?")
+        confirm = messagebox.askyesno("LOGOUT", "ARE YOU SURE YOU WANT TO LOGOUT?")
         if not confirm:
             return
 
