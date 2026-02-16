@@ -1,7 +1,7 @@
 from bff.enums import (BattingStyle, BowlingStyle, PlayerRole, TimePeriod,
                        HowOut, MatchType, MatchFormat, Venue, TossResult, Result)
 
-print(PlayerRole.get_value("WICKET_KEEPER"))
+print(PlayerRole.get_value("WKT_KEEPER"))
 
 print(PlayerRole.get_key("BATTER"))
 
@@ -14,3 +14,10 @@ print(Result.list_values())
 print(PlayerRole.list_values())
 
 print(MatchFormat.get_value("FORTY_OVERS"))
+
+print(list(range(12)))
+
+
+print(TimePeriod.get_value("L12M"))
+
+print(TimePeriod.get_key("LAST MONTH"))

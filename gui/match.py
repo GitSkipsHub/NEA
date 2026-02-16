@@ -172,7 +172,7 @@ class CreateMatchDetailsPage(BaseWindow):
         try:
             datetime.strptime(match_date, "%Y-%m-%d")
         except ValueError:
-            messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
+            messagebox.showerror("ERROR", "Date must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
         match_data = {
@@ -235,8 +235,9 @@ class SelectTeamPage(BaseWindow):
         content_frame = tk.Frame(main_frame, highlightbackground="dodger blue", highlightthickness=4)
         content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        left_frame = tk.Frame(content_frame, highlightbackground="white", highlightthickness=2)
-        left_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        left_frame = tk.Frame(content_frame, highlightbackground="white", highlightthickness=2, width=700)
+        left_frame.pack(side="left", fill="y", padx=10, pady=10)
+        left_frame.pack_propagate(False)
 
         clear_btn = tk.Button(left_frame, text="CLEAR TEAM", width=15, command=self.clear_team)
         clear_btn.pack(side="bottom", padx=20, pady=20)
@@ -244,16 +245,28 @@ class SelectTeamPage(BaseWindow):
         team_frame = tk.Frame(left_frame)
         team_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
-        team_columns = ("position", "player_name")
+        x_scrollbar = ttk.Scrollbar(team_frame, orient="horizontal")
+        x_scrollbar.pack(side="bottom", fill="x")
 
-        self.team_tree = ttk.Treeview(team_frame, columns=team_columns, show="headings", height=12,)
-        self.team_tree.pack(fill="both", expand=True)
+        team_columns = ("position", "player_name", "player_role", "batting_style", "bowling_style")
+
+        self.team_tree = ttk.Treeview(team_frame, columns=team_columns, show="headings", height=12,
+                                      xscrollcommand=x_scrollbar.set)
+        self.team_tree.pack(side="right", fill="both", expand=True)
+        x_scrollbar.config(command=self.team_tree.xview)
+
 
         self.team_tree.heading("position", text="POS")
         self.team_tree.heading("player_name", text="Player Name")
+        self.team_tree.heading("player_role", text="Player Role")
+        self.team_tree.heading("batting_style", text="Batting Style")
+        self.team_tree.heading("bowling_style", text="Bowling Style")
 
         self.team_tree.column("position", width=50, anchor="center")
         self.team_tree.column("player_name", width=200, anchor="center")
+        self.team_tree.column("player_role", width=200, anchor="center")
+        self.team_tree.column("batting_style", width=200, anchor="center")
+        self.team_tree.column("bowling_style", width=200, anchor="center")
 
         self.captain_var = tk.StringVar() #stores what the user selected in the dropdown
 
@@ -315,7 +328,7 @@ class SelectTeamPage(BaseWindow):
         self.players_tree.column("player_name", width=200, anchor="center")
         self.players_tree.column("player_role", width=100, anchor="center")
         self.players_tree.column("batting_style", width=100, anchor="center")
-        self.players_tree.column("bowling_style", width=120, anchor="center")
+        self.players_tree.column("bowling_style", width=150, anchor="center")
 
         add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command=self.add_player_to_team)
         add_player_btn.pack(side="right", padx=10, pady=10)
@@ -349,11 +362,11 @@ class SelectTeamPage(BaseWindow):
 
     def refresh_leadership_dropdowns(self):
         options = [] #builds fresh list of dropdown options from current team
-        self.name_to_player_id.clear()
+        self.name_to_player_id.clear() #empties the lookup dictionary
 
         for player_id in self.team_tree.get_children(): #returns iids of team tree items
-            row = self.team_tree.item(player_id, "values") #(position, player_name)
-            player_name = row[1]
+            row = self.team_tree.item(player_id, "values") #returns row's stored values(position, player_name)
+            player_name = row[1] #assigns variable player_name to tuple index 1
             display = f"{player_name}" #what the user sees in the dropdown
             options.append(display)
             self.name_to_player_id[display] = player_id #translates dropdown player_name to player_id
@@ -374,11 +387,14 @@ class SelectTeamPage(BaseWindow):
         if not selected:
             return
 
-        tree_iid = selected[0] #stores selected player_id  in tree_iid
-        values = self.players_tree.item(tree_iid, "values") #return values stored in that tree_iid
+        tree_iid = selected[0] #takes first selected row tree_iid
+        values = self.players_tree.item(tree_iid, "values") #return values stored in that row tree_iid
 
         mongo_player_id = str(values[0])
         player_name = values[1]
+        player_role = values[2]
+        batting_style = values[3]
+        bowling_style = values[4]
 
         if mongo_player_id in self.team_tree.get_children():
             messagebox.showerror("ERROR", "PLAYER ALREADY IN TEAM")
@@ -404,7 +420,7 @@ class SelectTeamPage(BaseWindow):
             "",
             "end",
             iid = mongo_player_id,
-            values=(next_position, player_name, "", "",)
+            values=(next_position, player_name, player_role, batting_style, bowling_style)
         )
 
         self.refresh_leadership_dropdowns()
@@ -450,11 +466,14 @@ class SelectTeamPage(BaseWindow):
 
         team_players = []
         for player_id in team_ids:
-            pos, player_name = self.team_tree.item(player_id, "values")[0:2]
+            pos, player_name, player_role, batting_style, bowling_style = self.team_tree.item(player_id, "values")
             team_players.append({
                 "player_id": player_id,
                 "position": int(pos),
-                "player_name": player_name
+                "player_name": player_name,
+                "player_role": PlayerRole.get_key(player_role),
+                "batting_style": BattingStyle.get_key(batting_style),
+                "bowling_style": BowlingStyle.get_key(bowling_style)
             })
 
         team_players.sort(key=lambda p: p["position"])
@@ -499,9 +518,9 @@ class MatchScorecard(BaseWindow):
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(1400, 900)
 
-        self.batting_scorecard = [] #list[dict]
-        self.bowling_scorecard = [] #list[dict]
-        self.fielding_scorecard = [] #list[dict]
+        # self.batting_scorecard = [] #list[dict]
+        # self.bowling_scorecard = [] #list[dict]
+        # self.fielding_scorecard = [] #list[dict]
 
         self.batting_entries = [] #list[dict]
         self.bowling_entries = [] #list[dict]
@@ -550,7 +569,7 @@ class MatchScorecard(BaseWindow):
         bat_headers = ["POS", "PLAYER", "HOW OUT", "FIELDER", "BOWLER", "RUNS", "BALLS", "4s", "6s"]
 
         for column_index, header_text in enumerate(bat_headers):
-            tk.Label( batting_table,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index, padx=10, pady=6)
+            tk.Label(batting_table,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index, padx=10, pady=6)
 
         team_players = self.selected_team["team_players"]
         self.batting_entries.clear()
@@ -562,6 +581,8 @@ class MatchScorecard(BaseWindow):
                 "player_id": tk.StringVar(value=str(player["player_id"])),
                 "position": tk.StringVar(value=str(player["position"])),
                 "player_name": tk.StringVar(value=str(player["player_name"])),
+                "player_role": tk.StringVar(value=str(player.get("player_role", ""))),
+                "batting_style": tk.StringVar(value=str(player.get("batting_style", ""))),
 
                 "how_out": tk.StringVar(value="NOT OUT"),
                 "fielder": tk.StringVar(value=""),
@@ -642,6 +663,8 @@ class MatchScorecard(BaseWindow):
                 "player_id": tk.StringVar(value=str(player["player_id"])),
                 "position": tk.StringVar(value=str(player["position"])),
                 "player_name": tk.StringVar(value=str(player["player_name"])),
+                "player_role": tk.StringVar(value=str(player.get("player_role", ""))),
+                "bowling_style": tk.StringVar(value=str(player.get("bowling_style", ""))),
                 "overs": tk.StringVar(value="0.0"),
                 "maidens": tk.StringVar(value="0"),
                 "runs_conceded": tk.StringVar(value="0"),
@@ -709,6 +732,8 @@ class MatchScorecard(BaseWindow):
                 "player_id": tk.StringVar(value=str(player["player_id"])),
                 "position": tk.StringVar(value=str(player["position"])),
                 "player_name": tk.StringVar(value=str(player["player_name"])),
+                "player_role": tk.StringVar(value=str(player.get("player_role", ""))),
+                "batting_style": tk.StringVar(value=str(player.get("batting_style", ""))),
                 "catches": tk.StringVar(value="0"),
                 "runouts": tk.StringVar(value="0"),
                 "stumpings": tk.StringVar(value="0"),
@@ -737,7 +762,6 @@ class MatchScorecard(BaseWindow):
             stumpings_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
 
 
-
     def save_scorecards(self):
 
         batting_data = []
@@ -760,6 +784,8 @@ class MatchScorecard(BaseWindow):
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
                 "player_name": row["player_name"].get(),
+                "player_role": row["player_role"].get(),
+                "batting_style": row["batting_style"].get(),
                 "how_out": row["how_out"].get(),
                 "fielder": row["fielder"].get(),
                 "bowler": row["bowler"].get(),
@@ -792,6 +818,8 @@ class MatchScorecard(BaseWindow):
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
                 "player_name": row["player_name"].get(),
+                "player_role": row["player_role"].get(),
+                "bowling_style": row["bowling_style"].get(),
                 "overs": overs,
                 "maidens": maidens,
                 "runs_conceded": runs_conceded,
@@ -820,6 +848,8 @@ class MatchScorecard(BaseWindow):
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
                 "player_name": row["player_name"].get(),
+                "player_role": row["player_role"].get(),
+                "batting_style": row["batting_style"].get(),
                 "catches": catches,
                 "runouts": runouts,
                 "stumpings": stumpings
@@ -1096,7 +1126,7 @@ class DeleteMatchPage(BaseWindow):
         self.match_db = MatchDB()
 
         self.window.title("SS - DELETE MATCH")
-        self.center_window(1100, 650)
+        self.center_window(1100, 750)
 
         self.create_widgets()
 

@@ -24,10 +24,10 @@ class BaseEnum(Enum):
 
 #PLAYER ROLE & TYPE ENUMS
 class PlayerRole(BaseEnum):
-    BAT = "BATTER"
-    BOWL = "BOWLER"
-    AL_RNDER = "ALL ROUNDER"
-    WKTKPR = "WICKET-KEEPER BATTER"
+    BATTER = "BATTER"
+    BOWLER = "BOWLER"
+    ALL_ROUNDER = "ALL ROUNDER"
+    WKT_KEEPER = "WICKET-KEEPER BATTER"
 
 class BattingStyle(BaseEnum):
     RH = "RIGHT HAND"
@@ -49,7 +49,7 @@ class BowlingStyle(BaseEnum):
 class BatterMetric(BaseEnum):
     RUNS = "RUNS"
     BAT_AVG = "BATTING AVERAGE"
-    BATT_SR = "STRIKE RATE"
+    BAT_SR = "STRIKE RATE"
 
 class BowlerMetric(BaseEnum):
     WICKETS = "WICKETS"
@@ -64,8 +64,8 @@ class WicketKeeperMetric(BaseEnum):
 class TimePeriod(BaseEnum):
     LM = "LAST MONTH"
     L3M = "LAST 3 MONTHS"
-    L5M = "LAST 5 MONTHS"
-    LY = "LAST YEAR"
+    L6M = "LAST 6 MONTHS"
+    L12M = "LAST YEAR"
 
 #---MATCH FILTER ENUMS---#
 class MatchType(BaseEnum):
@@ -95,6 +95,7 @@ class HowOut(BaseEnum):
     HIT_WICKET = "HIT WICKET"
     TIMED_OUT = "TIMED OUT"
     FIELD_OBSTRUCTION = "FIELD OBSTRUCTION"
+    DID_NOT_BAT = "DID NOT BAT"
     OTHER = "OTHER"
 
 class TossResult(BaseEnum):

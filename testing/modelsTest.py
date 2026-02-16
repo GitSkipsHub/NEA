@@ -86,7 +86,7 @@ print(match_test01.match_date)
 
 #CREATED INVALID TEAM COMPOSITION
 team_gen = TeamGenerator(
-    time_period= TimePeriod.LAST_MONTH,
+    time_period= TimePeriod.LM,
     no_of_batters=3,
     no_of_pacers=2,
     no_of_spinners=2,
@@ -99,7 +99,7 @@ print(f"INVALID TEAM COMPOSITION --> {result}")
 
 #CREATED VALID & UNBALANCED TEAM COMPOSITION
 team_gen = TeamGenerator(
-    time_period= TimePeriod.LAST_MONTH,
+    time_period= TimePeriod.LM,
     no_of_batters=4,
     no_of_pacers=2,
     no_of_spinners=2,
@@ -113,7 +113,7 @@ print(f"VALID & UNBALANCED TEAM COMPOSITION --> {result}")
 
 #CREATED VALID & BALANCED TEAM COMPOSITION
 team_gen = TeamGenerator(
-    time_period= TimePeriod.LAST_MONTH,
+    time_period= TimePeriod.LM,
     no_of_batters=4,
     no_of_pacers=1,
     no_of_spinners=2,

@@ -1,7 +1,7 @@
 from bson.errors import InvalidId
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, DuplicateKeyError, PyMongoError
-from datetime import datetime
+from datetime import datetime, tzinfo, timezone
 from typing import Optional, List, Dict, Any
 from bson.objectid import ObjectId
 
@@ -12,6 +12,7 @@ my_db = "smart_skipper_db"
 
 #Local Host URI
 mongo_db_uri = "mongodb://localhost:27017/"
+client = MongoClient('mongodb://localhost:27017/')
 
 class Database:
     #Initialise all as None
@@ -217,3 +218,360 @@ class MatchDB:
         except Exception as e:
             print(f"Error deleting match {e}")
             return False
+
+class TeamGeneratorDB:
+    def __init__(self):
+        self.db = Database()
+        self.collection = self.db.get_collection("match")
+
+
+    def generate_team(self, username: str, match_type: str, match_format: str, venue: str, from_date: datetime,
+                      batter_limit: int, pacer_limit: int, spinner_limit: int, all_rounder_limit: int, wk_limit: int):
+
+        limits = [batter_limit, pacer_limit, spinner_limit, all_rounder_limit, wk_limit]
+        if any(type(x) is not int for x in limits) or any(x < 0 for x in limits):
+            raise ValueError ("Limits must be positive integers")
+
+        pipeline = [
+            {
+                '$addFields': {
+                    'match_date_dt': {
+                        '$dateFromString': {
+                            'dateString': '$match_date',
+                            'format': '%Y-%m-%d',
+                            'timezone': 'Europe/London'
+                        }
+                    }
+                }
+            }, {
+                '$match': {
+                    'username': username,
+                    'venue': venue,
+                    'match_type': match_type,
+                    'match_format': match_format,
+                    'match_date_dt': {
+                        '$gte': from_date
+                    }
+                }
+            }, {
+                '$facet': {
+                    'batters': [
+                        {
+                            '$unwind': '$batting_scorecard'
+                        }, {
+                            '$match': {
+                                'batting_scorecard.player_role': 'BATTER'
+                            }
+                        }, {
+                            '$group': {
+                                '_id': '$batting_scorecard.player_id',
+                                'player_name': {
+                                    '$first': '$batting_scorecard.player_name'
+                                },
+                                'total_runs': {
+                                    '$sum': '$batting_scorecard.runs_scored'
+                                },
+                                'player_role': {
+                                    '$first': '$batting_scorecard.player_role'
+                                }
+                            }
+                        }, {
+                            '$sort': {
+                                'total_runs': -1
+                            }
+                        }, {
+                            '$limit': batter_limit
+                        }, {
+                            '$project': {
+                                '_id': 0,
+                                'player_name': 1,
+                                'player_role': 1,
+                                'total_runs': 1,
+                                'player_id': '$_id'
+                            }
+                        }
+                    ],
+                    'pacers': [
+                        {
+                            '$unwind': '$bowling_scorecard'
+                        }, {
+                            '$match': {
+                                'bowling_scorecard.player_role': 'BOWLER',
+                                'bowling_scorecard.bowling_style': {
+                                    '$in': [
+                                        'RAP', 'LAP'
+                                    ]
+                                }
+                            }
+                        }, {
+                            '$group': {
+                                '_id': '$bowling_scorecard.player_id',
+                                'player_name': {
+                                    '$first': '$bowling_scorecard.player_name'
+                                },
+                                'player_role': {
+                                    '$first': '$bowling_scorecard.player_role'
+                                },
+                                'total_wickets': {
+                                    '$sum': '$bowling_scorecard.wickets'
+                                }
+                            }
+                        }, {
+                            '$sort': {
+                                'total_wickets': -1
+                            }
+                        }, {
+                            '$limit': pacer_limit
+                        }, {
+                            '$project': {
+                                '_id': 0,
+                                'player_id': '$_id',
+                                'player_name': 1,
+                                'player_role': 1,
+                                'total_wickets': 1
+                            }
+                        }
+                    ],
+                    'spinners': [
+                        {
+                            '$unwind': '$bowling_scorecard'
+                        }, {
+                            '$match': {
+                                'bowling_scorecard.player_role': 'BOWLER',
+                                'bowling_scorecard.bowling_style': {
+                                    '$in': [
+                                        'RAOS', 'LAOS', 'RALS', 'LALS'
+                                    ]
+                                }
+                            }
+                        }, {
+                            '$group': {
+                                '_id': '$bowling_scorecard.player_id',
+                                'player_name': {
+                                    '$first': '$bowling_scorecard.player_name'
+                                },
+                                'player_role': {
+                                    '$first': '$bowling_scorecard.player_role'
+                                },
+                                'total_wickets': {
+                                    '$sum': '$bowling_scorecard.wickets'
+                                }
+                            }
+                        }, {
+                            '$sort': {
+                                'total_wickets': -1
+                            }
+                        }, {
+                            '$limit': spinner_limit
+                        }, {
+                            '$project': {
+                                '_id': 0,
+                                'player_id': '$_id',
+                                'player_name': 1,
+                                'player_role': 1,
+                                'total_wickets': 1
+                            }
+                        }
+                    ],
+                    'all_rounders': [
+                        {
+                            '$project': {
+                                'ar_events': {
+                                    '$concatArrays': [
+                                        {
+                                            '$map': {
+                                                'input': {
+                                                    '$filter': {
+                                                        'input': '$batting_scorecard',
+                                                        'as': 'b',
+                                                        'cond': {
+                                                            '$eq': [
+                                                                '$$b.player_role', 'ALL_ROUNDER'
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                'as': 'batter',
+                                                'in': {
+                                                    'player_id': '$$batter.player_id',
+                                                    'player_name': '$$batter.player_name',
+                                                    'player_role': '$$batter.player_role',
+                                                    'runs': '$$batter.runs_scored'
+                                                }
+                                            }
+                                        }, {
+                                            '$map': {
+                                                'input': {
+                                                    '$filter': {
+                                                        'input': '$bowling_scorecard',
+                                                        'as': 'w',
+                                                        'cond': {
+                                                            '$eq': [
+                                                                '$$w.player_role', 'ALL_ROUNDER'
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                'as': 'bowler',
+                                                'in': {
+                                                    'player_id': '$$bowler.player_id',
+                                                    'player_name': '$$bowler.player_name',
+                                                    'player_role': '$$bowler.player_role',
+                                                    'wickets': '$$bowler.wickets'
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }, {
+                            '$unwind': '$ar_events'
+                        }, {
+                            '$group': {
+                                '_id': '$ar_events.player_id',
+                                'player_name': {
+                                    '$first': '$ar_events.player_name'
+                                },
+                                'total_runs': {
+                                    '$sum': '$ar_events.runs'
+                                },
+                                'total_wickets': {
+                                    '$sum': '$ar_events.wickets'
+                                },
+                                'player_role': {
+                                    '$first': '$ar_events.player_role'
+                                }
+                            }
+                        }, {
+                            '$sort': {
+                                'total_runs': -1,
+                                'total_wickets': -1
+                            }
+                        }, {
+                            '$limit': all_rounder_limit
+                        }, {
+                            '$project': {
+                                '_id': 0,
+                                'player_id': '$_id',
+                                'player_name': 1,
+                                'player_role': 1,
+                                'total_runs': 1,
+                                'total_wickets': 1
+                            }
+                        }
+                    ],
+                    'wicket_keepers': [
+                        {
+                            '$project': {
+                                'wk_events': {
+                                    '$concatArrays': [
+                                        {
+                                            '$map': {
+                                                'input': {
+                                                    '$filter': {
+                                                        'input': '$batting_scorecard',
+                                                        'as': 'b',
+                                                        'cond': {
+                                                            '$eq': [
+                                                                '$$b.player_role', 'WKT_KEEPER'
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                'as': 'batter',
+                                                'in': {
+                                                    'player_id': '$$batter.player_id',
+                                                    'player_name': '$$batter.player_name',
+                                                    'player_role': '$$batter.player_role',
+                                                    'runs': '$$batter.runs_scored'
+                                                }
+                                            }
+                                        }, {
+                                            '$map': {
+                                                'input': {
+                                                    '$filter': {
+                                                        'input': '$fielding_scorecard',
+                                                        'as': 'f',
+                                                        'cond': {
+                                                            '$eq': [
+                                                                '$$f.player_role', 'WKT_KEEPER'
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                'as': 'wk',
+                                                'in': {
+                                                    'player_id': '$$wk.player_id',
+                                                    'player_name': '$$wk.player_name',
+                                                    'player_role': '$$wk.player_role',
+                                                    'catches': '$$wk.catches',
+                                                    'runouts': '$$wk.runouts',
+                                                    'stumpings': '$$wk.stumpings'
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }, {
+                            '$unwind': '$wk_events'
+                        }, {
+                            '$group': {
+                                '_id': '$wk_events.player_id',
+                                'player_name': {
+                                    '$first': '$wk_events.player_name'
+                                },
+                                'total_runs': {
+                                    '$sum': '$wk_events.runs'
+                                },
+                                'total_dismissals': {
+                                    '$sum': {
+                                        '$add': [
+                                            '$wk_events.catches', '$wk_events.runouts', '$wk_events.stumpings'
+                                        ]
+                                    }
+                                },
+                                'player_role': {
+                                    '$first': '$wk_events.player_role'
+                                }
+                            }
+                        }, {
+                            '$sort': {
+                                'total_runs': -1,
+                                'total_dismissals': -1
+                            }
+                        }, {
+                            '$limit': wk_limit
+                        }, {
+                            '$project': {
+                                '_id': 0,
+                                'player_id': '$_id',
+                                'player_name': 1,
+                                'player_role': 1,
+                                'total_runs': 1,
+                                'total_dismissals': 1
+                            }
+                        }
+                    ]
+                }
+            }, {
+                '$project': {
+                    'combined': {
+                        '$concatArrays': [
+                            '$batters', '$wicket_keepers', '$all_rounders', '$spinners', '$pacers',
+                        ]
+                    }
+                }
+            }, {
+                '$unwind': '$combined'
+            }, {
+                '$replaceRoot': {
+                    'newRoot': '$combined'
+                }
+            }
+        ]
+
+        result = list(self.collection.aggregate(pipeline))
+        return result
+
+
