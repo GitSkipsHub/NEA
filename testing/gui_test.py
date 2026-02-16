@@ -1,11 +1,12 @@
 import tkinter as tk
 
 from gui.baseWindow import BaseWindow
-from gui.match import CreateMatchDetailsPage, SelectTeamPage, MatchScorecard
+from gui.match import CreateMatchDetailsPage, SelectTeamPage, MatchScorecard, MatchManagementPage
 from gui.start import StartWindow
 
 root=tk.Tk()
 StartWindow(root)
+#CreateMatchDetailsPage(root, MatchManagementPage, "kaushal")
 #MatchScorecard(root, SelectTeamPage, "kaushal", match_id="", selected_team="")
 #SelectTeamPage(root, CreateMatchDetailsPage, "kaushal", created_match_id="")
 

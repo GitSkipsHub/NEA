@@ -149,7 +149,23 @@ class CreateMatchDetailsPage(BaseWindow):
         save_btn.pack(side="right", padx=20, pady=20)
 
         back_btn = self.create_back_btn(footer, self.go_back)
-        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+        back_btn.pack(side="left", padx=20, pady=20)
+
+        cancel_btn = tk.Button(footer, text="CANCEL", command=self.cancel_match_creation, width=15)
+        cancel_btn.pack(side="bottom", padx=10, pady=10)
+
+    def cancel_match_creation(self):
+        if not messagebox.askyesno("CANCEL MATCH CREATION","ARE YOU SURE YOU WANT TO DELETE THIS MATCH RECORD?"):
+            return
+
+        deleted = self.match_db.delete_match(self.current_user, self.created_match_id)
+
+        if not deleted:
+            messagebox.showerror("ERROR", "Could not delete match record (maybe already deleted).")
+            return
+
+        self.window.withdraw()
+        MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
 
     def save_match_details_and_continue(self):
@@ -231,6 +247,9 @@ class SelectTeamPage(BaseWindow):
 
         save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command=self.save_team_and_continue)
         save_team_btn.pack(side="right", padx=20, pady=20)
+
+        cancel_btn = tk.Button(footer, text="CANCEL", command=self.cancel_match, width=15)
+        cancel_btn.pack(side="bottom", padx=10, pady=10)
 
         content_frame = tk.Frame(main_frame, highlightbackground="dodger blue", highlightthickness=4)
         content_frame.pack(fill="both", expand=True, padx=10, pady=10)
@@ -337,6 +356,19 @@ class SelectTeamPage(BaseWindow):
         remove_player_btn.pack(side="left", padx=10, pady=10)
 
         self.search_player()
+
+    def cancel_match(self):
+        if not messagebox.askyesno("CANCEL MATCH CREATION","ARE YOU SURE YOU WANT TO DELETE THIS MATCH RECORD?"):
+            return
+
+        deleted = self.match_db.delete_match(self.current_user, self.match_id)
+
+        if not deleted:
+            messagebox.showerror("ERROR", "Could not delete match record (maybe already deleted).")
+            return
+
+        self.window.withdraw()
+        MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
     def clear_tree(self):
         for item in self.players_tree.get_children():
@@ -541,6 +573,9 @@ class MatchScorecard(BaseWindow):
         save_scorecard_btn = tk.Button(footer,  text="SAVE SCORECARDS", width=15, command=self.save_scorecards)
         save_scorecard_btn.pack(side="right", padx=20, pady=20)
 
+        cancel_btn = tk.Button(footer, text="CANCEL", command=self.cancel_match, width=15)
+        cancel_btn.pack(side="bottom", padx=10, pady=10)
+
         canvas = Canvas(main_frame)
         canvas.pack(side="left", fill="both", expand=True)
 
@@ -591,7 +626,7 @@ class MatchScorecard(BaseWindow):
                 "runs_scored": tk.StringVar(value="0"),
                 "balls": tk.StringVar(value="0"),
                 "fours": tk.StringVar(value="0"),
-                "sixes": tk.StringVar(value="0")
+                "sixes": tk.StringVar(value="0"),
             }
 
             self.batting_entries.append(row)
@@ -637,6 +672,27 @@ class MatchScorecard(BaseWindow):
             sixes_entry = (tk.Entry(batting_table, textvariable=row["sixes"], width=5))
             sixes_entry.grid(row=r, column=8, padx=4, pady=3)
             sixes_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
+
+        self.total_var = tk.StringVar(batting_table, value="0")
+        self.extras_var = tk.StringVar(batting_table, value="0")
+        self.subtotal_var = tk.StringVar(batting_table, value="0")
+
+        totals_row = len(team_players) + 1
+
+        tk.Label(batting_table, text="SUBTOTAL : ", font=("Arial", 11, "bold")).grid(row=totals_row, column=1, padx=10,pady=35, sticky="e")
+        subtotal_entry = tk.Entry(batting_table, textvariable=self.subtotal_var, width=5)
+        subtotal_entry.grid(row=totals_row, column=2, padx=4, pady=35)
+        subtotal_entry.configure(highlightthickness=2.5, highlightbackground="dodger blue")
+
+        tk.Label(batting_table, text="EXTRAS : ", font=("Arial", 11, "bold")).grid( row=totals_row, column=3, padx=10, pady=35, sticky="e")
+        extras_entry = tk.Entry(batting_table, textvariable=self.extras_var, width=5)
+        extras_entry.grid(row=totals_row, column=4, padx=4, pady=35)
+        extras_entry.configure(highlightthickness=2.5, highlightbackground="dodger blue")
+
+        tk.Label(batting_table, text="TOTAL : ", font=("Arial", 11, "bold")).grid(row=totals_row, column=5, padx=10, pady=35, sticky="e")
+        total_entry = tk.Entry(batting_table, textvariable=self.total_var, width=5)
+        total_entry.grid(row=totals_row, column=6, padx=4, pady=35)
+        total_entry.configure(highlightthickness=2.5, highlightbackground="dodger blue")
 
 
         #--------------------------------------------BOWLING SCORECARD-------------------------------------------------#
@@ -761,10 +817,67 @@ class MatchScorecard(BaseWindow):
             stumpings_entry.grid(row=r, column=4, padx=4, pady=3)
             stumpings_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
 
+        self.byes = tk.StringVar(fielding_table, value="0")
+        self.leg_byes = tk.StringVar(fielding_table, value="0")
+        self.penalties = tk.StringVar(fielding_table, value="0")
+
+        totals_row = len(team_players) + 1
+
+        tk.Label(fielding_table, text="BYES : ", font=("Arial", 11, "bold")).grid(row=totals_row, column=0, padx=10,pady=35, sticky="e")
+        subtotal_entry = tk.Entry(fielding_table, textvariable=self.byes, width=5)
+        subtotal_entry.grid(row=totals_row, column=1, padx=4, pady=35)
+        subtotal_entry.configure(highlightthickness=2.5, highlightbackground="dodger blue")
+
+        tk.Label(fielding_table, text="LEG BYES : ", font=("Arial", 11, "bold")).grid( row=totals_row, column=2, padx=10, pady=35, sticky="e")
+        extras_entry = tk.Entry(fielding_table, textvariable=self.leg_byes, width=5)
+        extras_entry.grid(row=totals_row, column=3, padx=4, pady=35)
+        extras_entry.configure(highlightthickness=2.5, highlightbackground="dodger blue")
+
+        tk.Label(fielding_table, text="PENALTIES : ", font=("Arial", 11, "bold")).grid(row=totals_row, column=4, padx=10, pady=35, sticky="e")
+        total_entry = tk.Entry(fielding_table, textvariable=self.penalties, width=5)
+        total_entry.grid(row=totals_row, column=5, padx=4, pady=35)
+        total_entry.configure(highlightthickness=2.5, highlightbackground="dodger blue")
+
+    def cancel_match(self):
+        if not messagebox.askyesno("CANCEL MATCH CREATION","ARE YOU SURE YOU WANT TO DELETE THIS MATCH RECORD?"):
+            return
+
+        deleted = self.match_db.delete_match(self.current_user, self.match_id)
+
+        if not deleted:
+            messagebox.showerror("ERROR", "Could not delete match record (maybe already deleted).")
+            return
+
+        self.window.withdraw()
+        MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
+
 
     def save_scorecards(self):
 
         batting_data = []
+        try:
+            subtotal = int(self.subtotal_var.get())
+            extras = int(self.extras_var.get())
+            total = int(self.total_var.get())
+
+        except ValueError:
+            messagebox.showerror("ERROR", "VALUES MUST BE INTEGERS")
+            return
+
+        if min(subtotal, extras, total)<0:
+            messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+            return
+
+        if subtotal + extras != total:
+            messagebox.showerror("ERROR", "TOTAL MUST EQUAL SUBTOTAL + EXTRAS.")
+            return
+
+        batting_summary = {
+                "subtotal": subtotal,
+                "extras": extras,
+                "total": total
+        }
+
         for row in self.batting_entries:
             try:
                 runs_scored = int(row["runs_scored"].get())
@@ -792,7 +905,7 @@ class MatchScorecard(BaseWindow):
                 "runs_scored": runs_scored,
                 "balls": balls,
                 "fours": fours,
-                "sixes": sixes
+                "sixes": sixes,
             })
 
 
@@ -814,6 +927,10 @@ class MatchScorecard(BaseWindow):
                 messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
                 return
 
+            if overs %1 >=0.6:
+                messagebox.showerror("ERROR", "OVERS MUST HAVE .0 to .5 ONLY")
+                return
+
             bowling_data.append({
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
@@ -830,6 +947,26 @@ class MatchScorecard(BaseWindow):
 
 
         fielding_data = []
+
+        try:
+            byes = int(self.byes.get())
+            leg_byes = int(self.leg_byes.get())
+            penalties = int(self.penalties.get())
+
+        except ValueError:
+            messagebox.showerror("ERROR", "VALUES MUST BE INTEGERS")
+            return
+
+        if min(byes, leg_byes, penalties)<0:
+            messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+            return
+
+        fielding_extras = {
+            "byes": byes,
+            "leg_byes": leg_byes,
+            "penalties": penalties
+        }
+
         for row in self.fielding_entries:
             try:
                 catches = int(row["catches"].get())
@@ -856,8 +993,10 @@ class MatchScorecard(BaseWindow):
             })
 
         scorecard_data = self.match_db.update_match(self.current_user, self.match_id, {"batting_scorecard": batting_data,
+                                                                                       "batting_summary": batting_summary,
                                                                                        "bowling_scorecard": bowling_data,
-                                                                                     "fielding_scorecard": fielding_data})
+                                                                                     "fielding_scorecard": fielding_data,
+                                                                                       "fielding_extras": fielding_extras})
 
         if scorecard_data:
             messagebox.showinfo("SUCCESS", "ALL SCORECARDS SAVED")
@@ -976,7 +1115,7 @@ class UpdateMatchPage(BaseWindow):
                     Venue.get_value(m.get("venue", "")),
                     MatchType.get_value(m.get("match_type", "")),
                     MatchFormat.get_value(m.get("match_format", "")),
-                    m.get("result", "")
+                    Result.get_value(m.get("result", ""))
                 )
             )
 

@@ -110,3 +110,4 @@ class Result(BaseEnum):
     TIE = "TIE"
     ABANDONED = "ABANDONED"
     CANCELLED = "CANCELLED"
+    NO_RESULT = "NO RESULT"
