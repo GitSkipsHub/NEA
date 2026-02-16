@@ -1,5 +1,8 @@
 import tkinter as tk
+from tkinter import ttk, messagebox
 from gui.baseWindow import BaseWindow
+from gui.start import StartWindow
+
 
 class HomePage(BaseWindow):
     def __init__(self, window, parent, username):
@@ -75,7 +78,14 @@ class HomePage(BaseWindow):
         MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
     def log_out(self):
-        pass
+        confirm = messagebox.askyesno("Logout", "Are you sure you want to log out?")
+        if not confirm:
+            return
+
+        self.window.destroy()
+        self.parent.deiconify()
+
+
 
 
 

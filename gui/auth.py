@@ -3,6 +3,7 @@ from tkinter import messagebox
 from gui.baseWindow import BaseWindow
 from bff.models import Account
 from bff.database import AccountDB
+from gui.start import StartWindow
 
 
 class RegistrationWindow(BaseWindow):
@@ -162,9 +163,11 @@ class LoginWindow(BaseWindow):
     def open_home_page(self):
         from gui.home import HomePage
         username = self.username_input.get().strip() #Need username for HomePage Welcome
+        self.window.withdraw()
         self.window.destroy()
         new = tk.Toplevel(self.parent) #Creates new TopLevel Window from previous page
-        HomePage(new, None, username)
+        HomePage(new, self.parent, username)
+
 
     def go_back(self):
         self.window.destroy()
