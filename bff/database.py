@@ -91,7 +91,7 @@ class PlayerDB:
         self.db = Database()
         self.collection = self.db.get_collection("player")
 
-    def create_player(self, username: str, player_data: Dict) -> bool:
+    def create_player(self, username: str, player_data: Dict):
         try:
             player_data["username"] = username
             player_data["created_date"] = datetime.now()

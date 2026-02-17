@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox, Canvas
 from datetime import datetime
 from gui.baseWindow import BaseWindow
 from bff.database import MatchDB, PlayerDB
-from bff.enums import PlayerRole, BowlingStyle, BattingStyle, MatchFormat, Venue, Result, MatchType, HowOut
+from bff.enums import PlayerRole, BowlingStyle, BattingStyle, MatchFormat, Venue, Result, MatchType, HowOut, TossResult
 
 
 class MatchManagementPage(BaseWindow):
@@ -75,7 +75,7 @@ class CreateMatchDetailsPage(BaseWindow):
         self.current_user = username
 
         self.window.title("SS - MATCH CREATION")
-        self.center_window(850,650)
+        self.center_window(850,750)
 
         self.match_db = MatchDB()
         self.created_match_id = None
@@ -117,29 +117,38 @@ class CreateMatchDetailsPage(BaseWindow):
             row=2
         )
 
+        self.toss_result_var = tk.StringVar()
+        self.create_dropdown(
+            parent=form,
+            text="TOSS RESULT: ",
+            variable=self.toss_result_var,
+            values=TossResult.list_values(),
+            row=3
+        )
+
         self.result_var = tk.StringVar()
         self.create_dropdown(
             parent=form,
             text="RESULT: ",
             variable=self.result_var,
             values=Result.list_values(),
-            row=3
+            row=4
         )
 
-        tk.Label(form, text="GROUND NAME: ").grid(column=0, row=4, pady=10, sticky="e")
+        tk.Label(form, text="GROUND NAME: ").grid(column=0, row=5, pady=10, sticky="e")
         self.ground_name_input = tk.Entry(form)
         self.ground_name_input.configure(highlightthickness=3, highlightbackground="dodger blue")
-        self.ground_name_input.grid(column=1, row=4, pady=10)
+        self.ground_name_input.grid(column=1, row=5, pady=10)
 
-        tk.Label(form, text="OPPOSITION: ").grid(column=0, row=5, pady=10, sticky="e")
+        tk.Label(form, text="OPPOSITION: ").grid(column=0, row=6, pady=10, sticky="e")
         self.opposition_input = tk.Entry(form)
         self.opposition_input.configure(highlightthickness=3, highlightbackground="dodger blue")
-        self.opposition_input.grid(column=1, row=5, pady=10)
+        self.opposition_input.grid(column=1, row=6, pady=10)
 
-        tk.Label(form, text="DATE (YYYY-MM-DD): ").grid(column=0, row=6, pady=10, sticky="e")
+        tk.Label(form, text="DATE (YYYY-MM-DD): ").grid(column=0, row=7, pady=10, sticky="e")
         self.date_input = tk.Entry(form)
         self.date_input.configure(highlightthickness=3, highlightbackground="dodger blue")
-        self.date_input.grid(column=1, row=6, pady=10)
+        self.date_input.grid(column=1, row=7, pady=10)
 
 
         footer = tk.Frame(main_frame)
@@ -174,13 +183,14 @@ class CreateMatchDetailsPage(BaseWindow):
         match_type_value = self.match_type_var.get().strip()
         match_format_value = self.match_format_var.get().strip()
         venue_value = self.venue_var.get().strip()
-        result = self.result_var.get().strip()
+        result_value = self.result_var.get().strip()
+        toss_result_value = self.toss_result_var.get().strip()
         ground_name = self.ground_name_input.get().strip()
         opposition = self.opposition_input.get().strip()
         match_date = self.date_input.get().strip()
 
-        if (not match_type_value or not match_format_value or not venue_value or not result or not ground_name or not
-        opposition or not match_date):
+        if (not match_type_value or not match_format_value or not venue_value or not result_value or not toss_result_value
+                or not ground_name or not opposition or not match_date):
                 messagebox.showerror("Error", "Please fill in all required fields")
                 return
 
@@ -195,7 +205,8 @@ class CreateMatchDetailsPage(BaseWindow):
             "match_type": MatchType.get_key(match_type_value), #stores enum key into mongo
             "match_format": MatchFormat.get_key(match_format_value),
             "venue": Venue.get_key(venue_value),
-            "result": result,
+            "result": Result.get_key(result_value),
+            "toss_result": TossResult.get_key(toss_result_value),
             "ground_name": ground_name,
             "opposition": opposition,
             "match_date": match_date,

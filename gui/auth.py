@@ -3,7 +3,6 @@ from tkinter import messagebox
 from gui.baseWindow import BaseWindow
 import bcrypt
 from bff.database import AccountDB
-from gui.start import StartWindow
 
 
 class RegistrationWindow(BaseWindow):
