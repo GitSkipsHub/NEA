@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui.baseWindow import BaseWindow
-import bcrypt
 from bff.database import AccountDB
+from bff.models import Account
 
 
 class RegistrationWindow(BaseWindow):
@@ -51,8 +51,7 @@ class RegistrationWindow(BaseWindow):
         back_btn.pack(side=tk.LEFT, padx=20, pady=20, )
         tk.Button(footer, text="REGISTER", width=15, command=self.register, ).pack(side="right", padx=20, pady=20)
 
-    def hash_password(self, password):
-        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
 
     def register(self):
         username = self.username_input.get().strip() #Removes white spaces in username
@@ -84,7 +83,7 @@ class RegistrationWindow(BaseWindow):
             messagebox.showerror("ERROR", "USERNAME ALREADY EXISTS")
             return
 
-        hashed_password = self.hash_password(password)
+        hashed_password = Account.hash_password(password)
 
         if self.account_db.create_account(username, hashed_password):
             messagebox.showinfo("SUCCESS", "ACCOUNT CREATED")
@@ -136,9 +135,6 @@ class LoginWindow(BaseWindow):
 
         tk.Button(footer, text="LOGIN", width=15, command=self.login, ).pack(side="right", padx=20, pady=20)
 
-    def verify_password(self, password: str, hash_password: str) -> bool:
-        return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
-
     #LOGIN FUNCTION VALIDATION CHECKS
     def login(self):
         username = self.username_input.get().strip()
@@ -155,7 +151,7 @@ class LoginWindow(BaseWindow):
             return
 
         #Account from models class and checks if passwords match
-        if not self.verify_password(password, account["hashed_password"]):
+        if not Account.verify_password(password, account["hashed_password"]):
             messagebox.showerror("ERROR", "INCORRECT PASSWORD")
             return
 

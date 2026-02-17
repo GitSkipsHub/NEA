@@ -4,6 +4,7 @@ from gui.baseWindow import BaseWindow
 from bff.database import PlayerDB
 from bff.enums import PlayerRole, BattingStyle, BowlingStyle
 from datetime import datetime
+from bff.models import Player
 
 
 class PlayerManagementWindow(BaseWindow):
@@ -186,16 +187,18 @@ class CreatePlayerWindow(BaseWindow):
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
-        player_data = {
-            "first_name": first_name,
-            "last_name": last_name,
-            "date_of_birth": dob,
-            "player_role": PlayerRole.get_key(player_role_value),
-            "batting_style": BattingStyle.get_key(batting_style_value),
-            "bowling_style": BowlingStyle.get_key(bowling_style_value),
-        }
+        player_obj = Player(
+            player_id="",  # temporary (Mongo creates _id)
+            username=self.current_user,
+            first_name=first_name,
+            last_name= last_name,
+            date_of_birth=dob,
+            player_role=PlayerRole.get_key(player_role_value),
+            batting_style=BattingStyle.get_key(batting_style_value),
+            bowling_style=BowlingStyle.get_key(bowling_style_value)
+        )
 
-        if self.player_db.create_player(self.current_user, player_data):
+        if self.player_db.create_player(self.current_user, player_obj.to_dict()):
             messagebox.showinfo("SUCCESS", "Player Created")
             self.go_back()
             return
@@ -355,18 +358,19 @@ class UpdatePlayerWindow(BaseWindow):
             if isinstance(formatted_date, datetime):
                 formatted_date =formatted_date.strftime("%Y-%m-%d %H:%M:%S") #Formats date in human-readable format
 
+            player_obj = Player.from_dict(player)
             self.tree.insert(
                 "", #insert at root level, not nested
                 "end", # adds row to bottom of the table
                 values=(
-                    str(player.get("_id", "")), #index 0
+                    player_obj.player_id, #index 0
                     formatted_date,             #index 1
-                    player.get("first_name", ""), #index 2
-                    player.get("last_name", ""),
-                    player.get("date_of_birth", ""),
-                    PlayerRole.get_value(player.get("player_role", "")),
-                    BattingStyle.get_value(player.get("batting_style", "")),
-                    BowlingStyle.get_value(player.get("bowling_style", "")), #index 7
+                    player_obj.first_name, #index 2
+                    player_obj.last_name,
+                    player_obj.date_of_birth,
+                    PlayerRole.get_value(player_obj.player_role),
+                    BattingStyle.get_value(player_obj.batting_style),
+                    BowlingStyle.get_value(player_obj.bowling_style), #index 7
                 )
             )
 
@@ -527,18 +531,20 @@ class DeletePlayerWindow(BaseWindow):
             formatted_date = player.get("created_date")
             if isinstance(formatted_date, datetime):
                 formatted_date = formatted_date.strftime("%Y-%m-%d %H:%M:%S") #Formats date in human-readable format
+
+            player_obj = Player.from_dict(player)
             self.tree.insert(
                 "", #"" = insert at root level, not nested
                 "end", # adds row to bottom of the table
                 values=(
-                    str(player.get("_id", "")), #index 0
+                    player_obj.player_id, #index 0
                     formatted_date,             #index 1
-                    player.get("first_name", ""), #index 2
-                    player.get("last_name", ""),
-                    player.get("date_of_birth", ""),
-                    PlayerRole.get_value(player.get("player_role", "")),
-                    BattingStyle.get_value(player.get("batting_style", "")),
-                    BowlingStyle.get_value(player.get("bowling_style", "")), #index 7
+                    player_obj.first_name, #index 2
+                    player_obj.last_name,
+                    player_obj.date_of_birth,
+                    PlayerRole.get_value(player_obj.player_role),
+                    BattingStyle.get_value(player_obj.batting_style),
+                    BowlingStyle.get_value(player_obj.bowling_style), #index 7
                 )
             )
 

@@ -1,11 +1,10 @@
 from bson.errors import InvalidId
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, DuplicateKeyError, PyMongoError
+from bff.models import Account, Player, Match
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from bson.objectid import ObjectId
-
-#client = MongoClient("mongodb://localhost:27017/")
 
 #DB NAME
 my_db = "smart_skipper_db"
@@ -64,12 +63,8 @@ class AccountDB:
 
     def create_account(self, username: str, hashed_password: str):
         try:
-            account = {
-                "username": username,
-                "hashed_password": hashed_password,
-                "created_date": datetime.now()
-            }
-            result = self.collection.insert_one(account)
+            account = Account(username=username, hashed_password=hashed_password)
+            result = self.collection.insert_one(account.to_dict())
             #This is used to  return True only if MongoDB confirms the document was successfully inserted
             return result is not None #insert id is None is insert failed
         #Prevents Duplicate Accounts Created
@@ -93,20 +88,13 @@ class PlayerDB:
 
     def create_player(self, username: str, player_data: Dict):
         try:
+            player_data = dict(player_data)
             player_data["username"] = username
             player_data["created_date"] = datetime.now()
             player_data["last_updated"] = datetime.now()
 
-            stats_fields_defaults = {
-                "matches": 0, "innings": 0, "runs_scored": 0, "balls": 0, "fours": 0,
-                "sixes": 0, "overs": 0,"maidens": 0, "runs_conceded": 0, "wickets": 0, "wides": 0,
-                "no_balls": 0, "catches": 0, "runouts": 0, "stumpings": 0,
-            }
-
-            for j, k in stats_fields_defaults.items():
-                player_data.setdefault(j, k)
-
-            result = self.collection.insert_one(player_data)
+            player = Player(player_id="", **player_data)
+            result = self.collection.insert_one(player.to_dict())
             return result.inserted_id is not None
 
         except Exception as e:
@@ -157,10 +145,12 @@ class MatchDB:
 
     def create_match(self, username: str, match_data: Dict) -> Optional[str]:
         try:
+            match_data = dict(match_data)
             match_data["username"] = username
             match_data["created_date"] = datetime.now()
             match_data["last_updated"] = datetime.now()
-            result = self.collection.insert_one(match_data)
+            match = Match(match_id= "", **match_data)
+            result = self.collection.insert_one(match.to_dict())
             return str(result.inserted_id)
         except Exception as e:
             print(f"Error creating match {e}")

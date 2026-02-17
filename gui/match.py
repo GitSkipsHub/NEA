@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, Canvas
 from datetime import datetime
 from gui.baseWindow import BaseWindow
 from bff.database import MatchDB, PlayerDB
+from bff.models import Player, Match
 from bff.enums import PlayerRole, BowlingStyle, BattingStyle, MatchFormat, Venue, Result, MatchType, HowOut, TossResult
 
 
@@ -201,18 +202,22 @@ class CreateMatchDetailsPage(BaseWindow):
             messagebox.showerror("ERROR", "Date must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
-        match_data = {
-            "match_type": MatchType.get_key(match_type_value), #stores enum key into mongo
-            "match_format": MatchFormat.get_key(match_format_value),
-            "venue": Venue.get_key(venue_value),
-            "result": Result.get_key(result_value),
-            "toss_result": TossResult.get_key(toss_result_value),
-            "ground_name": ground_name,
-            "opposition": opposition,
-            "match_date": match_date,
-        }
+        match_obj = Match(
+            match_id="",
+            username=self.current_user,
+            match_date=match_date,
+            match_format=MatchFormat.get_key(match_format_value),
+            match_type=MatchType.get_key(match_type_value),
+            venue=Venue.get_key(venue_value),
+            ground_name=ground_name,
+            opposition=opposition,
+            toss_result=TossResult.get_key(toss_result_value),
+            result=Result.get_key(result_value),
+            scorecard=None
+        )
 
-        match_id = self.match_db.create_match(self.current_user, match_data)
+        mongo_dict = match_obj.to_dict()
+        match_id = self.match_db.create_match(self.current_user, mongo_dict)
 
         if match_id is None:
             messagebox.showerror("ERROR", "FAILED TO CREATE MATCH")
@@ -391,15 +396,16 @@ class SelectTeamPage(BaseWindow):
         players = self.player_db.search_player(self.current_user, term) #Calls database function passing parameters
 
         for player in players:
+            player_obj = Player.from_dict(player)
             self.players_tree.insert(
                 "", #"" = insert at root level, not nested
                 "end", # adds row to bottom of the table
                 values=(
-                    str(player.get("_id", "")), # Mongo's primary key ObjectId enters GUI and replaces treeview_id
-                    player.get("first_name") + " " + player.get("last_name"),
-                    PlayerRole.get_value(player.get("player_role", "")),
-                    BattingStyle.get_value(player.get("batting_style", "")),
-                    BowlingStyle.get_value(player.get("bowling_style", "")), #index 7
+                    player_obj.player_id, # Mongo's primary key ObjectId enters GUI and replaces treeview_id
+                    player_obj.first_name + " " + player_obj.last_name,
+                    PlayerRole.get_value(player_obj.player_role),
+                    BattingStyle.get_value(player_obj.batting_style),
+                    BowlingStyle.get_value(player_obj.bowling_style), #index 7
                 )
             )
 
@@ -910,7 +916,7 @@ class MatchScorecard(BaseWindow):
                 "player_name": row["player_name"].get(),
                 "player_role": row["player_role"].get(),
                 "batting_style": row["batting_style"].get(),
-                "how_out": row["how_out"].get(),
+                "how_out": HowOut.get_key(row["how_out"].get()),
                 "fielder": row["fielder"].get(),
                 "bowler": row["bowler"].get(),
                 "runs_scored": runs_scored,
@@ -1114,19 +1120,19 @@ class UpdateMatchPage(BaseWindow):
         matches = self.match_db.search_match(self.current_user, filters)
 
         for m in matches:
-            match_id = str(m.get("_id", ""))
+            match_obj = Match.from_dict(m)
             self.tree.insert(
                 "",
                 "end",
-                iid=match_id,
+                iid=match_obj.match_id,
                 values=(
-                    match_id,
-                    m.get("match_date", ""),
-                    m.get("opposition", ""),
-                    Venue.get_value(m.get("venue", "")),
-                    MatchType.get_value(m.get("match_type", "")),
-                    MatchFormat.get_value(m.get("match_format", "")),
-                    Result.get_value(m.get("result", ""))
+                    match_obj.match_id,
+                    match_obj.match_date,
+                    match_obj.opposition,
+                    Venue.get_value(match_obj.venue),
+                    MatchType.get_value(match_obj.match_type),
+                    MatchFormat.get_value(match_obj.match_format),
+                    Result.get_value(match_obj.result)
                 )
             )
 
@@ -1343,16 +1349,16 @@ class DeleteMatchPage(BaseWindow):
         matches = self.match_db.search_match(self.current_user, filters)
 
         for m in matches:
-            match_id = str(m.get("_id", ""))
+            match_obj = Match.from_dict(m)
             self.tree.insert(
                 "",
                 "end",
-                iid=match_id,
+                iid=match_obj.match_id,
                 values=(
-                    match_id,
-                    m.get("match_date", ""),
-                    m.get("opposition", ""),
-                    Venue.get_value(m.get("venue", ""))
+                    match_obj.match_id,
+                    match_obj.match_date,
+                    match_obj.opposition,
+                    Venue.get_value(match_obj.venue)
                 )
             )
 

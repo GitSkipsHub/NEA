@@ -75,15 +75,15 @@ class FixtureDetailsPage(BaseWindow):
         save_btn = tk.Button(footer, text="SAVE", command= self.save_match_filters,width=15 )
         save_btn.pack(side="right", padx=20, pady=20)
 
-    def get_start_date(self, period: str) -> datetime:
+    def get_start_date(self, period_key: str) -> datetime:
         now = datetime.now(timezone.utc)
-        if period == TimePeriod.get_key("LAST MONTH"):
+        if period_key == "LM":
             return now - timedelta(days=30)
-        if period == TimePeriod.get_key("LAST 3 MONTHS"):
+        if period_key == "L3M":
             return now - timedelta(days=90)
-        if period == TimePeriod.get_key("LAST 6 MONTHS"):
+        if period_key == "L6M":
             return now - timedelta(days=180)
-        if period == TimePeriod.get_key("LAST YEAR"):
+        if period_key == "L12M":
             return now - timedelta(days=365)
 
         raise ValueError ("Invalid time period")
@@ -190,7 +190,7 @@ class TeamCompositionPage(BaseWindow):
             messagebox.showerror("ERROR", "TEAM MUST CONSIST ON ONLY 11 PLAYERS")
             return
 
-        balanced_team = (batters== 4 and spinners==2, pacers==2 and all_rounders==2 and wk==1)
+        balanced_team = (batters== 4 and spinners==2 and pacers==2 and all_rounders==2 and wk==1)
 
         if not balanced_team:
             proceed = messagebox.askyesno("WARNING", "IMBALANCED TEAM SELECTED. DO YOU WISH TO CONTINUE?")
