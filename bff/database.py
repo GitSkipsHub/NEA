@@ -1,7 +1,7 @@
 from bson.errors import InvalidId
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, DuplicateKeyError, PyMongoError
-from datetime import datetime, tzinfo, timezone
+from datetime import datetime
 from typing import Optional, List, Dict, Any
 from bson.objectid import ObjectId
 
@@ -24,12 +24,14 @@ class Database:
     def __new__(cls, *args, **kwargs):
         if cls.instance is None:
             cls.instance = super(Database, cls).__new__(cls)
+            cls.instance.client = None
+            cls.instance.db = None
         return cls.instance
 
     #Calls Connect function if client = None
     def __init__(self):
-        self.client = None
-        self.connect()
+        if self.client is None:
+            self.connect()
 
     #Connect Database Function
     def connect(self):
@@ -53,7 +55,6 @@ class Database:
         if self.client:
             self.client.close()
             print("Database connection closed")
-
 
 class AccountDB:
 
@@ -83,7 +84,6 @@ class AccountDB:
         return self.collection.find_one({"username": username})is not None
         #Returns True if account found and False is account not found
         #Account is not None = True | None is not None = False
-
 
 class PlayerDB:
 
@@ -223,7 +223,6 @@ class TeamGeneratorDB:
     def __init__(self):
         self.db = Database()
         self.collection = self.db.get_collection("match")
-
 
     def generate_team(self, username: str, match_type: str, match_format: str, venue: str, from_date: datetime,
                       batter_limit: int, pacer_limit: int, spinner_limit: int, all_rounder_limit: int, wk_limit: int):
@@ -573,5 +572,3 @@ class TeamGeneratorDB:
 
         result = list(self.collection.aggregate(pipeline))
         return result
-
-

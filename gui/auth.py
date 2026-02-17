@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui.baseWindow import BaseWindow
-from bff.database import AccountDB
-from gui.home import HomePage
 import bcrypt
+from bff.database import AccountDB
+from gui.start import StartWindow
 
 
 class RegistrationWindow(BaseWindow):
@@ -52,7 +52,7 @@ class RegistrationWindow(BaseWindow):
         back_btn.pack(side=tk.LEFT, padx=20, pady=20, )
         tk.Button(footer, text="REGISTER", width=15, command=self.register, ).pack(side="right", padx=20, pady=20)
 
-    def hash_password(self, password: str) -> str:
+    def hash_password(self, password):
         return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def register(self):
@@ -134,6 +134,7 @@ class LoginWindow(BaseWindow):
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
+
         tk.Button(footer, text="LOGIN", width=15, command=self.login, ).pack(side="right", padx=20, pady=20)
 
     def verify_password(self, password: str, hash_password: str) -> bool:
@@ -165,6 +166,7 @@ class LoginWindow(BaseWindow):
             return
 
     def open_home_page(self):
+        from gui.home import HomePage
         username = self.username_input.get().strip() #Need username for HomePage Welcome
         self.window.withdraw()
         self.window.destroy()
