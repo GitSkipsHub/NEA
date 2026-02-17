@@ -100,6 +100,9 @@ class FixtureDetailsPage(BaseWindow):
             messagebox.showerror("Error", "Please fill in all required fields")
             return
 
+        confirm_match_filters = messagebox.askyesno("CONFIRM CHOICE", "DO YOU WISH TO PROCEED WITH THESE MATCH FILTERS?")
+        if not confirm_match_filters:
+            return
 
         selected_time_period = TimePeriod.get_key(time_period_value)
         start_date = self.get_start_date(selected_time_period)
@@ -193,6 +196,10 @@ class TeamCompositionPage(BaseWindow):
             proceed = messagebox.askyesno("WARNING", "IMBALANCED TEAM SELECTED. DO YOU WISH TO CONTINUE?")
             if not proceed:
                 return
+
+        confirm_team = messagebox.askyesno("CONFIRM", "CONFIRM TEAM COMPOSITION?")
+        if not confirm_team:
+            return
 
         generated_team = self.team_generator_db.generate_team(username=self.current_user,
                                     match_type=self.match_type_filter,

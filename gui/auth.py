@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui.baseWindow import BaseWindow
-from bff.models import Account
 from bff.database import AccountDB
-from gui.start import StartWindow
+from gui.home import HomePage
+import bcrypt
 
 
 class RegistrationWindow(BaseWindow):
@@ -50,8 +50,10 @@ class RegistrationWindow(BaseWindow):
         #Calls create_back_btn function from BaseWindow
         back_btn = self.create_back_btn(footer, self.go_back) #Takes footer as parent to show where to position Back Btn
         back_btn.pack(side=tk.LEFT, padx=20, pady=20, )
-
         tk.Button(footer, text="REGISTER", width=15, command=self.register, ).pack(side="right", padx=20, pady=20)
+
+    def hash_password(self, password: str) -> str:
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def register(self):
         username = self.username_input.get().strip() #Removes white spaces in username
@@ -83,7 +85,7 @@ class RegistrationWindow(BaseWindow):
             messagebox.showerror("ERROR", "USERNAME ALREADY EXISTS")
             return
 
-        hashed_password = Account.hash_password(password)
+        hashed_password = self.hash_password(password)
 
         if self.account_db.create_account(username, hashed_password):
             messagebox.showinfo("SUCCESS", "ACCOUNT CREATED")
@@ -132,8 +134,10 @@ class LoginWindow(BaseWindow):
 
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
-
         tk.Button(footer, text="LOGIN", width=15, command=self.login, ).pack(side="right", padx=20, pady=20)
+
+    def verify_password(self, password: str, hash_password: str) -> bool:
+        return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
 
     #LOGIN FUNCTION VALIDATION CHECKS
     def login(self):
@@ -151,7 +155,7 @@ class LoginWindow(BaseWindow):
             return
 
         #Account from models class and checks if passwords match
-        if not Account.verify_password(password, account["hashed_password"]):
+        if not self.verify_password(password, account["hashed_password"]):
             messagebox.showerror("ERROR", "INCORRECT PASSWORD")
             return
 
@@ -161,7 +165,6 @@ class LoginWindow(BaseWindow):
             return
 
     def open_home_page(self):
-        from gui.home import HomePage
         username = self.username_input.get().strip() #Need username for HomePage Welcome
         self.window.withdraw()
         self.window.destroy()

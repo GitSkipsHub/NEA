@@ -1,7 +1,7 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from gui.baseWindow import BaseWindow
-from gui.start import StartWindow
+
 
 
 class HomePage(BaseWindow):
@@ -19,7 +19,7 @@ class HomePage(BaseWindow):
         main_frame = self.create_main_frame()
 
         tk.Label(main_frame,
-                 text=f"WELCOME BACK {self.current_user} !",
+                 text=f"WELCOME BACK {self.current_user.upper()} !",
                  underline=0,
                  font=("Arial", 20  , "bold"),
                  fg="dodger Blue",

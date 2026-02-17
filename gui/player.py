@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from tkinter.messagebox import showerror
-
 from gui.baseWindow import BaseWindow
 from bff.database import PlayerDB
 from bff.enums import PlayerRole, BattingStyle, BowlingStyle

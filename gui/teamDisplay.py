@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-
+from tkinter import ttk
+from gui.home import HomePage
 from gui.baseWindow import BaseWindow
 
 class TeamDisplay(BaseWindow):
@@ -19,6 +19,12 @@ class TeamDisplay(BaseWindow):
     def create_widgets(self):
         main_frame = self.create_main_frame()
         self.create_header(main_frame, "GENERATED TEAM")
+
+        footer = tk.Frame(main_frame)
+        footer.pack(fill="x", side="bottom")
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
 
         team_frame = tk.Frame(main_frame)
         team_frame.pack(padx=30, pady=30)
@@ -62,6 +68,11 @@ class TeamDisplay(BaseWindow):
                     player.get("total_wickets", ""),
                     player.get("total_dismissals", ""),
                 ))
+
+    def go_back(self):
+        self.window.withdraw()
+        self.window.destroy()
+        HomePage(tk.Toplevel(self.parent), self.parent, self.current_user)
 
 
 
