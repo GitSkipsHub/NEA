@@ -1,23 +1,21 @@
-from bff.enums import (BattingStyle, BowlingStyle, PlayerRole, TimePeriod,
-                       HowOut, MatchType, MatchFormat, Venue, TossResult, Result)
+from bff.enums import (BowlingStyle, BattingStyle, PlayerRole, TimePeriod, HowOut, MatchType, MatchFormat, Venue, TossResult, Result)
 
-print(PlayerRole.get_value("WKT_KEEPER"))
+print(BowlingStyle.get_value("LAOS"))
 
-print(PlayerRole.get_key("BATTER"))
-
-print(HowOut.get_key("FIELD OBSTRUCTION"))
-
-print(TossResult.get_value("LOST_BOWL"))
-
-print(Result.list_values())
+print(BattingStyle.get_key("LEFT HAND"))
 
 print(PlayerRole.list_values())
 
-print(MatchFormat.get_value("FORTY_OVERS"))
-
-print(list(range(12)))
-
-
 print(TimePeriod.get_value("L12M"))
 
-print(TimePeriod.get_key("LAST MONTH"))
+print(HowOut.get_key("FIELD OBSTRUCTION"))
+
+print(MatchType.list_values())
+
+print(MatchFormat.get_value("FORTY_OVERS"))
+
+print(Venue.get_key("HOME"))
+
+print(Result.list_values())
+
+print(TossResult.get_value("WON_BAT"))

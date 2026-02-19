@@ -43,9 +43,7 @@ class BowlingStyle(BaseEnum):
     NONE = "NONE"
 
 
-
 #PERFORMANCE METRIC ENUMS
-
 class BatterMetric(BaseEnum):
     RUNS = "RUNS"
     BAT_AVG = "BATTING AVERAGE"
