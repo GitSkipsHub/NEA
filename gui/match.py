@@ -213,7 +213,7 @@ class CreateMatchDetailsPage(BaseWindow):
             opposition=opposition,
             toss_result=TossResult.get_key(toss_result_value),
             result=Result.get_key(result_value),
-            scorecard=None
+            # scorecard=None
         )
 
         mongo_dict = match_obj.to_dict()
@@ -1103,6 +1103,7 @@ class UpdateMatchPage(BaseWindow):
 
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
 
+        self.clear_tree()
         self.load_matches()
 
     def clear_tree(self):
