@@ -55,6 +55,7 @@ for key, value in player_dict.items():
 fake_mongo_player = player_dict.copy()
 fake_mongo_player["_id"] = "507f1f77bcf86cd799439011"
 
+#TEST 3
 player_obj = Player.from_dict(fake_mongo_player)
 print(f"\nplayer_id = {player_obj.player_id}")
 print(f"\nusername = {player_obj.username}")
