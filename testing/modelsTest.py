@@ -1,91 +1,100 @@
-from datetime import datetime
-from bff.models import (Match, Player, Account)
+import bcrypt
+from bff.models import (Account, Player, Match)
 
 
-#CREATED DUMMY ACCOUNT
-dummy_account = {
-    "username": "username-test01",
-    "hashed_password": ""
-}
-#Returns all the values stored in Account Object as strings
-account = Account.from_dict(dummy_account)
-
-assert account.username == "username-test01"
-
-password = "password_test01"
-
+#TEST 1: CHECK IF HASH PASSWORD FUNCTION IS WORKING
+password = "test_password01"
 hashed_password = Account.hash_password(password)
 
-if Account.verify_password("password_test01", hashed_password):
-    print("PASS")
+#CREATED DUMMY ACCOUNT OBJECT
+dummy_account = Account(
+    username="username01",
+    hashed_password=hashed_password
+)
+
+#TEST 2: CONVERT ACCOUNT OBJECT TO DICT
+account_dict = dummy_account.to_dict()
+print(f"ACCOUNT DICT: \n    {account_dict}")
+
+#TEST 3: CONVERT ACCOUNT DICT TO OBJECT
+account_obj = dummy_account.from_dict(account_dict)
+print(f"\nACCOUNT OBJECT --> \n  {account_obj}")
+print(f"\nHASHED PASSWORD = {account_obj.hashed_password}")
+print(f"\nUSERNAME = {account_obj.username}")
+
+#TEST 4
+correct_password = bcrypt.checkpw("test_password01".encode("utf-8"), account_obj.hashed_password.encode("utf-8"))
+print(f"\nCORRECT PASSWORD: {correct_password}")
+
+#TEST 5
+wrong_password = bcrypt.checkpw("wrong_password".encode("utf-8"), account_obj.hashed_password.encode("utf-8"))
+print(f"\nWRONG PASSWORD: {wrong_password}\n")
+
+#TEST 6
+#print(Account.from_dict({}))
 
 
-assert hashed_password != password
+#CREATED DUMMY PLAYER OBJECT
+dummy_player = Player(
+    player_id="temp_id", #not stored in Mongo as MongoDB uses _id
+    username="username01",
+    first_name="Virat",
+    last_name="Kohli",
+    date_of_birth="1988-11-05",
+    player_role="BATTER",
+    batting_style="RIGHT_HAND",
+    bowling_style="RAP"
+)
 
-print("ACCOUNT TEST PASSED")
+#TEST 1
+player_dict = dummy_player.to_dict()
+for key, value in player_dict.items():
+    print(f"PLAYER DICT --> {key}: {value}")
 
-print(f'Password = {password} | Hashed Password = {hashed_password}')
+#TEST 2
+fake_mongo_player = player_dict.copy()
+fake_mongo_player["_id"] = "507f1f77bcf86cd799439011"
+
+player_obj = Player.from_dict(fake_mongo_player)
+print(f"\nplayer_id = {player_obj.player_id}")
+print(f"\nusername = {player_obj.username}")
+print(f"\nfull_name = {player_obj.first_name} {player_obj.last_name}\n")
 
 
-# dummy_player = {
-#     "username": "dummy_username",
-#     "player_id": "01",
-#     "first_name": "dummy_first_name",
-#     "last_name": "dummy_last_name",
-#     "date_of_birth": "dummy_dob",
-#     "player_role": "BATTER",
-#     "batting_style": "LEFT_HAND",
-#     "bowling_style":"LEFT_ARM_PACE",
-# }
-#
-#
-# player_test01 = Player.from_dict(dummy_player)
-#
-# print(player_test01.username)
-# print(player_test01.player_role)
-#
-#
-#
+
+
 # #CREATED DUMMY MATCH
-# dummy_match = {
-#     "username": "username01",
-#     "match_id": "id-01",
-#     "match_date": datetime.now(),
-#     "match_format": "T20",
-#     "match_type": "LEAGUE",
-#     "venue": "HOME",
-#     "opposition": "England",
-#     "ground_name": "Oval",
-#     "toss": "WON_BAT",
-#     "result": "LOST",
-#     "scorecard": {"subtotal": 100, "extras": 50, "total": 150, "byes_conceded": 20, "leg_byes_conceded": 30,
-#                   "penalties_conceded": 0, "batting_overs": 20, "bowling_overs": 18,
-#
-#         "batting": [{"player_id": "id-01", "player_name": "name_test01", "pos": 1,
-#                      "how_out": "BOWLED", "fielder": "mid-off", "bowler": "Bowler No.1",
-#                      "runs_scored": 50, "balls": 50, "fours": 3, "sixes": 0 }],
-#
-#         "bowling": [{"player_id": "id-01", "player_name": "name_test01", "pos": 1,
-#                      "overs": 23.4, "maidens": 3, "runs_conceded": 95, "wickets": 5, "wides": 4, "no_balls": 0}],
-#
-#         "fielding": []
-# }
-# }
-# #Returns all the values stored in Match Object as strings
-# match_test01 = Match.from_dict(dummy_match)
-# #Returns runs scored from Scorecard Dictionary & Batting List
-# print(match_test01.batting[0].runs_scored)
-# #Returns Dismissal Type
-# print(match_test01.scorecard.batting[0].how_out)
-# #Returns player_name in the match
-# print(match_test01.scorecard.bowling[0].player_name)
-# #Returns no.overs
-# print(match_test01.scorecard.bowling[0].overs)
-# #Returns no.wickets
-# print(match_test01.scorecard.bowling[0].wickets)
-# #Returns data created
-# print(match_test01.match_date)
-#
-#
-#
-#
+dummy_match = Match(
+    match_id="TEMP_ID",  # not stored in Mongo (Mongo uses _id)
+    username="username01",
+    match_date="2025-08-12",
+    match_format="T20",
+    match_type="LEAGUE",
+    venue="HOME",
+    ground_name="Ground 1",
+    opposition="Oppo 1",
+    result="WON",
+    toss_result="WON_BAT",
+    team_players=["p1", "p2", "p3"],
+    captain_id="p1",
+    wk_id="p2"
+)
+
+match_dict = dummy_match.to_dict()
+for key, value in match_dict.items():
+    print(f"MATCH DICT --> {key}: {value}")
+
+fake_mongo_match = match_dict.copy()
+fake_mongo_match["_id"] = "65ab3f4e9b1c2d3e4f5a6789"
+
+# Add an unknown field to prove your 'cleaned' logic works
+fake_mongo_match["old_field_from_bad_test_data"] = "should be ignored"
+
+match_obj = Match.from_dict(fake_mongo_match)
+
+print(f"match_id = {match_obj.match_id}")
+print(f"username = {match_obj.username}")
+print(f"match_format = {match_obj.match_format}")
+print(f"match_type = {match_obj.match_type}")
+print(f"team_players = {match_obj.team_players}")
+

@@ -38,21 +38,6 @@ class Player:
     batting_style: str
     bowling_style: str
     #Player Stats Initialised
-    matches: int = 0
-    innings: int = 0
-    runs_scored: int = 0
-    balls: int = 0
-    fours: int = 0
-    sixes: int = 0
-    overs: float = 0.0
-    maidens: int = 0
-    runs_conceded: int = 0
-    wickets: int = 0
-    wides: int = 0
-    no_balls: int = 0
-    catches: int = 0
-    runouts: int = 0
-    stumpings: int = 0
     #Logs
     created_date: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
