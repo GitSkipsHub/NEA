@@ -12,9 +12,14 @@ print(BattingStyle.get_key("LEFT HAND"))
 print(PlayerRole.list_values())
 
 #TEST 4
-print(PlayerRole.get_key("bowler"))
+try:
+    print(PlayerRole.get_key("bowler"))
+except ValueError as e:
+    print(f"ERROR: {e}")
+
 
 #TEST 5
-print(PlayerRole.get_value("INVALID_ROLE"))
-
-
+try:
+    print(PlayerRole.get_value("INVALID_ROLE"))
+except ValueError as e:
+    print(f"ERROR: {e}")

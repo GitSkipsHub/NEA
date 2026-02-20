@@ -13,7 +13,7 @@ class BaseEnum(Enum):
     def get_key(cls, value: str): #Retrieve the enumeration key name based on its value
         try:
             return cls(value).name
-        except:
+        except ValueError:
             raise ValueError(f"{value} is not a valid {cls.__name__} value.") #If given value does not exist within the enum
 
     @classmethod
