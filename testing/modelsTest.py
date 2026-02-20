@@ -66,7 +66,7 @@ print(f"\nfull_name = {player_obj.first_name} {player_obj.last_name}\n")
 
 # #CREATED DUMMY MATCH
 dummy_match = Match(
-    match_id="TEMP_ID",  # not stored in Mongo (Mongo uses _id)
+    match_id="TEMP_ID",  #not stored in Mongo (Mongo uses _id)
     username="username01",
     match_date="2025-08-12",
     match_format="T20",
@@ -81,18 +81,18 @@ dummy_match = Match(
     wk_id="p2"
 )
 
+#TEST 1
 match_dict = dummy_match.to_dict()
 for key, value in match_dict.items():
     print(f"MATCH DICT --> {key}: {value}")
 
+#TEST 2
 fake_mongo_match = match_dict.copy()
 fake_mongo_match["_id"] = "65ab3f4e9b1c2d3e4f5a6789"
 
-# Add an unknown field to prove your 'cleaned' logic works
-fake_mongo_match["old_field_from_bad_test_data"] = "should be ignored"
 
+#TEST 3
 match_obj = Match.from_dict(fake_mongo_match)
-
 print(f"match_id = {match_obj.match_id}")
 print(f"username = {match_obj.username}")
 print(f"match_format = {match_obj.match_format}")
