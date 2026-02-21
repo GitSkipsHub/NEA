@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, fields, asdict
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Dict, Any, List
 import bcrypt
