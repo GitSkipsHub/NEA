@@ -148,7 +148,6 @@ for key, value in match_dict.items():
 fake_mongo_match = match_dict.copy()
 fake_mongo_match["_id"] = "65ab3f4e9b1c2d3e4f5a6789"
 
-
 #TEST 3
 match_obj = Match.from_dict(fake_mongo_match)
 print(f"\nmatch_id = {match_obj.match_id}")
@@ -156,5 +155,4 @@ print(f"username = {match_obj.username}")
 print(f"match_format = {match_obj.match_format}")
 print(f"match_type = {match_obj.match_type}")
 print(f"team_players = {match_obj.team_players}")
-
 print(f"batting_scorecard = {match_obj.batting_scorecard}")

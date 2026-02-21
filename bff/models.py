@@ -85,11 +85,5 @@ class Match:
 
     @classmethod
     def from_dict(cls, data: Dict) -> 'Match':
-        data = dict(data)
         data["match_id"] = str(data.pop("_id", ""))
-        # sc = data.get("scorecard")
-        # data["scorecard"] = Scorecard.from_dict(sc) if isinstance(sc, dict) else None
-        #REMOVE LINES BELOW ONCE TEST DATA IS FIXED
-        allowed = {f.name for f in fields(cls)}
-        cleaned = {k: v for k, v in data.items() if k in allowed}
-        return cls(**cleaned)
+        return cls(**data)
