@@ -79,20 +79,6 @@ batting_scorecard = [
         "fours": 6,
         "sixes": 1,
     },
-    {
-        "player_id": "p2",
-        "position": 2,
-        "player_name": "player04",
-        "player_role": "BATTER",
-        "batting_style": "LH",
-        "how_out": "NOT_OUT",
-        "fielder": "",
-        "bowler": "",
-        "runs_scored": 30,
-        "balls": 28,
-        "fours": 2,
-        "sixes": 0,
-    },
 ]
 
 bowling_scorecard = [
@@ -109,19 +95,6 @@ bowling_scorecard = [
         "wides": 1,
         "no_balls": 0,
     },
-    {
-        "player_id": "p4",
-        "position": 2,
-        "player_name": "player06",
-        "player_role": "BOWLER",
-        "bowling_style": "RAOS",
-        "overs": 4.0,
-        "maidens": 1,
-        "runs_conceded": 18,
-        "wickets": 1,
-        "wides": 0,
-        "no_balls": 1,
-    },
 ]
 
 fielding_scorecard = [
@@ -134,16 +107,6 @@ fielding_scorecard = [
         "catches": 1,
         "runouts": 0,
         "stumpings": 1,
-    },
-    {
-        "player_id": "p6",
-        "position": 2,
-        "player_name": "player08",
-        "player_role": "BATTER",
-        "batting_style": "LH",
-        "catches": 0,
-        "runouts": 1,
-        "stumpings": 0,
     },
 ]
 
