@@ -243,7 +243,6 @@ class SelectTeamPage(BaseWindow):
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
         self.all_players = self.player_db.get_all_players(username)
-        self.selected_team = [] #list of all selected players (team)
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(1500, 900)
 
@@ -527,16 +526,22 @@ class SelectTeamPage(BaseWindow):
 
         team_players.sort(key=lambda p: p["position"])
 
-        selected_team = {
-            "team_players": team_players,
-            "captain_id": captain_id,
-            "wk_id": wk_id
-        }
-
         #print(team_data)
 
-        match_id = self.match_id
-        updated_match = self.match_db.update_match(self.current_user, match_id, selected_team)
+        match_doc = self.match_db.find_match(self.current_user, self.match_id)
+        if not match_doc:
+            messagebox.showerror("ERROR", "MATCH NOT FOUND")
+            return
+
+        match_obj = Match.from_dict(match_doc)
+
+        match_obj.team_players = team_players
+        match_obj.captain_id = captain_id
+        match_obj.wk_id = wk_id
+
+        match_dict = match_obj.to_dict()
+
+        updated_match = self.match_db.update_match(self.current_user, self.match_id, match_dict)
 
         if not updated_match:
             messagebox.showerror("ERROR", "TEAM SELECTION FAILED")
@@ -545,7 +550,7 @@ class SelectTeamPage(BaseWindow):
             messagebox.showinfo("SUCCESS", "TEAM SELECTION SUCCESSFUL")
 
         self.window.withdraw()
-        MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, match_id, selected_team)
+        MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, self.match_id)
 
     def go_back(self):
         self.window.destroy()
@@ -554,16 +559,14 @@ class SelectTeamPage(BaseWindow):
 
 
 class MatchScorecard(BaseWindow):
-    def __init__(self, window, parent, username, match_id, selected_team):
+    def __init__(self, window, parent, username, match_id,):
         super().__init__(window)
         self.window = window
         self.parent = parent
         self.current_user = username
         self.match_id = match_id
-        self.selected_team = selected_team
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
-        self.all_players = self.player_db.get_all_players(username)
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(1400, 900)
 
@@ -609,6 +612,23 @@ class MatchScorecard(BaseWindow):
 
         self.create_header(content_frame,  "MATCH SCORECARD")
 
+        doc = self.match_db.find_match(self.current_user, self.match_id)
+        if not doc:
+            messagebox.showerror("ERROR", "MATCH NOT FOUND")
+            self.go_back()
+            return
+
+        team_players = doc.get("team_players", [])
+        captain_id = doc.get("captain_id", "")
+        wk_id = doc.get("wk_id", "")
+        self.batting_entries.clear()
+
+        for p in team_players:
+            if str(p.get("player_id")) == str(captain_id):
+                p["player_name"] = f'{p.get("player_name","")} (C)'
+            if str(p.get("player_id")) == str(wk_id):
+                p["player_name"] = f'{p.get("player_name","")} (WK)'
+
 
         #--------------------------------------------BATTING SCORECARD-------------------------------------------------#
 
@@ -622,9 +642,6 @@ class MatchScorecard(BaseWindow):
 
         for column_index, header_text in enumerate(bat_headers):
             tk.Label(batting_table,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index, padx=10, pady=6)
-
-        team_players = self.selected_team["team_players"]
-        self.batting_entries.clear()
 
         for index, player in enumerate(team_players):
             r = index + 1
@@ -726,7 +743,6 @@ class MatchScorecard(BaseWindow):
             tk.Label(bowling_table,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index,
                                                                                       padx=10, pady=6)
 
-        team_players = self.selected_team["team_players"]
         self.bowling_entries.clear()
 
         for index, player in enumerate(team_players):
@@ -795,7 +811,6 @@ class MatchScorecard(BaseWindow):
             tk.Label(fielding_table ,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index,
                                                                                       padx=10, pady=6)
 
-        team_players = self.selected_team["team_players"]
         self.fielding_entries.clear()
 
         for index, player in enumerate(team_players):
@@ -1009,11 +1024,22 @@ class MatchScorecard(BaseWindow):
                 "stumpings": stumpings
             })
 
-        scorecard_data = self.match_db.update_match(self.current_user, self.match_id, {"batting_scorecard": batting_data,
-                                                                                       "batting_summary": batting_summary,
-                                                                                       "bowling_scorecard": bowling_data,
-                                                                                     "fielding_scorecard": fielding_data,
-                                                                                       "fielding_extras": fielding_extras})
+        match_doc = self.match_db.find_match(self.current_user, self.match_id)
+        if not match_doc:
+            messagebox.showerror("ERROR", "MATCH NOT FOUND")
+            return
+
+        match_obj = Match.from_dict(match_doc)
+
+        match_obj.xbatting_scorecard = batting_data
+        match_obj.batting_summary = batting_summary
+        match_obj.bowling_scorecard = bowling_data
+        match_obj.fielding_scorecard = fielding_data
+        match_obj.fielding_extras = fielding_extras
+
+        match_dict = match_obj.to_dict()
+
+        scorecard_data = self.match_db.update_match(self.current_user, self.match_id, match_dict)
 
         if scorecard_data:
             messagebox.showinfo("SUCCESS", "ALL SCORECARDS SAVED")

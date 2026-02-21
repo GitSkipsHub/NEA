@@ -93,7 +93,7 @@ fake_mongo_match["_id"] = "65ab3f4e9b1c2d3e4f5a6789"
 
 #TEST 3
 match_obj = Match.from_dict(fake_mongo_match)
-print(f"match_id = {match_obj.match_id}")
+print(f"\nmatch_id = {match_obj.match_id}")
 print(f"username = {match_obj.username}")
 print(f"match_format = {match_obj.match_format}")
 print(f"match_type = {match_obj.match_type}")

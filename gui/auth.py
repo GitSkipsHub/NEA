@@ -3,6 +3,7 @@ from tkinter import messagebox
 from gui.baseWindow import BaseWindow
 from bff.database import AccountDB
 from bff.models import Account
+from testing.modelsTest import account_obj
 
 
 class RegistrationWindow(BaseWindow):
@@ -85,7 +86,12 @@ class RegistrationWindow(BaseWindow):
 
         hashed_password = Account.hash_password(password)
 
-        if self.account_db.create_account(username, hashed_password):
+        account_obj = Account(
+            username=username,
+            hashed_password=hashed_password
+        )
+
+        if self.account_db.create_account(account_obj.username, account_obj.hashed_password):
             messagebox.showinfo("SUCCESS", "ACCOUNT CREATED")
             self.go_back()
             return
@@ -144,14 +150,16 @@ class LoginWindow(BaseWindow):
             return
 
         #Finds existing usernames in the database
-        account = self.account_db.find_account(username)
+        account_doc = self.account_db.find_account(username)
 
-        if not account:
+        if not account_doc:
             messagebox.showerror("ERROR", "USERNAME NOT FOUND")
             return
 
+        account_obj = Account.from_dict(account_doc)
+
         #Account from models class and checks if passwords match
-        if not Account.verify_password(password, account["hashed_password"]):
+        if not Account.verify_password(password, account_obj.hashed_password):
             messagebox.showerror("ERROR", "INCORRECT PASSWORD")
             return
 
@@ -162,7 +170,7 @@ class LoginWindow(BaseWindow):
 
     def open_home_page(self):
         from gui.home import HomePage
-        username = self.username_input.get().strip() #Need username for HomePage Welcome
+        username = account_obj.username #Need username for HomePage Welcome
         self.window.withdraw()
         self.window.destroy()
         new = tk.Toplevel(self.parent) #Creates new TopLevel Window from previous page
