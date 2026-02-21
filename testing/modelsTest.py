@@ -63,8 +63,94 @@ print(f"\nfull_name = {player_obj.first_name} {player_obj.last_name}\n")
 
 
 
+#CREATED DUMMY SCORECARDS
+batting_scorecard = [
+    {
+        "player_id": "p1",
+        "position": 1,
+        "player_name": "player01",
+        "player_role": "BATTER",
+        "batting_style": "RH",
+        "how_out": "CAUGHT",
+        "fielder": "player02",
+        "bowler": "player03",
+        "runs_scored": 45,
+        "balls": 32,
+        "fours": 6,
+        "sixes": 1,
+    },
+    {
+        "player_id": "p2",
+        "position": 2,
+        "player_name": "player04",
+        "player_role": "BATTER",
+        "batting_style": "LH",
+        "how_out": "NOT_OUT",
+        "fielder": "",
+        "bowler": "",
+        "runs_scored": 30,
+        "balls": 28,
+        "fours": 2,
+        "sixes": 0,
+    },
+]
 
-# #CREATED DUMMY MATCH
+bowling_scorecard = [
+    {
+        "player_id": "p3",
+        "position": 1,
+        "player_name": "player05",
+        "player_role": "BOWLER",
+        "bowling_style": "RAP",
+        "overs": 4.0,
+        "maidens": 0,
+        "runs_conceded": 22,
+        "wickets": 2,
+        "wides": 1,
+        "no_balls": 0,
+    },
+    {
+        "player_id": "p4",
+        "position": 2,
+        "player_name": "player06",
+        "player_role": "BOWLER",
+        "bowling_style": "RAOS",
+        "overs": 4.0,
+        "maidens": 1,
+        "runs_conceded": 18,
+        "wickets": 1,
+        "wides": 0,
+        "no_balls": 1,
+    },
+]
+
+fielding_scorecard = [
+    {
+        "player_id": "p5",
+        "position": 1,
+        "player_name": "player07",
+        "player_role": "WKT_KEEPER",
+        "batting_style": "RH",
+        "catches": 1,
+        "runouts": 0,
+        "stumpings": 1,
+    },
+    {
+        "player_id": "p6",
+        "position": 2,
+        "player_name": "player08",
+        "player_role": "BATTER",
+        "batting_style": "LH",
+        "catches": 0,
+        "runouts": 1,
+        "stumpings": 0,
+    },
+]
+
+batting_summary = {"subtotal": 75, "extras": 10, "total": 85}
+fielding_extras = {"byes": 2, "leg_byes": 1, "penalties": 0}
+
+#CREATED DUMMY MATCH
 dummy_match = Match(
     match_id="TEMP_ID",  #not stored in Mongo (Mongo uses _id)
     username="username01",
@@ -76,7 +162,16 @@ dummy_match = Match(
     opposition="Oppo 1",
     result="WON",
     toss_result="WON_BAT",
-    team_players=["p1", "p2", "p3"],
+    team_players=[
+        {"player_id": "mongo_id01", "position": 1, "player_name": "player01",},
+        {"player_id": "mongo_id02", "position": 2, "player_name": "player02",},
+        {"player_id": "mongo_id03", "position": 3, "player_name": "player03",}
+    ],
+    batting_scorecard=batting_scorecard,
+    bowling_scorecard=bowling_scorecard,
+    fielding_scorecard=fielding_scorecard,
+    batting_summary=batting_summary,
+    fielding_extras=fielding_extras,
     captain_id="p1",
     wk_id="p2"
 )
@@ -99,3 +194,4 @@ print(f"match_format = {match_obj.match_format}")
 print(f"match_type = {match_obj.match_type}")
 print(f"team_players = {match_obj.team_players}")
 
+print(f"batting_scorecard = {match_obj.batting_scorecard}")
