@@ -22,8 +22,6 @@ class Account:
 
     @classmethod
     def from_dict(cls, data:Dict[str, Any]) -> 'Account':
-        data = dict(data)
-        data.pop("_id", None)
         return cls(**data)
 
 @dataclass

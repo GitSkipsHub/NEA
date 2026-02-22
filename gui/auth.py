@@ -13,10 +13,11 @@ class RegistrationWindow(BaseWindow):
         self.window = window #Current GUI Window
         self.parent = parent #Previous 'Parent' Window
         self.window.title("SS - REGISTRATION")
-        self.center_window(800, 500)
+        self.center_window(800, 530)
         #Creates Instance of AccountDB class
         self.account_db = AccountDB()
         self.create_widgets()
+        self.show_password = False
 
     def create_widgets(self):
         main_frame = self.create_main_frame()
@@ -43,6 +44,9 @@ class RegistrationWindow(BaseWindow):
         self.confirm_password_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.confirm_password_input.grid(column=1, row=2, pady=10)
 
+        self.show_btn = tk.Button(form, text="SHOW", width=10, command=self.toggle_password)
+        self.show_btn.grid(column=1, row=3, padx=20, pady=10)
+
         #Footer Created to Position Back Button at Bottom of Screen
         footer = tk.Frame(main_frame)
         footer.pack(fill="x", side="bottom")
@@ -52,7 +56,17 @@ class RegistrationWindow(BaseWindow):
         back_btn.pack(side=tk.LEFT, padx=20, pady=20, )
         tk.Button(footer, text="REGISTER", width=15, command=self.register, ).pack(side="right", padx=20, pady=20)
 
-
+    def toggle_password(self):
+        if self.show_password:
+            self.password_input.config(show="*")
+            self.confirm_password_input.config(show="*")
+            self.show_password = False
+            self.show_btn.config(text="SHOW")
+        else:
+            self.password_input.config(show="")
+            self.confirm_password_input.config(show="")
+            self.show_password = True
+            self.show_btn.config(text="HIDE")
 
     def register(self):
         username = self.username_input.get().strip() #Removes white spaces in username
@@ -112,9 +126,10 @@ class LoginWindow(BaseWindow):
         self.window = window
         self.parent = parent
         self.window.title("SS - LOGIN")
-        self.center_window(800, 500)
+        self.center_window(800, 530)
         self.account_db = AccountDB()
         self.create_widgets()
+        self.show_password = False
 
     def create_widgets(self):
         main_frame = self.create_main_frame()
@@ -133,6 +148,9 @@ class LoginWindow(BaseWindow):
         self.password_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.password_input.grid(column=1, row=1, pady=10, )
 
+        self.show_btn = tk.Button(form, text="SHOW", width=10, command=self.toggle_password)
+        self.show_btn.grid(column=1, row=2, padx=20, pady=10)
+
         footer = tk.Frame(main_frame)
         footer.pack(fill="x", side="bottom")
 
@@ -140,6 +158,18 @@ class LoginWindow(BaseWindow):
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
 
         tk.Button(footer, text="LOGIN", width=15, command=self.login, ).pack(side="right", padx=20, pady=20)
+
+    def toggle_password(self):
+        if self.show_password:
+            self.password_input.config(show="*")
+            self.password_input.config(show="*")
+            self.show_password = False
+            self.show_btn.config(text="SHOW")
+        else:
+            self.password_input.config(show="")
+            self.password_input.config(show="")
+            self.show_password = True
+            self.show_btn.config(text="HIDE")
 
     #LOGIN FUNCTION VALIDATION CHECKS
     def login(self):
