@@ -356,8 +356,7 @@ class UpdatePlayerWindow(BaseWindow):
             row=5
         )
 
-        # ERROR #5: removed auto-load, so table is empty until SEARCH is pressed
-        #self.search_player()
+        self.search_player()
 
     #Remove all existing rows from the Treeview table --> ensures old results are cleared before new search results are inserted
     def clear_tree(self):
