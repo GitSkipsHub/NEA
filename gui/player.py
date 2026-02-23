@@ -170,6 +170,7 @@ class CreatePlayerWindow(BaseWindow):
         save_btn.pack(side="right", padx=20, pady=20)
 
     def save_player(self):
+        #Gets all inputs from entries
         first_name = self.first_name_input.get().strip()
         last_name = self.last_name_input.get().strip()
         dob = self.dob_input.get().strip()
@@ -181,12 +182,14 @@ class CreatePlayerWindow(BaseWindow):
             messagebox.showerror("Error", "Please fill in all required fields")
             return
 
+        #Checks if datetime is in correct format
         try:
             datetime.strptime(dob, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
+        #Maps fields into Player Object
         player_obj = Player(
             player_id="",  # temporary (Mongo creates _id)
             username=self.current_user,
@@ -198,6 +201,7 @@ class CreatePlayerWindow(BaseWindow):
             bowling_style=BowlingStyle.get_key(bowling_style_value)
         )
 
+        #Converts Player Object to dict and saves player
         if self.player_db.create_player(self.current_user, player_obj.to_dict()):
             messagebox.showinfo("SUCCESS", "Player Created")
             self.go_back()
