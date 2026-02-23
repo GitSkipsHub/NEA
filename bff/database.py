@@ -126,10 +126,10 @@ class PlayerDB:
                 {"first_name": {"$regex": search_term, "$options": "i"}}, #Finds value matching regular expression where option = case-insensitive
                 {"last_name": {"$regex": search_term, "$options": "i"}}
             ]}
-        return list(self.collection.find(query).sort("last_name", 1))
+        return list(self.collection.find(query).sort("last_name", 1)) #Sorts results in descending order of last name
 
     def get_all_players(self, username: str) -> List[Dict]:
-        return list(self.collection.find({"username": username}))
+        return list(self.collection.find({"username": username})) #returns all players within that account
 
     def update_player(self, username: str, player_id, update_data):
         try:
