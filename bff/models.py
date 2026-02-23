@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 import bcrypt
 
 
