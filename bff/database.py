@@ -92,12 +92,12 @@ class PlayerDB:
 
     def create_player(self, username: str, player_data: Dict):
         try:
-            # Add system fields
+            #Add system fields
             player_data["username"] = username
             player_data["created_date"] = datetime.now()
             player_data["last_updated"] = datetime.now()
 
-            # Manually map each field into the Player constructor
+            #Manually map each field into the Player constructor
             player = Player(
                 player_id="",
                 username=player_data["username"],
@@ -111,8 +111,9 @@ class PlayerDB:
                 last_updated=player_data["last_updated"]
             )
 
-            result = self.collection.insert_one(player.to_dict())
-            return result.inserted_id is not None
+            result = self.collection.insert_one(player.to_dict()) #Insert the player dictionary into the MongoDB collection
+            return result.inserted_id is not None # inserted_id will only exist if the document was successfully created
+            #Return True if insertion worked, otherwise False
 
         except Exception as e:
             print(f"Error creating Player: {e}")
