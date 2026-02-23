@@ -245,17 +245,20 @@ class UpdatePlayerWindow(BaseWindow):
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=30, pady=5)
 
+        #Defined columns that will appear in the table
         player_columns = (
             "player_id", "created_date", "first_name", "last_name",
             "date_of_birth", "player_role", "batting_style", "bowling_style"
         )
-
+        #Vertical scrollbar
         y_scrollbar = ttk.Scrollbar(table_frame, orient="vertical")
         y_scrollbar.pack(side="right", fill="y")
 
+        #Horizontal scrollbar
         x_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal")
         x_scrollbar.pack(side="bottom", fill="x")
 
+        #Treeview table widget
         self.tree = ttk.Treeview(
             table_frame,
             columns=player_columns,
@@ -266,9 +269,11 @@ class UpdatePlayerWindow(BaseWindow):
         )
         self.tree.pack(side="left", fill="both", expand=True)
 
+        #Linking scrollbars to Treeview
         x_scrollbar.config(command=self.tree.xview)
         y_scrollbar.config(command=self.tree.yview)
 
+        #Set column headings
         self.tree.heading("player_id", text="ID")
         self.tree.heading("created_date", text="Created Date")
         self.tree.heading("first_name", text="First Name")
@@ -278,6 +283,7 @@ class UpdatePlayerWindow(BaseWindow):
         self.tree.heading("batting_style", text="Batting Style")
         self.tree.heading("bowling_style", text="Bowling Style")
 
+        #Set column widths
         self.tree.column("player_id", width=200)
         self.tree.column("created_date", width=160)
         self.tree.column("first_name", width=120)
@@ -287,7 +293,8 @@ class UpdatePlayerWindow(BaseWindow):
         self.tree.column("batting_style", width=120)
         self.tree.column("bowling_style", width=150)
 
-        self.tree.bind("<<TreeviewSelect>>", self.select_on_player)
+        #Bind selection event
+        self.tree.bind("<<TreeviewSelect>>", self.select_on_player) #When a row is clicked, select_on_player() is triggered
 
         footer = tk.Frame(main_frame)
         footer.pack(fill="x", side="bottom")
