@@ -92,12 +92,25 @@ class PlayerDB:
 
     def create_player(self, username: str, player_data: Dict):
         try:
-            player_data = dict(player_data)
+            # Add system fields
             player_data["username"] = username
             player_data["created_date"] = datetime.now()
             player_data["last_updated"] = datetime.now()
 
-            player = Player(player_id="", **player_data)
+            # Manually map each field into the Player constructor
+            player = Player(
+                player_id="",
+                username=player_data["username"],
+                first_name=player_data["first_name"],
+                last_name=player_data["last_name"],
+                date_of_birth=player_data["date_of_birth"],
+                player_role=player_data["player_role"],
+                batting_style=player_data["batting_style"],
+                bowling_style=player_data["bowling_style"],
+                created_date=player_data["created_date"],
+                last_updated=player_data["last_updated"]
+            )
+
             result = self.collection.insert_one(player.to_dict())
             return result.inserted_id is not None
 
