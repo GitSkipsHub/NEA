@@ -191,7 +191,7 @@ class CreatePlayerWindow(BaseWindow):
 
         #Maps fields into Player Object
         player_obj = Player(
-            player_id="",  # temporary (Mongo creates _id)
+            player_id="",  # Temporary (Mongo creates _id)
             username=self.current_user,
             first_name=first_name,
             last_name= last_name,
