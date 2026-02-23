@@ -377,10 +377,8 @@ class UpdatePlayerWindow(BaseWindow):
             #If the date is a datetime object, convert it into readable string format
             if isinstance(formatted_date, datetime):
                 formatted_date = formatted_date.strftime("%Y-%m-%d %H:%M:%S")
-
             #Convert MongoDB dictionary into Player Object
             player_obj = Player.from_dict(player)
-
             #Insert the player data into the Treeview table
             self.tree.insert(
                 "",         #Insert at root level (not nested)
@@ -394,8 +392,7 @@ class UpdatePlayerWindow(BaseWindow):
                     PlayerRole.get_value(player_obj.player_role),
                     BattingStyle.get_value(player_obj.batting_style),
                     BowlingStyle.get_value(player_obj.bowling_style),
-                )
-            )
+                ))
 
     #Function  runs when a user selects a row in the table
     def select_on_player(self, event):
@@ -403,7 +400,6 @@ class UpdatePlayerWindow(BaseWindow):
         selected = self.tree.selection()
         #If no row is selected --> exit function
         if not selected:
-            # ERROR #1: does NOT reset selected_player_id when nothing selected
             return
 
         #Extract all values stored in the selected row
@@ -416,7 +412,6 @@ class UpdatePlayerWindow(BaseWindow):
         self.first_name_edit.set(values[2])
         self.last_name_edit.set(values[3])
         self.dob_edit.set(values[4])
-        #Display values (e.g. "RIGHT HAND"), not Enum keys
         self.player_role_edit.set(values[5])
         self.batting_style_edit.set(values[6])
         self.bowling_style_edit.set(values[7])
