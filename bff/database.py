@@ -120,15 +120,13 @@ class PlayerDB:
 
     def search_player(self, username, search_term: str = "") -> List[Dict]:
         search_term = search_term.strip() #Removes whitespaces
+        query = {"username": username} #Restricts mongo query to players within that profile
         if search_term:
-            query = { "username": username, #Restricts mongo query to players within that profile
+            query = {
                 "$or": [
                 {"first_name": {"$regex": search_term, "$options": "i"}}, #Finds value matching regular expression where option = case-insensitive
                 {"last_name": {"$regex": search_term, "$options": "i"}}
             ]}
-        else:
-            query = {"username": username}
-
         return list(self.collection.find(query).sort("last_name", 1)) #Sorts results in ascending order of last name
 
     def get_all_players(self, username: str) -> List[Dict]:
