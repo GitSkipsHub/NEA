@@ -3,7 +3,6 @@ from tkinter import messagebox
 from gui.baseWindow import BaseWindow
 from bff.database import AccountDB
 from bff.models import Account
-from testing.modelsTest import account_obj
 
 
 class RegistrationWindow(BaseWindow):
@@ -190,7 +189,7 @@ class LoginWindow(BaseWindow):
 
         #Account from models class and checks if passwords match
         if not Account.verify_password(password, account_obj.hashed_password):
-            messagebox.showerror("ERROR", "INCORRECT PASSWORD")
+            messagebox.showerror("ERROR", "INCORRECT USERNAME OR PASSWORD")
             return
 
         else:
@@ -200,7 +199,7 @@ class LoginWindow(BaseWindow):
 
     def open_home_page(self):
         from gui.home import HomePage
-        username = account_obj.username #Need username for HomePage Welcome
+        username = self.username_input.get().strip() #Need username for HomePage Welcome
         self.window.withdraw()
         self.window.destroy()
         new = tk.Toplevel(self.parent) #Creates new TopLevel Window from previous page

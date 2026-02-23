@@ -17,12 +17,20 @@ class Account:
     def verify_password(password: str, hash_password: str) -> bool:
         return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
 
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+    def to_dict(self) -> Dict[str, Any]: #Converst object into dictionary to store in MongoDB
+        return {
+            "username": self.username,
+            "hashed_password": self.hashed_password,
+            "created_date": self.created_date
+        }
 
     @classmethod
-    def from_dict(cls, data:Dict[str, Any]) -> 'Account':
-        return cls(**data)
+    def from_dict(cls, data: Dict[str, Any]) -> "Account": #Converst MongoDB dictionary into object to be used in GUI
+        return cls(
+            username=data.get("username", ""),
+            hashed_password=data.get("hashed_password", ""),
+            created_date=data.get("created_date", datetime.now())
+        )
 
 @dataclass
 class Player:
@@ -62,7 +70,7 @@ class Match:
     ground_name: str
     opposition: str
     result: str
-    toss_result: str = ""
+    toss_result: str
     team_players: List[Dict[str, Any]] = field(default_factory=list)
     batting_scorecard: List[Dict[str, Any]] = field(default_factory=list)
     bowling_scorecard: List[Dict[str, Any]] = field(default_factory=list)

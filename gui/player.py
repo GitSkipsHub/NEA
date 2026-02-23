@@ -214,7 +214,7 @@ class CreatePlayerWindow(BaseWindow):
 class UpdatePlayerWindow(BaseWindow):
     def __init__(self, window, parent, username):
         super().__init__(window)
-        self. selected_player_id = None
+        self.selected_player_id = None
         self.window = window
         self.parent = parent
         self.current_user = username
@@ -224,14 +224,15 @@ class UpdatePlayerWindow(BaseWindow):
         self.create_widgets()
 
     def create_widgets(self):
-
         main_frame = self.create_main_frame()
         self.create_header(main_frame, "UPDATE PLAYER")
 
         search_frame = tk.Frame(main_frame)
         search_frame.pack(pady=10)
 
-        tk.Label(search_frame, text="SEARCH NAME: ", font=("Arial", 15, "bold")).grid(row=0, column=1, padx=30, pady=20)
+        tk.Label(search_frame, text="SEARCH NAME: ", font=("Arial", 15, "bold")).grid(
+            row=0, column=1, padx=30, pady=20
+        )
         self.search_var = tk.StringVar()
         search_entry = tk.Entry(search_frame, textvariable=self.search_var, width=30)
         search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
@@ -240,8 +241,10 @@ class UpdatePlayerWindow(BaseWindow):
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=30, pady=5)
 
-        player_columns = ("player_id", "created_date", "first_name", "last_name", "date_of_birth", "player_role",
-                          "batting_style", "bowling_style")
+        player_columns = (
+            "player_id", "created_date", "first_name", "last_name",
+            "date_of_birth", "player_role", "batting_style", "bowling_style"
+        )
 
         y_scrollbar = ttk.Scrollbar(table_frame, orient="vertical")
         y_scrollbar.pack(side="right", fill="y")
@@ -249,9 +252,14 @@ class UpdatePlayerWindow(BaseWindow):
         x_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal")
         x_scrollbar.pack(side="bottom", fill="x")
 
-        self.tree = ttk.Treeview(table_frame, columns=player_columns, show="headings", 
-                                 height=10, yscrollcommand=y_scrollbar.set, xscrollcommand=x_scrollbar.set)
-
+        self.tree = ttk.Treeview(
+            table_frame,
+            columns=player_columns,
+            show="headings",
+            height=10,
+            yscrollcommand=y_scrollbar.set,
+            xscrollcommand=x_scrollbar.set
+        )
         self.tree.pack(side="left", fill="both", expand=True)
 
         x_scrollbar.config(command=self.tree.xview)
@@ -289,11 +297,6 @@ class UpdatePlayerWindow(BaseWindow):
         search_button = tk.Button(footer, text="SEARCH", command=self.search_player, width=15)
         search_button.pack(side="top", padx=10, pady=10)
 
-        buttons_frame = tk.Frame(search_frame)
-        buttons_frame.grid(row=1, column=3, padx=100, pady=20, sticky="e")
-
-        #self.create_sub_header(main_frame, "EDIT SELECTED PLAYER")
-        #tk.Label(main_frame, text="EDIT SELECTED PLAYER", font=("Arial", 15)).pack(padx=10, pady=10, side="top")
         form = tk.Frame(main_frame)
         form.pack(pady=20)
 
@@ -311,9 +314,11 @@ class UpdatePlayerWindow(BaseWindow):
         fname_entry = tk.Entry(form, textvariable=self.first_name_edit, width=25)
         fname_entry.grid(row=0, column=1, padx=10)
         fname_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+
         lname_entry = tk.Entry(form, textvariable=self.last_name_edit, width=25)
         lname_entry.grid(row=1, column=1, padx=10)
         lname_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+
         dob_entry = tk.Entry(form, textvariable=self.dob_edit, width=25)
         dob_entry.grid(row=2, column=1, padx=10)
         dob_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
@@ -325,7 +330,6 @@ class UpdatePlayerWindow(BaseWindow):
             values=PlayerRole.list_values(),
             row=3
         )
-
         self.create_dropdown(
             parent=form,
             text="BATTING STYLE: ",
@@ -333,7 +337,6 @@ class UpdatePlayerWindow(BaseWindow):
             values=BattingStyle.list_values(),
             row=4
         )
-
         self.create_dropdown(
             parent=form,
             text="BOWLING STYLE: ",
@@ -342,51 +345,53 @@ class UpdatePlayerWindow(BaseWindow):
             row=5
         )
 
-        self.search_player()
+        # ERROR #5: removed auto-load, so table is empty until SEARCH is pressed
+        #self.search_player()
 
     def clear_tree(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
     def search_player(self):
-        self.clear_tree() #Removes all existing rows on tree
-        term = self.search_var.get() #reads text entered in search box
-        players = self.player_db.search_player(self.current_user, term) #Calls database function passing parameters
+        self.clear_tree()
+        term = self.search_var.get()
+        players = self.player_db.search_player(self.current_user, term)
 
         for player in players:
             formatted_date = player.get("created_date")
             if isinstance(formatted_date, datetime):
-                formatted_date =formatted_date.strftime("%Y-%m-%d %H:%M:%S") #Formats date in human-readable format
+                formatted_date = formatted_date.strftime("%Y-%m-%d %H:%M:%S")
 
             player_obj = Player.from_dict(player)
             self.tree.insert(
-                "", #insert at root level, not nested
-                "end", # adds row to bottom of the table
+                "",
+                "end",
                 values=(
-                    player_obj.player_id, #index 0
-                    formatted_date,             #index 1
-                    player_obj.first_name, #index 2
+                    player_obj.player_id,
+                    formatted_date,
+                    player_obj.first_name,
                     player_obj.last_name,
                     player_obj.date_of_birth,
                     PlayerRole.get_value(player_obj.player_role),
                     BattingStyle.get_value(player_obj.batting_style),
-                    BowlingStyle.get_value(player_obj.bowling_style), #index 7
+                    BowlingStyle.get_value(player_obj.bowling_style),
                 )
             )
 
-    def select_on_player(self, event): #retreives selected row from treeview & returns tuple of item IDs
+    def select_on_player(self, event):
         selected = self.tree.selection()
-        if not selected: #if no row is selected (user clicked empty space) --> exit function
-            self.selected_player_id = None
+        if not selected:
+            # ERROR #1: does NOT reset selected_player_id when nothing selected
             return
 
-        #From the selected row, extract the data values that were inserted into it
-        values = self.tree.item(selected[0], "values") #extracts values stored in that row in the same order they were inserted into the treeview
-        self.selected_player_id = values[0] #stores player's unique id so correct record is updated later --> required for MongoDB
+        values = self.tree.item(selected[0], "values")
+        self.selected_player_id = values[0]
 
         self.first_name_edit.set(values[2])
         self.last_name_edit.set(values[3])
         self.dob_edit.set(values[4])
+
+        # These are display values (e.g. "RIGHT HAND"), not enum keys
         self.player_role_edit.set(values[5])
         self.batting_style_edit.set(values[6])
         self.bowling_style_edit.set(values[7])
@@ -413,19 +418,23 @@ class UpdatePlayerWindow(BaseWindow):
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
+        # ERROR #2: stores DISPLAY values instead of enum KEYS (wrong format for DB)
         update_data = {
             "first_name": fname,
             "last_name": lname,
             "date_of_birth": dob,
-            "player_role": PlayerRole.get_key(p_role_value),
-            "batting_style": BattingStyle.get_key(bat_style_value),
-            "bowling_style": BowlingStyle.get_key(bowl_style_value),
+            "player_role": p_role_value,          # should be PlayerRole.get_key(p_role_value)
+            "batting_style": bat_style_value,     # should be BattingStyle.get_key(bat_style_value)
+            "bowling_style": bowl_style_value,    # should be BowlingStyle.get_key(bowl_style_value)
         }
 
         updated_record = self.player_db.update_player(self.current_user, self.selected_player_id, update_data)
         if updated_record:
             messagebox.showinfo("SUCCESS", "PLAYER UPDATED SUCCESSFULLY")
-            self.search_player()
+
+            # ERROR #3: removed refresh, so table still shows old values after update
+            # self.search_player()
+
             self.selected_player_id = None
         else:
             messagebox.showerror("ERROR", "PLAYER UPDATE FAILED")
@@ -549,14 +558,14 @@ class DeletePlayerWindow(BaseWindow):
             )
 
     def select_on_player(self, event): #retreives selected row from treeview & returns tuple of item IDs
-         selected = self.tree.selection()
-         if not selected: #if no row is selected (user clicked empty space) --> exit function
-             self.selected_player_id = None
-             return
+        selected = self.tree.selection()
+        if not selected: #if no row is selected (user clicked empty space) --> exit function
+            self.selected_player_id = None
+            return
 
-         #From the selected row, extract the data values that were inserted into it
-         values = self.tree.item(selected[0], "values") #extracts values stored in that row in the same order they were inserted into the treeview
-         self.selected_player_id = values[0] #stores player's unique id so correct record is updated later --> required for MongoDB
+        #From the selected row, extract the data values that were inserted into it
+        values = self.tree.item(selected[0], "values") #extracts values stored in that row in the same order they were inserted into the treeview
+        self.selected_player_id = values[0] #stores player's unique id so correct record is updated later --> required for MongoDB
 
 
     def delete_player(self):

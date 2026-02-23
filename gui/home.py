@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui.baseWindow import BaseWindow
-
+from gui.start import StartWindow
 
 
 class HomePage(BaseWindow):
@@ -81,9 +81,13 @@ class HomePage(BaseWindow):
         confirm = messagebox.askyesno("LOGOUT", "ARE YOU SURE YOU WANT TO LOGOUT?")
         if not confirm:
             return
-
         self.window.destroy()
-        self.parent.deiconify()
+        root = tk.Tk()
+        StartWindow(root)
+        root.mainloop()
+
+
+
 
 
 
