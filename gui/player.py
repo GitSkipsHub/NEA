@@ -460,6 +460,7 @@ class UpdatePlayerWindow(BaseWindow):
         if updated_record:
             messagebox.showinfo("SUCCESS", "PLAYER UPDATED SUCCESSFULLY")
 
+            #Refreshes Treeview Table
             self.search_player()
 
             #Reset selected ID after update
