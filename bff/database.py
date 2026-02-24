@@ -152,13 +152,15 @@ class PlayerDB:
 
     def delete_player(self, username: str, player_id: str) -> bool:
         try:
+            #Tries to delete one document that matches both the username and the ObjectId of the player
             result = self.collection.delete_one({
                 "username": username,
-                "_id": ObjectId(player_id)
+                "_id": ObjectId(player_id) #Convert string ID into MongoDB ObjectId
             })
+            #Deleted_count will be 1 if a document was successfully deleted --> True/False
             return result.deleted_count == 1
-        except Exception as e:
-            print(f"Error deleting player {e}")
+        except Exception as e: #Catches any unexpected errors
+            print(f"Error deleting player {e}") #Prints the error for debugging purposes
             return False
 
 # class MatchDB:
