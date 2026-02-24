@@ -421,10 +421,12 @@ class UpdatePlayerWindow(BaseWindow):
         self.bowling_style_edit.set(values[7])
 
     def update_player(self):
+        #Check if a player has been selected from the table
         if not self.selected_player_id:
             messagebox.showerror("ERROR", "SELECT PLAYER FROM THE TABLE FIRST")
             return
 
+        #Get updated values from the input fields and remove extra spaces
         fname = self.first_name_edit.get().strip()
         lname = self.last_name_edit.get().strip()
         dob = self.dob_edit.get().strip()
@@ -436,29 +438,29 @@ class UpdatePlayerWindow(BaseWindow):
             messagebox.showerror("ERROR", "FILL IN ALL REQUIRED FIELDS")
             return
 
+        #Validate the date format
         try:
             datetime.strptime(dob, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
-        # ERROR #2: stores DISPLAY values instead of enum KEYS (wrong format for DB)
+        #Convert dropdown display values back into enum keys for database storage
         update_data = {
             "first_name": fname,
             "last_name": lname,
             "date_of_birth": dob,
-            "player_role": p_role_value,          # should be PlayerRole.get_key(p_role_value)
-            "batting_style": bat_style_value,     # should be BattingStyle.get_key(bat_style_value)
-            "bowling_style": bowl_style_value,    # should be BowlingStyle.get_key(bowl_style_value)
+            "player_role": PlayerRole.get_key(p_role_value),
+            "batting_style": BattingStyle.get_key(bat_style_value),
+            "bowling_style": BowlingStyle.get_key(bowl_style_value),
         }
 
+        #Call the database function to update the record
         updated_record = self.player_db.update_player(self.current_user, self.selected_player_id, update_data)
         if updated_record:
             messagebox.showinfo("SUCCESS", "PLAYER UPDATED SUCCESSFULLY")
 
-            # ERROR #3: removed refresh, so table still shows old values after update
-            # self.search_player()
-
+            # Reset selected ID after update
             self.selected_player_id = None
         else:
             messagebox.showerror("ERROR", "PLAYER UPDATE FAILED")
