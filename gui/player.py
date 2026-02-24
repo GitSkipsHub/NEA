@@ -460,7 +460,9 @@ class UpdatePlayerWindow(BaseWindow):
         if updated_record:
             messagebox.showinfo("SUCCESS", "PLAYER UPDATED SUCCESSFULLY")
 
-            # Reset selected ID after update
+            self.search_player()
+
+            #Reset selected ID after update
             self.selected_player_id = None
         else:
             messagebox.showerror("ERROR", "PLAYER UPDATE FAILED")
