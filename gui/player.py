@@ -459,12 +459,17 @@ class UpdatePlayerWindow(BaseWindow):
         updated_record = self.player_db.update_player(self.current_user, self.selected_player_id, update_data)
         if updated_record:
             messagebox.showinfo("SUCCESS", "PLAYER UPDATED SUCCESSFULLY")
-
             #Refreshes Treeview Table
             self.search_player()
-
             #Reset selected ID after update
             self.selected_player_id = None
+            # Clear input fields
+            self.first_name_edit.set("")
+            self.last_name_edit.set("")
+            self.dob_edit.set("")
+            self.player_role_edit.set("")
+            self.batting_style_edit.set("")
+            self.bowling_style_edit.set("")
         else:
             messagebox.showerror("ERROR", "PLAYER UPDATE FAILED")
 
