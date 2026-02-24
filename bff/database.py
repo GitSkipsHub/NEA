@@ -137,16 +137,17 @@ class PlayerDB:
 
     def update_player(self, username: str, player_id, update_data):
         try:
+            #Update the last_updated field to track when the record was modified
             update_data["last_updated"] = datetime.now()
             result = self.collection.update_one(
                 {"username": username, "_id": ObjectId(player_id)},
-                {"$set": update_data}
+                {"$set": update_data} #Only update the specified fields instead of replacing the whole document
             )
-            return result.modified_count == 1
+            return result.modified_count == 1 #If exactly one document was modified, return True (update successful)
         except InvalidId:
-            return False
+            return False #If the player_id is not a valid ObjectId format, prevent program crash
         except PyMongoError as e:
-            print(f"Database error updating {e}")
+            print(f"Database error updating {e}") #Catch any other MongoDB-related errors and print them for debugging
             return False
 
     def delete_player(self, username: str, player_id: str) -> bool:
