@@ -397,12 +397,10 @@ class UpdatePlayerWindow(BaseWindow):
             )
 
     #Function  runs when a user selects a row in the table
-    def select_on_player(self, event):
-        #Get currently selected row
+    def select_on_player(self, event): #retreives selected row from treeview & returns tuple of item IDs
         selected = self.tree.selection()
-        #If no row is selected --> exit function
-        if not selected:
-            # ERROR #1: does NOT reset selected_player_id when nothing selected
+        if not selected: #if no row is selected (user clicked empty space) --> exit function
+            self.selected_player_id = None
             return
 
         #Extract all values stored in the selected row
@@ -599,7 +597,7 @@ class DeletePlayerWindow(BaseWindow):
 
         #From the selected row, extract the data values that were inserted into it
         values = self.tree.item(selected[0], "values") #extracts values stored in that row in the same order they were inserted into the treeview
-        self.selected_player_id = values[0] #stores player's unique id so correct record is updated later --> required for MongoDB
+        self.selected_player_id = values[0] #stores player's unique id so correct record is deleted
 
 
     def delete_player(self):
@@ -617,6 +615,7 @@ class DeletePlayerWindow(BaseWindow):
             messagebox.showinfo("SUCCESS", "PLAYER DELETED SUCCESSFULLY")
             self.search_player()
             self.selected_player_id = None
+            self.search_player()
 
         else:
             messagebox.showerror("ERROR", "PLAYER DELETION FAILED")
