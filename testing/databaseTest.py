@@ -1,5 +1,5 @@
-from bff.models import Account
-from bff.database import AccountDB
+from bff.models import Account, Match
+from bff.database import AccountDB, MatchDB
 
 #CREATE DATABASE INSTANCE
 account_db = AccountDB()
@@ -35,13 +35,12 @@ print("ACCOUNT CREATED", duplicate_account)
 #     print("Password Verified:", is_correct)
 
 
-from bff.database import MatchDB
-from datetime import datetime
 
-# Create instance of MatchDB
+
+#Create instance of MatchDB
 match_db = MatchDB()
 
-# Dummy match data (minimal required fields)
+#Dummy match data
 dummy_match = {
     "match_date": "2026-02-25",
     "match_format": "T20",
@@ -57,10 +56,10 @@ dummy_match = {
     "fielding_scorecard": []
 }
 
-# Call create_match method
+#Call create_match method
 inserted_id = match_db.create_match("test_user01", dummy_match)
 
-# Print result
+#Print result
 if inserted_id:
     print("Match inserted successfully.")
     print("MATCH ID:", inserted_id)

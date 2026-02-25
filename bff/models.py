@@ -80,7 +80,6 @@ class Match:
     fielding_extras: Dict[str, Any] = field(default_factory=dict)
     captain_id: str = ""
     wk_id: str = ""
-    # scorecard: Optional[Scorecard] = None
     created_date: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
 
