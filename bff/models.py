@@ -86,11 +86,11 @@ class Match:
 
     def to_dict(self) -> Dict:
         d = asdict(self)
-        # d["scorecard"] = self.scorecard.to_dict() if self.scorecard else None
-        d.pop("match_id", None)
+        # # d["scorecard"] = self.scorecard.to_dict() if self.scorecard else None
+        # d.pop("match_id", None)
         return d
 
     @classmethod
     def from_dict(cls, data: Dict) -> 'Match':
-        data["match_id"] = str(data.pop("_id", ""))
+        # data["match_id"] = str(data.pop("_id", ""))
         return cls(**data)
