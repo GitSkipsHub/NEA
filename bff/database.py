@@ -173,28 +173,7 @@ class MatchDB:
             match_data["username"] = username
             match_data["created_date"] = datetime.now()
             match_data["last_updated"] = datetime.now()
-
-            match = Match(
-                match_id="",
-                username=match_data["username"],
-                match_date=match_data["match_date"],
-                match_format=match_data["match_format"],
-                match_type=match_data["match_type"],
-                venue=match_data["venue"],
-                ground_name=match_data["ground_name"],
-                opposition=match_data["opposition"],
-                result=match_data["result"],
-                toss_result=match_data["toss_result"],
-                team_players=match_data.get("team_players", []),
-                batting_scorecard=match_data.get("batting_scorecard", []),
-                bowling_scorecard=match_data.get("bowling_scorecard", []),
-                fielding_scorecard=match_data.get("fielding_scorecard", []),
-                batting_summary=match_data.get("batting_summary", {}),
-                fielding_extras=match_data.get("fielding_extras", {}),
-                created_date=match_data["created_date"],
-                last_updated=match_data["last_updated"]
-            )
-
+            match = Match(match_id= "", **match_data)
             result = self.collection.insert_one(match.to_dict())
             return str(result.inserted_id)
         except Exception as e:
