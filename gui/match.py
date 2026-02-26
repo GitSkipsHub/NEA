@@ -260,7 +260,7 @@ class SelectTeamPage(BaseWindow):
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=10, pady=10)
 
-        save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command=self.save_team_and_continue)
+        save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command="")
         save_team_btn.pack(side="right", padx=20, pady=20)
 
         cancel_btn = tk.Button(footer, text="CANCEL", command=self.cancel_match, width=15)
@@ -273,7 +273,7 @@ class SelectTeamPage(BaseWindow):
         left_frame.pack(side="left", fill="y", padx=10, pady=10)
         left_frame.pack_propagate(False)
 
-        clear_btn = tk.Button(left_frame, text="CLEAR TEAM", width=15, command=self.clear_team)
+        clear_btn = tk.Button(left_frame, text="CLEAR TEAM", width=15, command="")
         clear_btn.pack(side="bottom", padx=20, pady=20)
 
         team_frame = tk.Frame(left_frame)
@@ -364,10 +364,10 @@ class SelectTeamPage(BaseWindow):
         self.players_tree.column("batting_style", width=100, anchor="center")
         self.players_tree.column("bowling_style", width=150, anchor="center")
 
-        add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command=self.add_player_to_team)
+        add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command="")
         add_player_btn.pack(side="right", padx=10, pady=10)
 
-        remove_player_btn = tk.Button(right_frame, text="REMOVE PLAYER", width=15, command=self.remove_player_from_team)
+        remove_player_btn = tk.Button(right_frame, text="REMOVE PLAYER", width=15, command="")
         remove_player_btn.pack(side="left", padx=10, pady=10)
 
         self.search_player()
@@ -408,149 +408,149 @@ class SelectTeamPage(BaseWindow):
                 )
             )
 
-    def refresh_leadership_dropdowns(self):
-        options = [] #builds fresh list of dropdown options from current team
-        self.name_to_player_id.clear() #empties the lookup dictionary
-
-        for player_id in self.team_tree.get_children(): #returns iids of team tree items
-            row = self.team_tree.item(player_id, "values") #returns row's stored values(position, player_name)
-            player_name = row[1] #assigns variable player_name to tuple index 1
-            display = f"{player_name}" #what the user sees in the dropdown
-            options.append(display)
-            self.name_to_player_id[display] = player_id #translates dropdown player_name to player_id
-
-        #updates combobox options
-        self.captain_dropdown["values"] = options
-        self.wk_dropdown["values"] = options
-
-        #clears invalid captains & wks that are no longer in selected team
-        if self.captain_var.get() not in options:
-            self.captain_var.set("")
-        if self.wk_var.get() not in options:
-            self.wk_var.set("")
-
-
-    def add_player_to_team(self):
-        selected = self.players_tree.selection() #returns iid of selected player
-        if not selected:
-            return
-
-        tree_iid = selected[0] #takes first selected row tree_iid
-        values = self.players_tree.item(tree_iid, "values") #return values stored in that row tree_iid
-
-        mongo_player_id = str(values[0])
-        player_name = values[1]
-        player_role = values[2]
-        batting_style = values[3]
-        bowling_style = values[4]
-
-        if mongo_player_id in self.team_tree.get_children():
-            messagebox.showerror("ERROR", "PLAYER ALREADY IN TEAM")
-            return
-
-        if len(self.team_tree.get_children()) >=11:
-            messagebox.showerror("ERROR", "TEAM IS FULL")
-            return
-
-        next_position = None
-        used_positions = set() #data structure where number can only appear once
-        for i in self.team_tree.get_children():
-            values = self.team_tree.item(i, "values")
-            pos = int(values[0])
-            used_positions.add(pos)
-
-        for position in range(1, 12):
-            if position not in used_positions:
-                next_position = position
-                break
-
-        self.team_tree.insert(
-            "",
-            "end",
-            iid = mongo_player_id,
-            values=(next_position, player_name, player_role, batting_style, bowling_style)
-        )
-
-        self.refresh_leadership_dropdowns()
-
-    def remove_player_from_team(self):
-        selected = self.team_tree.selection()
-        if not selected:
-            return
-        self.team_tree.delete(selected[0])
-        self.refresh_leadership_dropdowns()
-
-    def clear_team(self):
-        self.team_tree.delete(*self.team_tree.get_children())
-        self.captain_var.set("")
-        self.wk_var.set("")
-        self.refresh_leadership_dropdowns()
-
-    def save_team_and_continue(self):
-        team_ids = list(self.team_tree.get_children())
-
-        if len(team_ids) != 11:
-            messagebox.showerror("ERROR", "SELECT EXACTLY 11 PLAYERS")
-            return
-
-        captain_id = self.name_to_player_id.get(self.captain_var.get(), "")
-        wk_id= self.name_to_player_id.get(self.wk_var.get(), "")
-
-        if not captain_id:
-            messagebox.showerror("ERROR", "SELECT A CAPTAIN")
-            return
-
-        if not wk_id:
-            messagebox.showerror("ERROR", "SELECT A WICKET-KEEPER")
-            return
-
-        if not captain_id in team_ids:
-            messagebox.showerror("ERROR", "CAPTAIN MUST BE IN SELECTED TEAM")
-            return
-
-        if not wk_id in team_ids:
-            messagebox.showerror("ERROR", "WICKET-KEEPER MUST BE IN SELECTED TEAM")
-            return
-
-        team_players = []
-        for player_id in team_ids:
-            pos, player_name, player_role, batting_style, bowling_style = self.team_tree.item(player_id, "values")
-            team_players.append({
-                "player_id": player_id,
-                "position": int(pos),
-                "player_name": player_name,
-                "player_role": PlayerRole.get_key(player_role),
-                "batting_style": BattingStyle.get_key(batting_style),
-                "bowling_style": BowlingStyle.get_key(bowling_style)
-            })
-
-        team_players.sort(key=lambda p: p["position"])
-
-        #print(team_data)
-
-        match_doc = self.match_db.find_match(self.current_user, self.match_id)
-        if not match_doc:
-            messagebox.showerror("ERROR", "MATCH NOT FOUND")
-            return
-
-        match_obj = Match.from_dict(match_doc)
-
-        match_obj.team_players = team_players
-        match_obj.captain_id = captain_id
-        match_obj.wk_id = wk_id
-
-        match_dict = match_obj.to_dict()
-
-        updated_match = self.match_db.update_match(self.current_user, self.match_id, match_dict)
-
-        if not updated_match:
-            messagebox.showerror("ERROR", "TEAM SELECTION FAILED")
-
-        else:
-            messagebox.showinfo("SUCCESS", "TEAM SELECTION SUCCESSFUL")
-
-        self.window.withdraw()
-        MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, self.match_id)
+    # def refresh_leadership_dropdowns(self):
+    #     options = [] #builds fresh list of dropdown options from current team
+    #     self.name_to_player_id.clear() #empties the lookup dictionary
+    #
+    #     for player_id in self.team_tree.get_children(): #returns iids of team tree items
+    #         row = self.team_tree.item(player_id, "values") #returns row's stored values(position, player_name)
+    #         player_name = row[1] #assigns variable player_name to tuple index 1
+    #         display = f"{player_name}" #what the user sees in the dropdown
+    #         options.append(display)
+    #         self.name_to_player_id[display] = player_id #translates dropdown player_name to player_id
+    #
+    #     #updates combobox options
+    #     self.captain_dropdown["values"] = options
+    #     self.wk_dropdown["values"] = options
+    #
+    #     #clears invalid captains & wks that are no longer in selected team
+    #     if self.captain_var.get() not in options:
+    #         self.captain_var.set("")
+    #     if self.wk_var.get() not in options:
+    #         self.wk_var.set("")
+    #
+    #
+    # def add_player_to_team(self):
+    #     selected = self.players_tree.selection() #returns iid of selected player
+    #     if not selected:
+    #         return
+    #
+    #     tree_iid = selected[0] #takes first selected row tree_iid
+    #     values = self.players_tree.item(tree_iid, "values") #return values stored in that row tree_iid
+    #
+    #     mongo_player_id = str(values[0])
+    #     player_name = values[1]
+    #     player_role = values[2]
+    #     batting_style = values[3]
+    #     bowling_style = values[4]
+    #
+    #     if mongo_player_id in self.team_tree.get_children():
+    #         messagebox.showerror("ERROR", "PLAYER ALREADY IN TEAM")
+    #         return
+    #
+    #     if len(self.team_tree.get_children()) >=11:
+    #         messagebox.showerror("ERROR", "TEAM IS FULL")
+    #         return
+    #
+    #     next_position = None
+    #     used_positions = set() #data structure where number can only appear once
+    #     for i in self.team_tree.get_children():
+    #         values = self.team_tree.item(i, "values")
+    #         pos = int(values[0])
+    #         used_positions.add(pos)
+    #
+    #     for position in range(1, 12):
+    #         if position not in used_positions:
+    #             next_position = position
+    #             break
+    #
+    #     self.team_tree.insert(
+    #         "",
+    #         "end",
+    #         iid = mongo_player_id,
+    #         values=(next_position, player_name, player_role, batting_style, bowling_style)
+    #     )
+    #
+    #     self.refresh_leadership_dropdowns()
+    #
+    # def remove_player_from_team(self):
+    #     selected = self.team_tree.selection()
+    #     if not selected:
+    #         return
+    #     self.team_tree.delete(selected[0])
+    #     self.refresh_leadership_dropdowns()
+    #
+    # def clear_team(self):
+    #     self.team_tree.delete(*self.team_tree.get_children())
+    #     self.captain_var.set("")
+    #     self.wk_var.set("")
+    #     self.refresh_leadership_dropdowns()
+    #
+    # def save_team_and_continue(self):
+    #     team_ids = list(self.team_tree.get_children())
+    #
+    #     if len(team_ids) != 11:
+    #         messagebox.showerror("ERROR", "SELECT EXACTLY 11 PLAYERS")
+    #         return
+    #
+    #     captain_id = self.name_to_player_id.get(self.captain_var.get(), "")
+    #     wk_id= self.name_to_player_id.get(self.wk_var.get(), "")
+    #
+    #     if not captain_id:
+    #         messagebox.showerror("ERROR", "SELECT A CAPTAIN")
+    #         return
+    #
+    #     if not wk_id:
+    #         messagebox.showerror("ERROR", "SELECT A WICKET-KEEPER")
+    #         return
+    #
+    #     if not captain_id in team_ids:
+    #         messagebox.showerror("ERROR", "CAPTAIN MUST BE IN SELECTED TEAM")
+    #         return
+    #
+    #     if not wk_id in team_ids:
+    #         messagebox.showerror("ERROR", "WICKET-KEEPER MUST BE IN SELECTED TEAM")
+    #         return
+    #
+    #     team_players = []
+    #     for player_id in team_ids:
+    #         pos, player_name, player_role, batting_style, bowling_style = self.team_tree.item(player_id, "values")
+    #         team_players.append({
+    #             "player_id": player_id,
+    #             "position": int(pos),
+    #             "player_name": player_name,
+    #             "player_role": PlayerRole.get_key(player_role),
+    #             "batting_style": BattingStyle.get_key(batting_style),
+    #             "bowling_style": BowlingStyle.get_key(bowling_style)
+    #         })
+    #
+    #     team_players.sort(key=lambda p: p["position"])
+    #
+    #     #print(team_data)
+    #
+    #     match_doc = self.match_db.find_match(self.current_user, self.match_id)
+    #     if not match_doc:
+    #         messagebox.showerror("ERROR", "MATCH NOT FOUND")
+    #         return
+    #
+    #     match_obj = Match.from_dict(match_doc)
+    #
+    #     match_obj.team_players = team_players
+    #     match_obj.captain_id = captain_id
+    #     match_obj.wk_id = wk_id
+    #
+    #     match_dict = match_obj.to_dict()
+    #
+    #     updated_match = self.match_db.update_match(self.current_user, self.match_id, match_dict)
+    #
+    #     if not updated_match:
+    #         messagebox.showerror("ERROR", "TEAM SELECTION FAILED")
+    #
+    #     else:
+    #         messagebox.showinfo("SUCCESS", "TEAM SELECTION SUCCESSFUL")
+    #
+    #     self.window.withdraw()
+    #     MatchScorecard(tk.Toplevel(self.window), self.window, self.current_user, self.match_id)
 
     def go_back(self):
         self.window.destroy()

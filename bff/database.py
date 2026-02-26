@@ -169,16 +169,6 @@ class MatchDB:
             print(f"Error creating match {e}")
             return None
 
-    def delete_match(self, username: str, match_id: str) -> bool:
-        try:
-            result = self.collection.delete_one(
-                {"username": username, "_id": ObjectId(match_id)}
-            )
-            return result.deleted_count == 1
-        except Exception as e:
-            print(f"Error deleting match {e}")
-            return False
-
     def update_match(self, username: str, match_id, update_data):
         try:
             update_data["last_updated"] = datetime.now()
@@ -221,6 +211,15 @@ class MatchDB:
     def get_all_matches(self, username:str) -> List[Dict]:
         return list(self.collection.find({"username": username}))
 
+    def delete_match(self, username: str, match_id: str) -> bool:
+        try:
+            result = self.collection.delete_one(
+                {"username": username, "_id": ObjectId(match_id)}
+            )
+            return result.deleted_count == 1
+        except Exception as e:
+            print(f"Error deleting match {e}")
+            return False
 
 class TeamGeneratorDB:
     def __init__(self):
