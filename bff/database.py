@@ -98,18 +98,7 @@ class PlayerDB:
             player_data["last_updated"] = datetime.now()
 
             #Manually map each field into the Player constructor
-            player = Player(
-                player_id="",
-                username=player_data["username"],
-                first_name=player_data["first_name"],
-                last_name=player_data["last_name"],
-                date_of_birth=player_data["date_of_birth"],
-                player_role=player_data["player_role"],
-                batting_style=player_data["batting_style"],
-                bowling_style=player_data["bowling_style"],
-                created_date=player_data["created_date"],
-                last_updated=player_data["last_updated"]
-            )
+            player = Player(player_id="", **player_data)
 
             result = self.collection.insert_one(player.to_dict()) #Insert the player dictionary into the MongoDB collection
             return result.inserted_id is not None # inserted_id will only exist if the document was successfully created
@@ -180,6 +169,16 @@ class MatchDB:
             print(f"Error creating match {e}")
             return None
 
+    def delete_match(self, username: str, match_id: str) -> bool:
+        try:
+            result = self.collection.delete_one(
+                {"username": username, "_id": ObjectId(match_id)}
+            )
+            return result.deleted_count == 1
+        except Exception as e:
+            print(f"Error deleting match {e}")
+            return False
+
     def update_match(self, username: str, match_id, update_data):
         try:
             update_data["last_updated"] = datetime.now()
@@ -222,15 +221,6 @@ class MatchDB:
     def get_all_matches(self, username:str) -> List[Dict]:
         return list(self.collection.find({"username": username}))
 
-    def delete_match(self, username: str, match_id: str) -> bool:
-        try:
-            result = self.collection.delete_one(
-                {"username": username, "_id": ObjectId(match_id)}
-            )
-            return result.deleted_count == 1
-        except Exception as e:
-            print(f"Error deleting match {e}")
-            return False
 
 class TeamGeneratorDB:
     def __init__(self):
