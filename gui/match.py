@@ -413,6 +413,7 @@ class SelectTeamPage(BaseWindow):
         #Get selected row from available players table
         selected = self.players_tree.selection()
         if not selected:
+            messagebox.showerror("ERROR", "SELECT PLAYER FIRST")
             return
 
         #Take the first selected row
