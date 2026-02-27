@@ -440,7 +440,7 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.insert(
             "",
             "end",
-            values=("?", player_name, player_role, batting_style, bowling_style)
+            values=("POS", player_name, player_role, batting_style, bowling_style)
         )
         self.refresh_leadership_dropdowns()
 
