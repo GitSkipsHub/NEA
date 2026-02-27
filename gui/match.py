@@ -1031,7 +1031,7 @@ class MatchScorecard(BaseWindow):
 
         match_obj = Match.from_dict(match_doc)
 
-        match_obj.xbatting_scorecard = batting_data
+        match_obj.batting_scorecard = batting_data
         match_obj.batting_summary = batting_summary
         match_obj.bowling_scorecard = bowling_data
         match_obj.fielding_scorecard = fielding_data
