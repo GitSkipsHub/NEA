@@ -397,8 +397,8 @@ class SelectTeamPage(BaseWindow):
             player_obj = Player.from_dict(player)
             self.players_tree.insert(
                 "", #"" = insert at root level, not nested
-                "end",
-                iid= player_obj.player_id,# adds row to bottom of the table
+                "end",# adds row to bottom of the table
+                iid= player_obj.player_id, #assigns tree_id as player_id
                 values=(
                     player_obj.player_id, # Mongo's primary key ObjectId enters GUI and replaces treeview_id
                     player_obj.first_name + " " + player_obj.last_name,
@@ -440,6 +440,7 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.insert(
             "",
             "end",
+            iid= values[0],
             values=("Position Number", player_name, player_role, batting_style, bowling_style)
         )
         #self.refresh_leadership_dropdowns()
