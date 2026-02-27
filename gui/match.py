@@ -432,7 +432,7 @@ class SelectTeamPage(BaseWindow):
             return
 
         #Prevents more than 11 players in team
-        if len(self.team_tree.get_children()) > 11:
+        if len(self.team_tree.get_children()) >= 11:
             messagebox.showerror("ERROR", "TEAM IS FULL")
             return
 
@@ -442,20 +442,20 @@ class SelectTeamPage(BaseWindow):
             "end",
             values=("Position Number", player_name, player_role, batting_style, bowling_style)
         )
-        self.refresh_leadership_dropdowns()
+        #self.refresh_leadership_dropdowns()
 
-    def remove_player_from_team(self):
-        selected = self.team_tree.selection()
-        if not selected:
-            return
-        self.team_tree.delete(selected[0])
-        self.refresh_leadership_dropdowns()
-
-    def clear_team(self):
-        self.team_tree.delete(*self.team_tree.get_children())
-        self.captain_var.set("")
-        self.wk_var.set("")
-        self.refresh_leadership_dropdowns()
+    # def remove_player_from_team(self):
+    #     selected = self.team_tree.selection()
+    #     if not selected:
+    #         return
+    #     self.team_tree.delete(selected[0])
+    #     self.refresh_leadership_dropdowns()
+    #
+    # def clear_team(self):
+    #     self.team_tree.delete(*self.team_tree.get_children())
+    #     self.captain_var.set("")
+    #     self.wk_var.set("")
+    #     self.refresh_leadership_dropdowns()
 
     def save_team_and_continue(self):
         team_ids = list(self.team_tree.get_children())
