@@ -436,23 +436,7 @@ class SelectTeamPage(BaseWindow):
             messagebox.showerror("ERROR", "TEAM IS FULL")
             return
 
-        used_positions = set()  #data structure where number can only appear once
 
-        #Loop through every player currently in the team table
-        for i in self.team_tree.get_children():
-            #Get the values stored in that row (position, name, role, etc.)
-            row = self.team_tree.item(i, "values")
-            #Convert the position value (which is stored as a string in the table) into an integer so it can be compared numerically later
-            pos = int(row[1])
-            #Add the position to the set so we know it is already used
-            used_positions.add(pos)
-
-        # Variable to store the next available position number
-        next_position = None
-        for position in range(1, 12):
-            if position not in used_positions:
-                next_position = position
-                break
 
         #Basic insert values into tree
         self.team_tree.insert(
@@ -461,14 +445,13 @@ class SelectTeamPage(BaseWindow):
             iid= values[0], # #assigns tree_id as player_id
             values=(next_position, player_name, player_role, batting_style, bowling_style)
         )
-        #self.refresh_leadership_dropdowns()
 
     def remove_player_from_team(self):
         selected = self.team_tree.selection()
         if not selected:
             return
         self.team_tree.delete(selected[0])
-        self.refresh_leadership_dropdowns()
+
 
     # def clear_team(self):
     #     self.team_tree.delete(*self.team_tree.get_children())
