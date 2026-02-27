@@ -98,7 +98,7 @@ class RegistrationWindow(BaseWindow):
                          " - Have at least one uppercase letter\n\n"
                          " - Have at least one lowercase letter\n\n"
                          " - Have at least one special character ($, @, #, %)\n\n"
-                         " - Be between 6 and 20 characters in length")
+                         " - Be at least 8 characters long")
             return
 
         if not confirm_password:
