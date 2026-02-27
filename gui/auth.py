@@ -1,3 +1,4 @@
+import re as regex
 import tkinter as tk
 from tkinter import messagebox
 from gui.baseWindow import BaseWindow
@@ -81,8 +82,19 @@ class RegistrationWindow(BaseWindow):
             messagebox.showerror("ERROR", "USERNAME MUST BE AT LEAST 2 CHARACTERS LONG")
             return
 
-        if len(password) < 8:
-            messagebox.showerror("ERROR", "PASSWORD MUST BE AT LEAST 8 CHARACTERS LONG")
+        conditions = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+        pattern = regex.compile(conditions)
+
+        valid_password = regex.search(pattern, password)
+
+        if not valid_password:
+            messagebox.showerror(
+                "ERROR", "PASSWORD NOT STRONG ENOUGH\n\n PASSWORD CONDITIONS:\n"
+                         " - Have at least one number \n\n"
+                         " - Have at least one uppercase letter\n\n"
+                         " - Have at least one lowercase letter\n\n"
+                         " - Have at least one special character ($, @, #, %)\n\n"
+                         " - Be between 6 and 20 characters in length")
             return
 
         if not confirm_password:
