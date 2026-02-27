@@ -340,7 +340,6 @@ class SelectTeamPage(BaseWindow):
 
         y_scrollbar = ttk.Scrollbar(table_frame, orient="vertical")
         y_scrollbar.pack(side="right", fill="y")
-
         x_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal")
         x_scrollbar.pack(side="bottom", fill="x")
 
