@@ -366,7 +366,7 @@ class SelectTeamPage(BaseWindow):
         add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command=self.add_player_to_team)
         add_player_btn.pack(side="right", padx=10, pady=10)
 
-        remove_player_btn = tk.Button(right_frame, text="REMOVE PLAYER", width=15, command="")
+        remove_player_btn = tk.Button(right_frame, text="REMOVE PLAYER", width=15, command=self.remove_player_from_team)
         remove_player_btn.pack(side="left", padx=10, pady=10)
 
         self.search_player()
@@ -443,7 +443,7 @@ class SelectTeamPage(BaseWindow):
             #Get the values stored in that row (position, name, role, etc.)
             row = self.team_tree.item(i, "values")
             #Convert the position value (which is stored as a string in the table) into an integer so it can be compared numerically later
-            pos = int(row[1])
+            pos = int(row[0])
             #Add the position to the set so we know it is already used
             used_positions.add(pos)
 
@@ -473,7 +473,7 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.delete(selected[0]) #selected[0] is the iid (unique row ID) of that player
 
 
-        self.refresh_leadership_dropdowns()
+        #self.refresh_leadership_dropdowns()
 
     # def clear_team(self):
     #     self.team_tree.delete(*self.team_tree.get_children())
