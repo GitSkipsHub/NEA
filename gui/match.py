@@ -408,38 +408,17 @@ class SelectTeamPage(BaseWindow):
                 )
             )
 
-    def refresh_leadership_dropdowns(self):
-        options = [] #builds fresh list of dropdown options from current team
-        self.name_to_player_id.clear() #empties the lookup dictionary
-
-        for player_id in self.team_tree.get_children(): #returns iids of team tree items
-            row = self.team_tree.item(player_id, "values") #returns row's stored values(position, player_name)
-            player_name = row[1] #assigns variable player_name to tuple index 1
-            display = f"{player_name}" #what the user sees in the dropdown
-            options.append(display)
-            self.name_to_player_id[display] = player_id #translates dropdown player_name to player_id
-
-        #updates combobox options
-        self.captain_dropdown["values"] = options
-        self.wk_dropdown["values"] = options
-
-        #clears invalid captains & wks that are no longer in selected team
-        if self.captain_var.get() not in options:
-            self.captain_var.set("")
-        if self.wk_var.get() not in options:
-            self.wk_var.set("")
-
 
     def add_player_to_team(self):
-        # Get selected row from available players table
+        #Get selected row from available players table
         selected = self.players_tree.selection()
         if not selected:
             return
 
-        # Take the first selected row
+        #Take the first selected row
         tree_iid = selected[0]
 
-        # Get values stored in that row
+        #Get values stored in that row
         values = self.players_tree.item(tree_iid, "values")
 
         player_name = values[1]
