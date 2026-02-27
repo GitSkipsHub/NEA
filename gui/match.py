@@ -397,7 +397,8 @@ class SelectTeamPage(BaseWindow):
             player_obj = Player.from_dict(player)
             self.players_tree.insert(
                 "", #"" = insert at root level, not nested
-                "end", # adds row to bottom of the table
+                "end",
+                iid= player_obj.player_id,# adds row to bottom of the table
                 values=(
                     player_obj.player_id, # Mongo's primary key ObjectId enters GUI and replaces treeview_id
                     player_obj.first_name + " " + player_obj.last_name,
@@ -447,7 +448,7 @@ class SelectTeamPage(BaseWindow):
         bowling_style = values[4]
 
         #Prevents duplicate players from being selected in team
-        if tree_iid in self.players_tree.get_children():
+        if tree_iid in self.team_tree.get_children():
             messagebox.showerror("ERROR", "PLAYER ALREADY IN TEAM")
             return
 
