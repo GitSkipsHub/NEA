@@ -418,7 +418,6 @@ class SelectTeamPage(BaseWindow):
 
         #Take the first selected row
         tree_iid = selected[0]
-
         #Get values stored in that row
         values = self.players_tree.item(tree_iid, "values")
 
