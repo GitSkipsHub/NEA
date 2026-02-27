@@ -363,7 +363,7 @@ class SelectTeamPage(BaseWindow):
         self.players_tree.column("batting_style", width=100, anchor="center")
         self.players_tree.column("bowling_style", width=150, anchor="center")
 
-        add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command="")
+        add_player_btn = tk.Button(right_frame, text="ADD PLAYER", width=15, command=self.add_player_to_team)
         add_player_btn.pack(side="right", padx=10, pady=10)
 
         remove_player_btn = tk.Button(right_frame, text="REMOVE PLAYER", width=15, command="")
@@ -430,46 +430,38 @@ class SelectTeamPage(BaseWindow):
 
 
     def add_player_to_team(self):
-        selected = self.players_tree.selection() #returns iid of selected player
+        # Get selected row from available players table
+        selected = self.players_tree.selection()
         if not selected:
             return
 
-        tree_iid = selected[0] #takes first selected row tree_iid
-        values = self.players_tree.item(tree_iid, "values") #return values stored in that row tree_iid
+        # Take the first selected row
+        tree_iid = selected[0]
 
-        mongo_player_id = str(values[0])
+        # Get values stored in that row
+        values = self.players_tree.item(tree_iid, "values")
+
         player_name = values[1]
         player_role = values[2]
         batting_style = values[3]
         bowling_style = values[4]
 
-        if mongo_player_id in self.team_tree.get_children():
+        #Prevents duplicate players from being selected in team
+        if tree_iid in self.players_tree.get_children():
             messagebox.showerror("ERROR", "PLAYER ALREADY IN TEAM")
             return
 
-        if len(self.team_tree.get_children()) >=11:
+        #Prevents more than 11 players in team
+        if len(self.team_tree.get_children()) > 11:
             messagebox.showerror("ERROR", "TEAM IS FULL")
             return
 
-        next_position = None
-        used_positions = set() #data structure where number can only appear once
-        for i in self.team_tree.get_children():
-            values = self.team_tree.item(i, "values")
-            pos = int(values[0])
-            used_positions.add(pos)
-
-        for position in range(1, 12):
-            if position not in used_positions:
-                next_position = position
-                break
-
+        #Basic insert values into tree
         self.team_tree.insert(
             "",
             "end",
-            iid = mongo_player_id,
-            values=(next_position, player_name, player_role, batting_style, bowling_style)
+            values=("?", player_name, player_role, batting_style, bowling_style)
         )
-
         self.refresh_leadership_dropdowns()
 
     def remove_player_from_team(self):

@@ -43,22 +43,6 @@ class BowlingStyle(BaseEnum):
     NONE = "NONE"
 
 
-#PERFORMANCE METRIC ENUMS
-class BatterMetric(BaseEnum):
-    RUNS = "RUNS"
-    BAT_AVG = "BATTING AVERAGE"
-    BAT_SR = "STRIKE RATE"
-
-class BowlerMetric(BaseEnum):
-    WICKETS = "WICKETS"
-    BOWL_AVG = "BOWLING AVERAGE"
-    BOWL_SR = "STRIKE RATE"
-# ALL ROUNDER RE-USES BOTH BATTER & BOWLER METRICS FOR ITS ENUMS
-
-class WicketKeeperMetric(BaseEnum):
-    DISMISSALS = "DISMISSALS"
-    #BATTING AVERAGE FROM BATTING METRIC RE-USED
-
 class TimePeriod(BaseEnum):
     LM = "LAST MONTH"
     L3M = "LAST 3 MONTHS"

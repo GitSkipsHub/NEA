@@ -5,10 +5,10 @@ from gui.match import CreateMatchDetailsPage, SelectTeamPage, MatchScorecard, Ma
 from gui.start import StartWindow
 
 root=tk.Tk()
-StartWindow(root)
+#StartWindow(root)
 #CreateMatchDetailsPage(root, MatchManagementPage, "kaushal")
 #MatchScorecard(root, SelectTeamPage, "kaushal", match_id="", selected_team="")
-#SelectTeamPage(root, CreateMatchDetailsPage, "kaushal", created_match_id="")
+SelectTeamPage(root, CreateMatchDetailsPage, "kaushal", created_match_id="")
 
 # dummy_team = {
 #     "team_players": [
