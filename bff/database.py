@@ -171,15 +171,20 @@ class MatchDB:
 
     def update_match(self, username: str, match_id, update_data):
         try:
+            #Update timestamp whenever a match is modified
             update_data["last_updated"] = datetime.now()
+            #Update the match document using username + match_id
             result = self.collection.update_one(
                 {"username": username, "_id": ObjectId(match_id)},
-                {"$set": update_data}
+                {"$set": update_data}  #Only update specified fields
             )
+            #Return True if exactly one document was updated
             return result.modified_count == 1
         except InvalidId:
+            #Return False if match_id is not a valid ObjectId
             return False
         except PyMongoError as e:
+            #Catch other database-related errors
             print(f"Database error as {e}")
             return False
 
@@ -191,10 +196,12 @@ class MatchDB:
 
     def find_match(self, username: str, match_id: str):
         try:
+            #Find a single match document using username + match_id
             return self.collection.find_one(
                 {"username": username, "_id": ObjectId(match_id)}
             )
         except InvalidId:
+            #Return None if match_id format is invalid
             return None
 
     def get_all_matches(self, username:str) -> List[Dict]:
@@ -202,11 +209,14 @@ class MatchDB:
 
     def delete_match(self, username: str, match_id: str) -> bool:
         try:
+            #Delete match document using username + match_id
             result = self.collection.delete_one(
                 {"username": username, "_id": ObjectId(match_id)}
             )
+            #Return True if exactly one document was deleted
             return result.deleted_count == 1
         except Exception as e:
+            #Catch unexpected errors during deletion
             print(f"Error deleting match {e}")
             return False
 
