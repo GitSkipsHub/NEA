@@ -189,9 +189,12 @@ class MatchDB:
             return False
 
     def search_match(self, username: str, filters: Dict[str, Any] ) -> List[Dict]:
+        #Base query ensures user only sees their own matches
         query: Dict[str, Any] = {"username": username}
+        #If opposition filter is provided, apply case-insensitive partial search
         if filters.get("opposition"):
             query["opposition"] = {"$regex" : filters["opposition"],"$options": "i"}
+        #Return matching documents sorted by most recent match_date first
         return list(self.collection.find(query).sort("match_date", -1))
 
     def find_match(self, username: str, match_id: str):
