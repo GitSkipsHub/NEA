@@ -410,23 +410,16 @@ class SelectTeamPage(BaseWindow):
 
     def refresh_leadership_dropdowns(self):
         options = []  #List for dropdown names
-        self.name_to_player_id.clear() #Clears dictionary before mapping
         #Loop through players in team table
         for player_id in self.team_tree.get_children():
             row = self.team_tree.item(player_id, "values")
             player_name = row[1]
-            display = f"{player_name}"
-            options.append(display)
+            options.append(player_name)
             #Link the name shown in the dropdown to the player's real ID and stores in dictionary
-            self.name_to_player_id[display] = player_id
+            self.name_to_player_id[player_name] = player_id
         #Update dropdown options
         self.captain_dropdown["values"] = options
         self.wk_dropdown["values"] = options
-        #Clear invalid selections
-        if self.captain_var.get() not in options:
-            self.captain_var.set("")
-        if self.wk_var.get() not in options:
-            self.wk_var.set("")
 
 
     def add_player_to_team(self):
