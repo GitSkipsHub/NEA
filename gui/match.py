@@ -1266,7 +1266,7 @@ class UpdateMatchPage(BaseWindow):
         #Clear form as well (since no selection)
         self._clear_form()
 
-    def select_on_match(self):
+    def select_on_match(self, event=None):
         #Get selected row from the table
         selected = self.tree.selection()
         if not selected:
@@ -1291,11 +1291,11 @@ class UpdateMatchPage(BaseWindow):
         if not self.selected_match_id:
             messagebox.showerror("ERROR", "SELECT MATCH FROM THE TABLE FIRST")
             return
-
         #Get updated values from form inputs
         match_date = self.date_edit.get().strip()
         opposition = self.opp_edit.get().strip()
         ground_name = self.ground_edit.get().strip()
+
         match_type_value = self.match_type_edit.get().strip()
         match_format_value = self.match_format_edit.get().strip()
         venue_value = self.venue_edit.get().strip()
@@ -1306,6 +1306,7 @@ class UpdateMatchPage(BaseWindow):
                 not match_type_value or not match_format_value or not venue_value or not result_value):
             messagebox.showerror("ERROR", "FILL IN ALL REQUIRED FIELDS")
             return
+
         #Validate date format
         try:
             datetime.strptime(match_date, "%Y-%m-%d")
@@ -1329,6 +1330,7 @@ class UpdateMatchPage(BaseWindow):
             return
 
         messagebox.showinfo("SUCCESS", "MATCH UPDATED SUCCESSFULLY")
+
         #Refresh table and clear selection
         self.search_match()
 
