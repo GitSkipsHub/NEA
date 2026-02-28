@@ -674,7 +674,7 @@ class MatchScorecard(BaseWindow):
             #Store all input fields for one player in a dictionary
             #Each value is stored as a StringVar so it can be read later when saving
             row = {
-                "player_id": tk.StringVar(value=str(player["_id"])),
+                "player_id": tk.StringVar(value=str(player["player_id"])),
                 "position": tk.StringVar(value=str(player["position"])),
                 "player_name": tk.StringVar(value=str(player["player_name"])),
                 "player_role": tk.StringVar(value=str(player.get("player_role", ""))),
