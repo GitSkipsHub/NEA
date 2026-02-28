@@ -913,45 +913,54 @@ class MatchScorecard(BaseWindow):
 
     def save_scorecards(self):
 
-        batting_data = []
+        batting_data = [] #List to store all batting rows
+        #Read subtotal, extras and total from entry fields
         try:
             subtotal = self.subtotal_var.get()
             extras = self.extras_var.get()
             total = self.total_var.get()
 
         except ValueError:
+            #Show error if conversion fails
             messagebox.showerror("ERROR", "VALUES MUST BE INTEGERS")
             return
 
+        #Check if any total values are negative
         if min(subtotal, extras, total)< 0:
             messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
             return
 
+        #Check if total = subtotal + extras
         if subtotal + extras != total:
             messagebox.showerror("ERROR", "TOTAL MUST EQUAL SUBTOTAL + EXTRAS.")
             return
 
+        #Store summary values for the batting scorecard
         batting_summary = {
                 "subtotal": subtotal,
                 "extras": extras,
                 "total": total
         }
 
+        #Loop through each player's batting row
         for row in self.batting_entries:
             try:
-                runs_scored = int(row["runs_scored"].get())
+                runs_scored = row["runs_scored"].get()
                 balls = row["balls"].get()
                 fours = row["fours"].get()
                 sixes = row["sixes"].get()
 
             except ValueError:
+                #Show error if conversion fails
                 messagebox.showerror("ERROR", "STATS MUST BE INTEGERS")
                 return
 
+            #Check for negative values
             if min(runs_scored, balls, fours, sixes)<0:
                 messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
                 return
 
+            #Append this player's batting data into list
             batting_data.append({
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
@@ -1051,20 +1060,20 @@ class MatchScorecard(BaseWindow):
         #         "stumpings": stumpings
         #     })
         #
-        # match_doc = self.match_db.find_match(self.current_user, self.match_id)
-        # if not match_doc:
-        #     messagebox.showerror("ERROR", "MATCH NOT FOUND")
-        #     return
-        #
-        # match_obj = Match.from_dict(match_doc)
-        #
-        # match_obj.batting_scorecard = batting_data
-        # match_obj.batting_summary = batting_summary
+        match_doc = self.match_db.find_match(self.current_user, self.match_id)
+        if not match_doc:
+            messagebox.showerror("ERROR", "MATCH NOT FOUND")
+            return
+
+        match_obj = Match.from_dict(match_doc)
+
+        match_obj.batting_scorecard = batting_data
+        match_obj.batting_summary = batting_summary
         # match_obj.bowling_scorecard = bowling_data
         # match_obj.fielding_scorecard = fielding_data
         # match_obj.fielding_extras = fielding_extras
-        #
-        # match_dict = match_obj.to_dict()
+
+        match_dict = match_obj.to_dict()
         #
         # scorecard_data = self.match_db.update_match(self.current_user, self.match_id, match_dict)
         #
