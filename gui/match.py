@@ -1122,7 +1122,7 @@ class UpdateMatchPage(BaseWindow):
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=30, pady=5)
 
-        match_columns = ("match_id", "match_date", "opposition", "venue", "match_type", "match_format", "result")
+        match_columns = ("match_id", "match_date", "opposition", "venue", "ground_name", "match_type", "match_format", "result")
 
         y_scrollbar = ttk.Scrollbar(table_frame, orient="vertical")
         y_scrollbar.pack(side="right", fill="y")
@@ -1145,6 +1145,7 @@ class UpdateMatchPage(BaseWindow):
         self.tree.heading("match_date", text="DATE")
         self.tree.heading("opposition", text="OPPOSITION")
         self.tree.heading("venue", text="VENUE")
+        self.tree.heading("ground_name", text="GROUND NAME")
         self.tree.heading("match_type", text="TYPE")
         self.tree.heading("match_format", text="FORMAT")
         self.tree.heading("result", text="RESULT")
@@ -1153,6 +1154,7 @@ class UpdateMatchPage(BaseWindow):
         self.tree.column("match_date", width=110, anchor="center")
         self.tree.column("opposition", width=200, anchor="center")
         self.tree.column("venue", width=110, anchor="center")
+        self.tree.column("ground_name", width=200, anchor="center")
         self.tree.column("match_type", width=140, anchor="center")
         self.tree.column("match_format", width=140, anchor="center")
         self.tree.column("result", width=140, anchor="center")
@@ -1225,7 +1227,6 @@ class UpdateMatchPage(BaseWindow):
             row=6
         )
 
-        # initial load
         self.search_match()
 
     def clear_tree(self):
@@ -1233,14 +1234,16 @@ class UpdateMatchPage(BaseWindow):
             self.tree.delete(item)
 
     def search_match(self):
+        #Clear existing rows before reloading results
         self.clear_tree()
         self.selected_match_id = None
-
+        #Get search text from input box
         term = self.search_var.get().strip()
+        #If user entered opposition, apply it as filter
         filters = {}
         if term:
             filters["opposition"] = term
-
+        #Retrieve matching documents from database
         matches = self.match_db.search_match(self.current_user, filters)
 
         for m in matches:
@@ -1253,6 +1256,7 @@ class UpdateMatchPage(BaseWindow):
                     match_obj.match_date,
                     match_obj.opposition,
                     Venue.get_value(match_obj.venue),
+                    match_obj.ground_name,
                     MatchType.get_value(match_obj.match_type),
                     MatchFormat.get_value(match_obj.match_format),
                     Result.get_value(match_obj.result),
@@ -1263,33 +1267,31 @@ class UpdateMatchPage(BaseWindow):
         self._clear_form()
 
     def select_on_match(self, event=None):
+        #Get selected row from the table
         selected = self.tree.selection()
         if not selected:
             self.selected_match_id = None
             return
-
+        #Extract values from selected row
         values = self.tree.item(selected[0], "values")
-        #Values order matches insert() above
+
+        #Populate form fields using table values
         self.selected_match_id = values[0]
         self.date_edit.set(values[1])
         self.opp_edit.set(values[2])
         self.venue_edit.set(values[3])
-        self.match_type_edit.set(values[4])
-        self.match_format_edit.set(values[5])
-        self.result_edit.set(values[6])
+        self.ground_edit.set(values[4])
+        self.match_type_edit.set(values[5])
+        self.match_format_edit.set(values[6])
+        self.result_edit.set(values[7])
 
-        # ground_name is NOT in the table, so you must fetch the document to populate it
-        doc = self.match_db.find_match(self.current_user, self.selected_match_id)
-        if doc:
-            self.ground_edit.set(doc.get("ground_name", ""))
-        else:
-            self.ground_edit.set("")
 
     def update_match(self):
+        #Ensure a match has been selected from the table
         if not self.selected_match_id:
             messagebox.showerror("ERROR", "SELECT MATCH FROM THE TABLE FIRST")
             return
-
+        #Get updated values from form inputs
         match_date = self.date_edit.get().strip()
         opposition = self.opp_edit.get().strip()
         ground_name = self.ground_edit.get().strip()
@@ -1299,17 +1301,19 @@ class UpdateMatchPage(BaseWindow):
         venue_value = self.venue_edit.get().strip()
         result_value = self.result_edit.get().strip()
 
+        #Validate that all required fields are filled
         if (not match_date or not opposition or not ground_name or
                 not match_type_value or not match_format_value or not venue_value or not result_value):
             messagebox.showerror("ERROR", "FILL IN ALL REQUIRED FIELDS")
             return
 
+        #Validate date format
         try:
             datetime.strptime(match_date, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("ERROR", "DATE MUST BE YYYY-MM-DD (e.g., 2026-02-28)")
             return
-
+        #Prepare dictionary of updated fields
         update_data = {
             "match_date": match_date,
             "opposition": opposition,
@@ -1319,7 +1323,7 @@ class UpdateMatchPage(BaseWindow):
             "venue": Venue.get_key(venue_value),
             "result": Result.get_key(result_value),
         }
-
+        #Send updated data to database
         ok = self.match_db.update_match(self.current_user, self.selected_match_id, update_data)
         if not ok:
             messagebox.showerror("ERROR", "MATCH UPDATE FAILED")
@@ -1327,7 +1331,7 @@ class UpdateMatchPage(BaseWindow):
 
         messagebox.showinfo("SUCCESS", "MATCH UPDATED SUCCESSFULLY")
 
-        #refresh table + reset selection + clear form
+        #Refresh table and clear selection
         self.search_match()
 
     def _clear_form(self):
