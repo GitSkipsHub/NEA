@@ -185,19 +185,8 @@ class MatchDB:
 
     def search_match(self, username: str, filters: Dict[str, Any] ) -> List[Dict]:
         query: Dict[str, Any] = {"username": username}
-        # if filters.get("match_date"):
-        #     query["match_date"] = filters["match_date"]
-        # if filters.get("venue"):
-        #     query["venue"] = filters["venue"]
-        # if filters.get("result"):
-        #     query["result"] = filters["result"]
-        # if filters.get("match_type"):
-        #     query["match_type"] = filters["match_type"]
-        # if filters.get("match_format"):
-        #     query["match_format"] = filters["match_format"]
         if filters.get("opposition"):
             query["opposition"] = {"$regex" : filters["opposition"],"$options": "i"}
-
         return list(self.collection.find(query).sort("match_date", -1))
 
     def find_match(self, username: str, match_id: str):
