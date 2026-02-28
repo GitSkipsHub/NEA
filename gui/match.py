@@ -260,7 +260,7 @@ class SelectTeamPage(BaseWindow):
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=10, pady=10)
 
-        save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command="")
+        save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command=self.save_team_and_continue)
         save_team_btn.pack(side="right", padx=20, pady=20)
 
         cancel_btn = tk.Button(footer, text="CANCEL", command=self.cancel_match, width=15)
@@ -428,7 +428,6 @@ class SelectTeamPage(BaseWindow):
         if self.wk_var.get() not in options:
             self.wk_var.set("")
 
-        print(self.name_to_player_id)
 
     def add_player_to_team(self):
         #Get selected row from available players table
@@ -544,7 +543,8 @@ class SelectTeamPage(BaseWindow):
 
         #Sort players by batting position
         team_players.sort(key=lambda p: p["position"])
-        print(team_players)
+        for player in team_players:
+            print(player)
         #Retrieve match document from database
         match_doc = self.match_db.find_match(self.current_user, self.match_id)
         if not match_doc:
@@ -630,22 +630,26 @@ class MatchScorecard(BaseWindow):
 
         self.create_header(content_frame,  "MATCH SCORECARD")
 
+        #Fetch the match document from the database using current user and match_id
         doc = self.match_db.find_match(self.current_user, self.match_id)
         if not doc:
             messagebox.showerror("ERROR", "MATCH NOT FOUND")
             self.go_back()
             return
 
+        #Get the selected team players, captain_id and wk_id from the match document
         team_players = doc.get("team_players", [])
         captain_id = doc.get("captain_id", "")
         wk_id = doc.get("wk_id", "")
+        #Clear previous batting entries to avoid duplicate data when reopening page
         self.batting_entries.clear()
 
+        #Adding C and WK symbols next to corresponding player
         for p in team_players:
-            if str(p.get("player_id")) == str(captain_id):
-                p["player_name"] = f'{p.get("player_name","")} (C)'
+            if str(p.get("player_name")) == str(captain_id):
+                p["player_name"] = f'{p.get("player_name","")} (*)'
             if str(p.get("player_id")) == str(wk_id):
-                p["player_name"] = f'{p.get("player_name","")} (WK)'
+                p["player_name"] = f'{p.get("player_name","")} (†)'
 
 
         #--------------------------------------------BATTING SCORECARD-------------------------------------------------#
@@ -665,7 +669,7 @@ class MatchScorecard(BaseWindow):
             r = index + 1
 
             row = {
-                "player_id": tk.StringVar(value=str(player["player_id"])),
+                "player_id": tk.StringVar(value=str(player["_id"])),
                 "position": tk.StringVar(value=str(player["position"])),
                 "player_name": tk.StringVar(value=str(player["player_name"])),
                 "player_role": tk.StringVar(value=str(player.get("player_role", ""))),
