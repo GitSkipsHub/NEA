@@ -660,14 +660,19 @@ class MatchScorecard(BaseWindow):
         batting_table = tk.Frame(content_frame)
         batting_table.pack(padx=20, pady=20, anchor="center")
 
+        #Column headers for batting table
         bat_headers = ["POS", "PLAYER", "HOW OUT", "FIELDER", "BOWLER", "RUNS", "BALLS", "4s", "6s"]
 
+        #Create header labels in first row
         for column_index, header_text in enumerate(bat_headers):
             tk.Label(batting_table,text=header_text, font=("Arial", 11, "bold")).grid(row=0, column=column_index, padx=10, pady=6)
 
+        #Loop through each player in the selected team
         for index, player in enumerate(team_players):
-            r = index + 1
+            r = index + 1  #Row number starts from 1 because row 0 is header
 
+            #Store all input fields for one player in a dictionary
+            #Each value is stored as a StringVar so it can be read later when saving
             row = {
                 "player_id": tk.StringVar(value=str(player["_id"])),
                 "position": tk.StringVar(value=str(player["position"])),
@@ -684,7 +689,7 @@ class MatchScorecard(BaseWindow):
                 "fours": tk.StringVar(value="0"),
                 "sixes": tk.StringVar(value="0"),
             }
-
+            #Add this player's input dictionary to list for later saving
             self.batting_entries.append(row)
 
             position = (tk.Label(batting_table, textvariable=row["position"], width=4, anchor="center"))
