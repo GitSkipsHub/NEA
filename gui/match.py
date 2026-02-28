@@ -529,6 +529,7 @@ class SelectTeamPage(BaseWindow):
         if not wk_id in team_ids:
             messagebox.showerror("ERROR", "WICKET-KEEPER MUST BE IN SELECTED TEAM")
             return
+
         #Build team player list from table
         team_players = []
         for player_id in team_ids:
