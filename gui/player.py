@@ -397,7 +397,7 @@ class UpdatePlayerWindow(BaseWindow):
             )
 
     #Function  runs when a user selects a row in the table
-    def select_on_player(self, event): #retreives selected row from treeview & returns tuple of item IDs
+    def select_on_player(self, event=None): #retreives selected row from treeview & returns tuple of item IDs
         selected = self.tree.selection()
         if not selected: #if no row is selected (user clicked empty space) --> exit function
             self.selected_player_id = None
