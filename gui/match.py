@@ -646,9 +646,9 @@ class MatchScorecard(BaseWindow):
 
         #Adding C and WK symbols next to corresponding player
         for p in team_players:
-            if str(p.get("_id")) == str(captain_id):
+            if str(p.get("player_id")) == str(captain_id):
                 p["player_name"] = f'{p.get("player_name","")} (*)'
-            if str(p.get("_id")) == str(wk_id):
+            if str(p.get("player_id")) == str(wk_id):
                 p["player_name"] = f'{p.get("player_name","")} (†)'
 
 
