@@ -242,6 +242,9 @@ class UpdatePlayerWindow(BaseWindow):
         search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
         search_entry.grid(row=0, column=2, padx=10, pady=10)
 
+        search_button = tk.Button(search_frame, text="SEARCH", command=self.search_player, width=15)
+        search_button.grid(row=0, column=3, padx=10, pady=10)
+
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=30, pady=5)
 
@@ -304,9 +307,6 @@ class UpdatePlayerWindow(BaseWindow):
 
         update_button = tk.Button(footer, text="UPDATE PLAYER", command=self.update_player, width=15)
         update_button.pack(side="right", pady=10, padx=10)
-
-        search_button = tk.Button(footer, text="SEARCH", command=self.search_player, width=15)
-        search_button.pack(side="top", padx=10, pady=10)
 
         form = tk.Frame(main_frame)
         form.pack(pady=20)
@@ -554,8 +554,6 @@ class DeletePlayerWindow(BaseWindow):
         delete_button = tk.Button(footer, text="DELETE PLAYER", command=self.delete_player, width=15)
         delete_button.pack(side="right", pady=10, padx=10)
 
-        search_button = tk.Button(footer, text="SEARCH", command=self.search_player, width=15)
-        search_button.pack(side="top", padx=10, pady=10)
 
         self.search_player()
 

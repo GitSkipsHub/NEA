@@ -1098,55 +1098,48 @@ class UpdateMatchPage(BaseWindow):
         self.window = window
         self.parent = parent
         self.current_user = username
-
         self.match_db = MatchDB()
         self.selected_match_id = None
-
         self.window.title("SS - UPDATE MATCH")
-        self.center_window(1250, 700)
-
+        self.center_window(1250, 900)
         self.create_widgets()
 
     def create_widgets(self):
         main_frame = self.create_main_frame()
         self.create_header(main_frame, "UPDATE MATCH")
-        self.create_sub_header(main_frame, "SELECT A MATCH")
-
-        # Footer
-        footer = tk.Frame(main_frame)
-        footer.pack(fill="x", side="bottom")
-
-        back_btn = self.create_back_btn(footer, self.go_back)
-        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
-
-        btn_frame = tk.Frame(footer)
-        btn_frame.pack(side="right", padx=20, pady=20)
-
-        tk.Button(btn_frame, text="EDIT DETAILS", width=15, command=self.open_edit_details).pack(side="left", padx=6)
-
-        # Search (simple: opposition)
         search_frame = tk.Frame(main_frame)
         search_frame.pack(pady=10)
 
-        tk.Label(search_frame, text="SEARCH OPPOSITION: ").grid(row=0, column=0, padx=8, pady=8, sticky="e")
+        tk.Label(search_frame, text="SEARCH OPPOSITION: ", font=("Arial", 15, "bold")).grid(row=0, column=0, padx=30, pady=20)
         self.search_var = tk.StringVar()
         search_entry = tk.Entry(search_frame, textvariable=self.search_var, width=30)
         search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
-        search_entry.grid(row=0, column=1, padx=8, pady=8)
+        search_entry.grid(row=0, column=1, padx=10, pady=10)
 
-        tk.Button(search_frame, text="SEARCH", width=12, command=self.load_matches).grid(row=0, column=2, padx=10)
+        search_button = tk.Button(search_frame, text="SEARCH", command=self.search_match, width=15)
+        search_button.grid(row=0, column=2, padx=10, pady=10)
 
-        # Matches table
         table_frame = tk.Frame(main_frame)
-        table_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        table_frame.pack(fill="both", expand=True, padx=30, pady=5)
 
-        cols = ("match_id", "match_date", "opposition", "venue", "match_type", "match_format", "result")
-        y_scroll = ttk.Scrollbar(table_frame, orient="vertical")
-        y_scroll.pack(side="right", fill="y")
+        match_columns = ("match_id", "match_date", "opposition", "venue", "match_type", "match_format", "result")
 
-        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", yscrollcommand=y_scroll.set, height=14)
-        self.tree.pack(fill="both", expand=True)
-        y_scroll.config(command=self.tree.yview)
+        y_scrollbar = ttk.Scrollbar(table_frame, orient="vertical")
+        y_scrollbar.pack(side="right", fill="y")
+        x_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal")
+        x_scrollbar.pack(side="bottom", fill="x")
+
+        self.tree = ttk.Treeview(
+            table_frame,
+            columns=match_columns,
+            show="headings",
+            height=10,
+            yscrollcommand=y_scrollbar.set,
+            xscrollcommand=x_scrollbar.set
+        )
+        self.tree.pack(side="left", fill="both", expand=True)
+        x_scrollbar.config(command=self.tree.xview)
+        y_scrollbar.config(command=self.tree.yview)
 
         self.tree.heading("match_id", text="MATCH ID")
         self.tree.heading("match_date", text="DATE")
@@ -1159,25 +1152,92 @@ class UpdateMatchPage(BaseWindow):
         self.tree.column("match_id", width=230, anchor="center")
         self.tree.column("match_date", width=110, anchor="center")
         self.tree.column("opposition", width=200, anchor="center")
-        self.tree.column("venue", width=90, anchor="center")
-        self.tree.column("match_type", width=120, anchor="center")
-        self.tree.column("match_format", width=120, anchor="center")
-        self.tree.column("result", width=110, anchor="center")
+        self.tree.column("venue", width=110, anchor="center")
+        self.tree.column("match_type", width=140, anchor="center")
+        self.tree.column("match_format", width=140, anchor="center")
+        self.tree.column("result", width=140, anchor="center")
 
-        self.tree.bind("<<TreeviewSelect>>", self.on_select)
+        self.tree.bind("<<TreeviewSelect>>", self.select_on_match)
 
-        self.clear_tree()
-        self.load_matches()
+        footer = tk.Frame(main_frame)
+        footer.pack(fill="x", side="bottom")
+
+        back_btn = self.create_back_btn(footer, self.go_back)
+        back_btn.pack(side=tk.LEFT, padx=10, pady=10)
+
+        update_button = tk.Button(footer, text="UPDATE MATCH", command=self.update_match, width=15)
+        update_button.pack(side="right", pady=10, padx=10)
+
+        form = tk.Frame(main_frame)
+        form.pack(pady=20)
+
+        tk.Label(form, text="DATE (YYYY-MM-DD): ").grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        tk.Label(form, text="OPPOSITION: ").grid(row=1, column=0, padx=10, pady=10, sticky="e")
+        tk.Label(form, text="GROUND NAME: ").grid(row=2, column=0, padx=10, pady=10, sticky="e")
+
+        self.date_edit = tk.StringVar()
+        self.opp_edit = tk.StringVar()
+        self.ground_edit = tk.StringVar()
+
+        date_entry = tk.Entry(form, textvariable=self.date_edit, width=25)
+        date_entry.grid(row=0, column=1, padx=10)
+        date_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+
+        opp_entry = tk.Entry(form, textvariable=self.opp_edit, width=25)
+        opp_entry.grid(row=1, column=1, padx=10)
+        opp_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+
+        ground_entry = tk.Entry(form, textvariable=self.ground_edit, width=25)
+        ground_entry.grid(row=2, column=1, padx=10)
+        ground_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
+
+        self.match_type_edit = tk.StringVar()
+        self.match_format_edit = tk.StringVar()
+        self.venue_edit = tk.StringVar()
+        self.result_edit = tk.StringVar()
+
+        self.create_dropdown(
+            parent=form,
+            text="MATCH TYPE: ",
+            variable=self.match_type_edit,
+            values=MatchType.list_values(),
+            row=3
+        )
+        self.create_dropdown(
+            parent=form,
+            text="MATCH FORMAT: ",
+            variable=self.match_format_edit,
+            values=MatchFormat.list_values(),
+            row=4
+        )
+        self.create_dropdown(
+            parent=form,
+            text="VENUE: ",
+            variable=self.venue_edit,
+            values=Venue.list_values(),
+            row=5
+        )
+        self.create_dropdown(
+            parent=form,
+            text="RESULT: ",
+            variable=self.result_edit,
+            values=Result.list_values(),
+            row=6
+        )
+
+        # initial load
+        self.search_match()
 
     def clear_tree(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-    def load_matches(self):
+    def search_match(self):
         self.clear_tree()
+        self.selected_match_id = None
 
-        filters = {}
         term = self.search_var.get().strip()
+        filters = {}
         if term:
             filters["opposition"] = term
 
@@ -1188,7 +1248,6 @@ class UpdateMatchPage(BaseWindow):
             self.tree.insert(
                 "",
                 "end",
-                iid=match_obj.match_id,
                 values=(
                     match_obj.match_id,
                     match_obj.match_date,
@@ -1196,141 +1255,89 @@ class UpdateMatchPage(BaseWindow):
                     Venue.get_value(match_obj.venue),
                     MatchType.get_value(match_obj.match_type),
                     MatchFormat.get_value(match_obj.match_format),
-                    Result.get_value(match_obj.result)
+                    Result.get_value(match_obj.result),
                 )
             )
 
-        self.selected_match_id = None
+        #Clear form as well (since no selection)
+        self._clear_form()
 
-    def on_select(self, event=None):
+    def select_on_match(self, event=None):
         selected = self.tree.selection()
         if not selected:
             self.selected_match_id = None
             return
-        self.selected_match_id = selected[0]
 
-    def require_selected(self) -> bool:
+        values = self.tree.item(selected[0], "values")
+        #Values order matches insert() above
+        self.selected_match_id = values[0]
+        self.date_edit.set(values[1])
+        self.opp_edit.set(values[2])
+        self.venue_edit.set(values[3])
+        self.match_type_edit.set(values[4])
+        self.match_format_edit.set(values[5])
+        self.result_edit.set(values[6])
+
+        # ground_name is NOT in the table, so you must fetch the document to populate it
+        doc = self.match_db.find_match(self.current_user, self.selected_match_id)
+        if doc:
+            self.ground_edit.set(doc.get("ground_name", ""))
+        else:
+            self.ground_edit.set("")
+
+    def update_match(self):
         if not self.selected_match_id:
-            messagebox.showerror("ERROR", "SELECT A MATCH FIRST")
-            return False
-        return True
-
-    def open_edit_details(self):
-        if not self.require_selected():
-            return
-        self.window.withdraw()
-        EditMatchDetailsPage(tk.Toplevel(self.window), self.window, self.current_user, self.selected_match_id)
-
-    def go_back(self):
-        self.window.destroy()
-        self.parent.deiconify()
-
-
-class EditMatchDetailsPage(BaseWindow):
-    def __init__(self, window, parent, username, match_id):
-        super().__init__(window)
-        self.window = window
-        self.parent = parent
-        self.current_user = username
-        self.match_id = match_id
-        self.match_db = MatchDB()
-
-        self.window.title("SS - EDIT MATCH DETAILS")
-        self.center_window(850, 650)
-
-        self.match_doc = self.match_db.find_match(self.current_user, self.match_id)
-        if not self.match_doc:
-            messagebox.showerror("ERROR", "MATCH NOT FOUND")
-            self.window.destroy()
-            self.parent.deiconify()
+            messagebox.showerror("ERROR", "SELECT MATCH FROM THE TABLE FIRST")
             return
 
-        self.create_widgets()
+        match_date = self.date_edit.get().strip()
+        opposition = self.opp_edit.get().strip()
+        ground_name = self.ground_edit.get().strip()
 
-    def create_widgets(self):
-        main_frame = self.create_main_frame()
-        self.create_header(main_frame, "UPDATE MATCH")
-        self.create_sub_header(main_frame, "EDIT DETAILS")
+        match_type_value = self.match_type_edit.get().strip()
+        match_format_value = self.match_format_edit.get().strip()
+        venue_value = self.venue_edit.get().strip()
+        result_value = self.result_edit.get().strip()
 
-        form = tk.Frame(main_frame)
-        form.pack(pady=10)
-
-        self.match_type_var = tk.StringVar(value=MatchType.get_value(self.match_doc.get("match_type", "")))
-        self.create_dropdown(form, "MATCH TYPE: ", self.match_type_var, MatchType.list_values(), row=0)
-
-        self.match_format_var = tk.StringVar(value=MatchFormat.get_value(self.match_doc.get("match_format", "")))
-        self.create_dropdown(form, "MATCH FORMAT: ", self.match_format_var, MatchFormat.list_values(), row=1)
-
-        self.venue_var = tk.StringVar(value=Venue.get_value(self.match_doc.get("venue", "")))
-        self.create_dropdown(form, "VENUE: ", self.venue_var, Venue.list_values(), row=2)
-
-        self.result_var = tk.StringVar(value=self.match_doc.get("result", ""))
-        self.create_dropdown(form, "RESULT: ", self.result_var, Result.list_values(), row=3)
-
-        tk.Label(form, text="GROUND NAME: ").grid(column=0, row=4, pady=10, sticky="e")
-        self.ground_input = tk.Entry(form, width=30)
-        self.ground_input.configure(highlightthickness=3, highlightbackground="dodger blue")
-        self.ground_input.grid(column=1, row=4, pady=10)
-        self.ground_input.insert(0, self.match_doc.get("ground_name", ""))
-
-        tk.Label(form, text="OPPOSITION: ").grid(column=0, row=5, pady=10, sticky="e")
-        self.opp_input = tk.Entry(form, width=30)
-        self.opp_input.configure(highlightthickness=3, highlightbackground="dodger blue")
-        self.opp_input.grid(column=1, row=5, pady=10)
-        self.opp_input.insert(0, self.match_doc.get("opposition", ""))
-
-        tk.Label(form, text="DATE (YYYY-MM-DD): ").grid(column=0, row=6, pady=10, sticky="e")
-        self.date_input = tk.Entry(form, width=30)
-        self.date_input.configure(highlightthickness=3, highlightbackground="dodger blue")
-        self.date_input.grid(column=1, row=6, pady=10)
-        self.date_input.insert(0, self.match_doc.get("match_date", ""))
-
-        footer = tk.Frame(main_frame)
-        footer.pack(fill="x", side="bottom")
-
-        save_btn = tk.Button(footer, text="SAVE", width=15, command=self.save_changes)
-        save_btn.pack(side="right", padx=20, pady=20)
-
-        back_btn = self.create_back_btn(footer, self.go_back)
-        back_btn.pack(side=tk.LEFT, padx=20, pady=20)
-
-    def save_changes(self):
-        match_type_value = self.match_type_var.get().strip()
-        match_format_value = self.match_format_var.get().strip()
-        venue_value = self.venue_var.get().strip()
-        result_value = self.result_var.get().strip()
-        ground_name = self.ground_input.get().strip()
-        opposition = self.opp_input.get().strip()
-        match_date = self.date_input.get().strip()
-
-        if (not match_type_value or not match_format_value or not venue_value or not result_value
-                or not ground_name or not opposition or not match_date):
-            messagebox.showerror("ERROR", "FILL IN ALL FIELDS")
+        if (not match_date or not opposition or not ground_name or
+                not match_type_value or not match_format_value or not venue_value or not result_value):
+            messagebox.showerror("ERROR", "FILL IN ALL REQUIRED FIELDS")
             return
 
         try:
             datetime.strptime(match_date, "%Y-%m-%d")
         except ValueError:
-            messagebox.showerror("ERROR", "DATE MUST BE YYYY-MM-DD")
+            messagebox.showerror("ERROR", "DATE MUST BE YYYY-MM-DD (e.g., 2026-02-28)")
             return
 
         update_data = {
+            "match_date": match_date,
+            "opposition": opposition,
+            "ground_name": ground_name,
             "match_type": MatchType.get_key(match_type_value),
             "match_format": MatchFormat.get_key(match_format_value),
             "venue": Venue.get_key(venue_value),
-            "result": result_value,
-            "ground_name": ground_name,
-            "opposition": opposition,
-            "match_date": match_date
+            "result": Result.get_key(result_value),
         }
 
-        ok = self.match_db.update_match(self.current_user, self.match_id, update_data)
+        ok = self.match_db.update_match(self.current_user, self.selected_match_id, update_data)
         if not ok:
-            messagebox.showerror("ERROR", "UPDATE FAILED")
+            messagebox.showerror("ERROR", "MATCH UPDATE FAILED")
             return
 
-        messagebox.showinfo("SUCCESS", "MATCH UPDATED")
-        self.go_back()
+        messagebox.showinfo("SUCCESS", "MATCH UPDATED SUCCESSFULLY")
+
+        #refresh table + reset selection + clear form
+        self.search_match()
+
+    def _clear_form(self):
+        self.date_edit.set("")
+        self.opp_edit.set("")
+        self.ground_edit.set("")
+        self.match_type_edit.set("")
+        self.match_format_edit.set("")
+        self.venue_edit.set("")
+        self.result_edit.set("")
 
     def go_back(self):
         self.window.destroy()
