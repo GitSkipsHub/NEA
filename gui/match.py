@@ -1266,7 +1266,7 @@ class UpdateMatchPage(BaseWindow):
         #Clear form as well (since no selection)
         self._clear_form()
 
-    def select_on_match(self, event=None):
+    def select_on_match(self):
         #Get selected row from the table
         selected = self.tree.selection()
         if not selected:
