@@ -273,7 +273,7 @@ class SelectTeamPage(BaseWindow):
         left_frame.pack(side="left", fill="y", padx=10, pady=10)
         left_frame.pack_propagate(False)
 
-        clear_btn = tk.Button(left_frame, text="CLEAR TEAM", width=15, command="")
+        clear_btn = tk.Button(left_frame, text="CLEAR TEAM", width=15, command=self.clear_team)
         clear_btn.pack(side="bottom", padx=20, pady=20)
 
         team_frame = tk.Frame(left_frame)
@@ -410,6 +410,7 @@ class SelectTeamPage(BaseWindow):
 
     def refresh_leadership_dropdowns(self):
         options = []  #List for dropdown names
+        self.name_to_player_id.clear()
         #Loop through players in team table
         for player_id in self.team_tree.get_children():
             row = self.team_tree.item(player_id, "values")
@@ -420,7 +421,14 @@ class SelectTeamPage(BaseWindow):
         #Update dropdown options
         self.captain_dropdown["values"] = options
         self.wk_dropdown["values"] = options
+        # Clear captain if no longer valid
+        if self.captain_var.get() not in options:
+            self.captain_var.set("")
+        # Clear wicket-keeper if no longer valid
+        if self.wk_var.get() not in options:
+            self.wk_var.set("")
 
+        print(self.name_to_player_id)
 
     def add_player_to_team(self):
         #Get selected row from available players table
