@@ -978,89 +978,89 @@ class MatchScorecard(BaseWindow):
             })
 
 
-        # bowling_data = []
-        # for row in self.bowling_entries:
-        #     try:
-        #         overs = float(row["overs"].get())
-        #         maidens = int(row["maidens"].get())
-        #         runs_conceded = int(row["runs_conceded"].get())
-        #         wickets = int(row["wickets"].get())
-        #         wides = int(row["wides"].get())
-        #         no_balls = int(row["no_balls"].get())
-        #
-        #     except ValueError:
-        #         messagebox.showerror("ERROR", "ALL STATS (EXCEPT OVERS) MUST BE INTEGERS")
-        #         return
-        #
-        #     if min(overs, maidens, runs_conceded, wickets, wides, no_balls) <0:
-        #         messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
-        #         return
-        #
-        #     if overs %1 >=0.6:
-        #         messagebox.showerror("ERROR", "OVERS MUST HAVE .0 to .5 ONLY")
-        #         return
-        #
-        #     bowling_data.append({
-        #         "player_id": row["player_id"].get(),
-        #         "position": row["position"].get(),
-        #         "player_name": row["player_name"].get(),
-        #         "player_role": row["player_role"].get(),
-        #         "bowling_style": row["bowling_style"].get(),
-        #         "overs": overs,
-        #         "maidens": maidens,
-        #         "runs_conceded": runs_conceded,
-        #         "wickets": wickets,
-        #         "wides": wides,
-        #         "no_balls": no_balls,
-        #     })
-        #
-        #
-        # fielding_data = []
-        #
-        # try:
-        #     byes = int(self.byes.get())
-        #     leg_byes = int(self.leg_byes.get())
-        #     penalties = int(self.penalties.get())
-        #
-        # except ValueError:
-        #     messagebox.showerror("ERROR", "VALUES MUST BE INTEGERS")
-        #     return
-        #
-        # if min(byes, leg_byes, penalties)<0:
-        #     messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
-        #     return
-        #
-        # fielding_extras = {
-        #     "byes": byes,
-        #     "leg_byes": leg_byes,
-        #     "penalties": penalties
-        # }
-        #
-        # for row in self.fielding_entries:
-        #     try:
-        #         catches = int(row["catches"].get())
-        #         runouts = int(row["runouts"].get())
-        #         stumpings = int(row["stumpings"].get())
-        #
-        #     except ValueError:
-        #         messagebox.showerror("ERROR", "STATS MUST BE INTEGERS")
-        #         return
-        #
-        #     if min(catches, runouts, stumpings)<0:
-        #         messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
-        #         return
-        #
-        #     fielding_data.append({
-        #         "player_id": row["player_id"].get(),
-        #         "position": row["position"].get(),
-        #         "player_name": row["player_name"].get(),
-        #         "player_role": row["player_role"].get(),
-        #         "batting_style": row["batting_style"].get(),
-        #         "catches": catches,
-        #         "runouts": runouts,
-        #         "stumpings": stumpings
-        #     })
-        #
+        bowling_data = []
+        for row in self.bowling_entries:
+            try:
+                overs = float(row["overs"].get())
+                maidens = int(row["maidens"].get())
+                runs_conceded = int(row["runs_conceded"].get())
+                wickets = int(row["wickets"].get())
+                wides = int(row["wides"].get())
+                no_balls = int(row["no_balls"].get())
+
+            except ValueError:
+                messagebox.showerror("ERROR", "ALL STATS (EXCEPT OVERS) MUST BE INTEGERS")
+                return
+
+            if min(overs, maidens, runs_conceded, wickets, wides, no_balls) <0:
+                messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+                return
+
+            if overs %1 >=0.6:
+                messagebox.showerror("ERROR", "OVERS MUST HAVE .0 to .5 ONLY")
+                return
+
+            bowling_data.append({
+                "player_id": row["player_id"].get(),
+                "position": row["position"].get(),
+                "player_name": row["player_name"].get(),
+                "player_role": row["player_role"].get(),
+                "bowling_style": row["bowling_style"].get(),
+                "overs": overs,
+                "maidens": maidens,
+                "runs_conceded": runs_conceded,
+                "wickets": wickets,
+                "wides": wides,
+                "no_balls": no_balls,
+            })
+
+
+        fielding_data = []
+
+        try:
+            byes = int(self.byes.get())
+            leg_byes = int(self.leg_byes.get())
+            penalties = int(self.penalties.get())
+
+        except ValueError:
+            messagebox.showerror("ERROR", "VALUES MUST BE INTEGERS")
+            return
+
+        if min(byes, leg_byes, penalties)<0:
+            messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+            return
+
+        fielding_extras = {
+            "byes": byes,
+            "leg_byes": leg_byes,
+            "penalties": penalties
+        }
+
+        for row in self.fielding_entries:
+            try:
+                catches = int(row["catches"].get())
+                runouts = int(row["runouts"].get())
+                stumpings = int(row["stumpings"].get())
+
+            except ValueError:
+                messagebox.showerror("ERROR", "STATS MUST BE INTEGERS")
+                return
+
+            if min(catches, runouts, stumpings)<0:
+                messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
+                return
+
+            fielding_data.append({
+                "player_id": row["player_id"].get(),
+                "position": row["position"].get(),
+                "player_name": row["player_name"].get(),
+                "player_role": row["player_role"].get(),
+                "batting_style": row["batting_style"].get(),
+                "catches": catches,
+                "runouts": runouts,
+                "stumpings": stumpings
+            })
+
         match_doc = self.match_db.find_match(self.current_user, self.match_id)
         if not match_doc:
             messagebox.showerror("ERROR", "MATCH NOT FOUND")
@@ -1070,21 +1070,21 @@ class MatchScorecard(BaseWindow):
 
         match_obj.batting_scorecard = batting_data
         match_obj.batting_summary = batting_summary
-        # match_obj.bowling_scorecard = bowling_data
-        # match_obj.fielding_scorecard = fielding_data
-        # match_obj.fielding_extras = fielding_extras
+        match_obj.bowling_scorecard = bowling_data
+        match_obj.fielding_scorecard = fielding_data
+        match_obj.fielding_extras = fielding_extras
 
         match_dict = match_obj.to_dict()
-        #
-        # scorecard_data = self.match_db.update_match(self.current_user, self.match_id, match_dict)
-        #
-        # if scorecard_data:
-        #     messagebox.showinfo("SUCCESS", "ALL SCORECARDS SAVED")
-        #     self.window.withdraw()
-        #     MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
-        #
-        # else:
-        #     messagebox.showerror("ERROR", "FAILED TO SAVE SCORECARD")
+
+        scorecard_data = self.match_db.update_match(self.current_user, self.match_id, match_dict)
+
+        if scorecard_data:
+            messagebox.showinfo("SUCCESS", "ALL SCORECARDS SAVED")
+            self.window.withdraw()
+            MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
+
+        else:
+            messagebox.showerror("ERROR", "FAILED TO SAVE SCORECARD")
 
 
     def go_back(self):
