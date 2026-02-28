@@ -408,6 +408,26 @@ class SelectTeamPage(BaseWindow):
                 )
             )
 
+    def refresh_leadership_dropdowns(self):
+        options = []  #List for dropdown names
+        self.name_to_player_id.clear() #Clears dictionary before mapping
+        #Loop through players in team table
+        for player_id in self.team_tree.get_children():
+            row = self.team_tree.item(player_id, "values")
+            player_name = row[1]
+            display = f"{player_name}"
+            options.append(display)
+            #Link the name shown in the dropdown to the player's real ID and stores in dictionary
+            self.name_to_player_id[display] = player_id
+        #Update dropdown options
+        self.captain_dropdown["values"] = options
+        self.wk_dropdown["values"] = options
+        #Clear invalid selections
+        if self.captain_var.get() not in options:
+            self.captain_var.set("")
+        if self.wk_var.get() not in options:
+            self.wk_var.set("")
+
 
     def add_player_to_team(self):
         #Get selected row from available players table
@@ -461,7 +481,7 @@ class SelectTeamPage(BaseWindow):
             iid= values[0], # #assigns tree_id as player_id
             values=(next_position, player_name, player_role, batting_style, bowling_style)
         )
-        #self.refresh_leadership_dropdowns()
+        self.refresh_leadership_dropdowns()
 
     def remove_player_from_team(self):
         #Get the currently selected row(s) from the team table
@@ -471,15 +491,13 @@ class SelectTeamPage(BaseWindow):
             return
         #Delete the first selected row from the team table
         self.team_tree.delete(selected[0]) #selected[0] is the iid (unique row ID) of that player
+        self.refresh_leadership_dropdowns()
 
-
-        #self.refresh_leadership_dropdowns()
-
-    # def clear_team(self):
-    #     self.team_tree.delete(*self.team_tree.get_children())
-    #     self.captain_var.set("")
-    #     self.wk_var.set("")
-    #     self.refresh_leadership_dropdowns()
+    def clear_team(self):
+        self.team_tree.delete(*self.team_tree.get_children())
+        self.captain_var.set("")
+        self.wk_var.set("")
+        self.refresh_leadership_dropdowns()
 
     def save_team_and_continue(self):
         team_ids = list(self.team_tree.get_children())
