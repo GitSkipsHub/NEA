@@ -501,31 +501,35 @@ class SelectTeamPage(BaseWindow):
         self.refresh_leadership_dropdowns()
 
     def save_team_and_continue(self):
+        #Get all selected player IDs from team table
         team_ids = list(self.team_tree.get_children())
 
         if len(team_ids) != 11:
             messagebox.showerror("ERROR", "SELECT EXACTLY 11 PLAYERS")
             return
 
+        #Get captain and wicket-keeper IDs from dropdown selection
         captain_id = self.name_to_player_id.get(self.captain_var.get(), "")
         wk_id= self.name_to_player_id.get(self.wk_var.get(), "")
 
+        #Validate captain selected
         if not captain_id:
             messagebox.showerror("ERROR", "SELECT A CAPTAIN")
             return
-
+        #Validate wk selected
         if not wk_id:
             messagebox.showerror("ERROR", "SELECT A WICKET-KEEPER")
             return
 
+        #Ensure captain is part of selected team
         if not captain_id in team_ids:
             messagebox.showerror("ERROR", "CAPTAIN MUST BE IN SELECTED TEAM")
             return
-
+        #Ensure wk is part of selected team
         if not wk_id in team_ids:
             messagebox.showerror("ERROR", "WICKET-KEEPER MUST BE IN SELECTED TEAM")
             return
-
+        #Build team player list from table
         team_players = []
         for player_id in team_ids:
             pos, player_name, player_role, batting_style, bowling_style = self.team_tree.item(player_id, "values")
@@ -538,23 +542,24 @@ class SelectTeamPage(BaseWindow):
                 "bowling_style": BowlingStyle.get_key(bowling_style)
             })
 
+        #Sort players by batting position
         team_players.sort(key=lambda p: p["position"])
 
         #print(team_data)
-
+        #Retrieve match document from database
         match_doc = self.match_db.find_match(self.current_user, self.match_id)
         if not match_doc:
             messagebox.showerror("ERROR", "MATCH NOT FOUND")
             return
-
+        # Convert document to Match object
         match_obj = Match.from_dict(match_doc)
-
+        # Update match object with team data
         match_obj.team_players = team_players
         match_obj.captain_id = captain_id
         match_obj.wk_id = wk_id
-
+        #Convert back to dictionary for database updat
         match_dict = match_obj.to_dict()
-
+        #Save updated match to database
         updated_match = self.match_db.update_match(self.current_user, self.match_id, match_dict)
 
         if not updated_match:
