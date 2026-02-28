@@ -520,7 +520,6 @@ class SelectTeamPage(BaseWindow):
         if not wk_id:
             messagebox.showerror("ERROR", "SELECT A WICKET-KEEPER")
             return
-
         #Ensure captain is part of selected team
         if not captain_id in team_ids:
             messagebox.showerror("ERROR", "CAPTAIN MUST BE IN SELECTED TEAM")
