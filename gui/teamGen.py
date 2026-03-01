@@ -118,7 +118,6 @@ class FixtureDetailsPage(BaseWindow):
             "venue": Venue.get_key(venue_value),
             "start_date": start_date
         }
-
         #Save filters to the class so they can be accessed later
         self.match_filters = match_filters
 
