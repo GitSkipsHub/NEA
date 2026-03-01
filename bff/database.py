@@ -483,7 +483,7 @@ class TeamGeneratorDB:
                                 'player_name': 1,
                                 'player_role': 1,
                                 'total_runs': 1,
-                                'total_wickets': 1
+                                'total_dismissals': 1
                             }
                         }
                     ]

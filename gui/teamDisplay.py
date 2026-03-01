@@ -58,10 +58,6 @@ class TeamDisplay(BaseWindow):
 
     def add_player_to_team(self):
         for player in self.generated_team:
-            for player in self.generated_team:
-                print("DEBUG PLAYER:", player)             # see full dict
-                print("DEBUG KEYS:", player.keys())         # see available keys
-                print("DEBUG ROLE:", player.get("player_role"))
             self.team_tree.insert(
                 "",
                 "end",
