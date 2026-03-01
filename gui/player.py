@@ -540,9 +540,6 @@ class DeletePlayerWindow(BaseWindow):
         self.tree.column("batting_style", width=120)
         self.tree.column("bowling_style", width=150)
 
-        self.tree.bind("<<TreeviewSelect>>", self.select_on_player)
-
-
         footer = tk.Frame(main_frame)
         footer.pack(fill="x", side="bottom")
 
@@ -551,7 +548,6 @@ class DeletePlayerWindow(BaseWindow):
 
         delete_button = tk.Button(footer, text="DELETE PLAYER", command=self.delete_player, width=15)
         delete_button.pack(side="right", pady=10, padx=10)
-
 
         self.search_player()
 
@@ -573,6 +569,7 @@ class DeletePlayerWindow(BaseWindow):
             self.tree.insert(
                 "", #"" = insert at root level, not nested
                 "end", # adds row to bottom of the table
+                iid= player_obj.player_id,
                 values=(
                     player_obj.player_id, #index 0
                     formatted_date,             #index 1
@@ -584,17 +581,6 @@ class DeletePlayerWindow(BaseWindow):
                     BowlingStyle.get_value(player_obj.bowling_style), #index 7
                 )
             )
-
-    def select_on_player(self, event): #retreives selected row from treeview & returns tuple of item IDs
-        selected = self.tree.selection()
-        if not selected: #if no row is selected (user clicked empty space) --> exit function
-            self.selected_player_id = None
-            return
-
-        #From the selected row, extract the data values that were inserted into it
-        values = self.tree.item(selected[0], "values") #extracts values stored in that row in the same order they were inserted into the treeview
-        self.selected_player_id = values[0] #stores player's unique id so correct record is deleted
-
 
     def delete_player(self):
         if not self.selected_player_id:
@@ -615,7 +601,6 @@ class DeletePlayerWindow(BaseWindow):
 
         else:
             messagebox.showerror("ERROR", "PLAYER DELETION FAILED")
-
 
     def go_back(self):
         self.window.destroy()

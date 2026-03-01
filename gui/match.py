@@ -1411,6 +1411,7 @@ class DeleteMatchPage(BaseWindow):
         self.load_matches()
 
     def clear_tree(self):
+        #Remove every row currently in the Treeview
         for item in self.tree.get_children():
             self.tree.delete(item)
 
