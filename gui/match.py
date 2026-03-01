@@ -916,9 +916,9 @@ class MatchScorecard(BaseWindow):
         batting_data = [] #List to store all batting rows
         #Read subtotal, extras and total from entry fields
         try:
-            subtotal = int(self.subtotal_var.get())
-            extras = int(self.extras_var.get())
-            total = int(self.total_var.get())
+            subtotal = self.subtotal_var.get()
+            extras = self.extras_var.get()
+            total = self.total_var.get()
 
         except ValueError:
             #Show error if conversion fails
@@ -934,7 +934,7 @@ class MatchScorecard(BaseWindow):
         if subtotal + extras != total:
             messagebox.showerror("ERROR", "TOTAL MUST EQUAL SUBTOTAL + EXTRAS.")
             return
-        print(f"CORRECT: {total} = {subtotal} + {extras}")
+
 
         #Store summary values for the batting scorecard
         batting_summary = {
@@ -947,9 +947,9 @@ class MatchScorecard(BaseWindow):
         for row in self.batting_entries:
             try:
                 runs_scored = int(row["runs_scored"].get())
-                balls = int( row["balls"].get())
-                fours = int(row["fours"].get())
-                sixes = int(row["sixes"].get())
+                balls = row["balls"].get()
+                fours = row["fours"].get()
+                sixes = row["sixes"].get()
 
             except ValueError:
                 #Show error if conversion fails
