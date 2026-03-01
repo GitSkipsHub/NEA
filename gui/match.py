@@ -1385,7 +1385,7 @@ class DeleteMatchPage(BaseWindow):
         search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
         search_entry.grid(row=0, column=1, padx=8, pady=8)
 
-        tk.Button(search_frame, text="SEARCH", width=12, command=self.load_matches).grid(row=0, column=2, padx=10)
+        tk.Button(search_frame, text="SEARCH", width=12, command=self.search_match).grid(row=0, column=2, padx=10)
 
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=20, pady=10)
@@ -1408,14 +1408,14 @@ class DeleteMatchPage(BaseWindow):
         self.tree.column("opposition", width=250, anchor="center")
         self.tree.column("venue", width=120, anchor="center")
 
-        self.load_matches()
+        self.search_match()
 
     def clear_tree(self):
         #Remove every row currently in the Treeview
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-    def load_matches(self):
+    def search_match(self):
         self.clear_tree() #Clear old rows so results don't stack up
         term = self.search_var.get().strip() #Read search box text
         filters = {} #Build optional filters for DB query
@@ -1459,7 +1459,7 @@ class DeleteMatchPage(BaseWindow):
             return
 
         messagebox.showinfo("SUCCESS", "MATCH DELETED")
-        self.load_matches()
+        self.search_match()
 
     def go_back(self):
         self.window.destroy()
