@@ -934,6 +934,7 @@ class MatchScorecard(BaseWindow):
         if subtotal + extras != total:
             messagebox.showerror("ERROR", "TOTAL MUST EQUAL SUBTOTAL + EXTRAS.")
             return
+        print(f"CORRECT: {total} = {subtotal} + {extras}")
 
         #Store summary values for the batting scorecard
         batting_summary = {
