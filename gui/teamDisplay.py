@@ -53,11 +53,13 @@ class TeamDisplay(BaseWindow):
         self.team_tree.column("total_wickets", width=200, anchor="center")
         self.team_tree.column("total_dismissals", width=200, anchor="center")
 
+        #Call method to insert players into the table
         self.add_player_to_team()
 
-
     def add_player_to_team(self):
+        #Loop through each player returned from the generated team
         for player in self.generated_team:
+            #Insert player details as a new row in the Treeview
             self.team_tree.insert(
                 "",
                 "end",
