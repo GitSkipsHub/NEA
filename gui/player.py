@@ -384,6 +384,7 @@ class UpdatePlayerWindow(BaseWindow):
             self.tree.insert(
                 "",         #Insert at root level (not nested)
                 "end",       #Add to bottom of table
+                iid= player_obj.player_id,
                 values=(
                     player_obj.player_id,
                     formatted_date,
@@ -403,11 +404,8 @@ class UpdatePlayerWindow(BaseWindow):
             self.selected_player_id = None
             return
 
-        #Extract all values stored in the selected row
-        values = self.tree.item(selected[0], "values")
-
-        #Store the selected player's ID (used later for updating)
-        self.selected_player_id = values[0]
+        player_id = selected[0]
+        values = self.tree.item(player_id, "values")
 
         #Populate input fields with selected player's data
         self.first_name_edit.set(values[2])

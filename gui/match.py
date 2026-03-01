@@ -1415,20 +1415,21 @@ class DeleteMatchPage(BaseWindow):
             self.tree.delete(item)
 
     def load_matches(self):
-        self.clear_tree()
-        term = self.search_var.get().strip()
-        filters = {}
+        self.clear_tree() #Clear old rows so results don't stack up
+        term = self.search_var.get().strip() #Read search box text
+        filters = {} #Build optional filters for DB query
         if term:
-            filters["opposition"] = term
+            filters["opposition"] = term #Filter by opposition if user typed something
 
-        matches = self.match_db.search_match(self.current_user, filters)
+        matches = self.match_db.search_match(self.current_user, filters) #Get matches for this user
 
         for m in matches:
+            #Convert Mongo dict -> Match object
             match_obj = Match.from_dict(m)
             self.tree.insert(
                 "",
                 "end",
-                iid=match_obj.match_id,
+                iid=match_obj.match_id, #Use match_id as the Treeview row ID (so selection gives match_id)
                 values=(
                     match_obj.match_id,
                     match_obj.match_date,
@@ -1438,13 +1439,12 @@ class DeleteMatchPage(BaseWindow):
             )
 
     def delete_match(self):
-        selected = self.tree.selection()
+        selected = self.tree.selection() #Get selected row iid(s)
         if not selected:
             messagebox.showerror("ERROR", "SELECT A MATCH")
             return
 
-        match_id = selected[0]
-        values = self.tree.item(match_id, "values")
+        match_id = selected[0] #First selected row id (we set this to match_id in insert)
 
         confirm_deletion = messagebox.askyesno("CONFIRM DELETION?",
                                                "ARE YOU SURE YOU WANT TO DELETE THIS MATCH")
