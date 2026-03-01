@@ -587,11 +587,6 @@ class MatchScorecard(BaseWindow):
         self.player_db = PlayerDB()
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(1400, 900)
-
-        # self.batting_scorecard = [] #list[dict]
-        # self.bowling_scorecard = [] #list[dict]
-        # self.fielding_scorecard = [] #list[dict]
-
         self.batting_entries = [] #list[dict]
         self.bowling_entries = [] #list[dict]
         self.fielding_entries = [] #list[dict]
@@ -646,11 +641,12 @@ class MatchScorecard(BaseWindow):
 
         #Adding C and WK symbols next to corresponding player
         for p in team_players:
+            raw_name = p.get("player_name", "")
+            display_name = raw_name
             if str(p.get("player_id")) == str(captain_id):
-                p["player_name"] = f'{p.get("player_name","")} (*)'
+                display_name += " (C)"
             if str(p.get("player_id")) == str(wk_id):
-                p["player_name"] = f'{p.get("player_name","")} (†)'
-
+                display_name += " (WK)"
 
         #--------------------------------------------BATTING SCORECARD-------------------------------------------------#
 
@@ -913,6 +909,12 @@ class MatchScorecard(BaseWindow):
 
     def save_scorecards(self):
 
+        def clean_name(name: str) -> str:
+            # Remove captain / wicket-keeper markers before saving to DB
+            return (name.replace(" (*)", "")
+                    .replace(" (†)", "")
+                    .strip())
+
         batting_data = [] #List to store all batting rows
         #Read subtotal, extras and total from entry fields
         try:
@@ -965,7 +967,7 @@ class MatchScorecard(BaseWindow):
             batting_data.append({
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
-                "player_name": row["player_name"].get(),
+                "player_name": clean_name(["player_name"].get()),
                 "player_role": row["player_role"].get(),
                 "batting_style": row["batting_style"].get(),
                 "how_out": HowOut.get_key(row["how_out"].get()),
@@ -1003,7 +1005,7 @@ class MatchScorecard(BaseWindow):
             bowling_data.append({
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
-                "player_name": row["player_name"].get(),
+                "player_name": clean_name(row["player_name"].get()),
                 "player_role": row["player_role"].get(),
                 "bowling_style": row["bowling_style"].get(),
                 "overs": overs,
@@ -1053,29 +1055,30 @@ class MatchScorecard(BaseWindow):
             fielding_data.append({
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
-                "player_name": row["player_name"].get(),
+                "player_name": clean_name(row["player_name"].get()),
                 "player_role": row["player_role"].get(),
                 "batting_style": row["batting_style"].get(),
                 "catches": catches,
                 "runouts": runouts,
                 "stumpings": stumpings
             })
-
+        #Retrieve the match document from the database using current user and match_id
         match_doc = self.match_db.find_match(self.current_user, self.match_id)
         if not match_doc:
             messagebox.showerror("ERROR", "MATCH NOT FOUND")
             return
-
+        #Convert the dictionary from MongoDB into a Match object
         match_obj = Match.from_dict(match_doc)
-
+        #Assign updated scorecard data to the match object
         match_obj.batting_scorecard = batting_data
         match_obj.batting_summary = batting_summary
         match_obj.bowling_scorecard = bowling_data
         match_obj.fielding_scorecard = fielding_data
         match_obj.fielding_extras = fielding_extras
-
+        #Convert updated Match object back into dictionary format
         match_dict = match_obj.to_dict()
 
+        #Call database method to update the match record
         scorecard_data = self.match_db.update_match(self.current_user, self.match_id, match_dict)
 
         if scorecard_data:
