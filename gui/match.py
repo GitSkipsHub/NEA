@@ -1390,7 +1390,7 @@ class DeleteMatchPage(BaseWindow):
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
-        cols = ("match_id", "date", "opposition", "venue")
+        cols = ("match_id", "date", "match_type", "match_format" "opposition", "venue", "result")
         y_scroll = ttk.Scrollbar(table_frame, orient="vertical")
         y_scroll.pack(side="right", fill="y")
 
@@ -1400,13 +1400,19 @@ class DeleteMatchPage(BaseWindow):
 
         self.tree.heading("match_id", text="MATCH ID")
         self.tree.heading("date", text="DATE")
+        self.tree.column("match_type", width=140, anchor="center")
+        self.tree.column("match_format", width=140, anchor="center")
         self.tree.heading("opposition", text="OPPOSITION")
         self.tree.heading("venue", text="VENUE")
+        self.tree.column("result", width=140, anchor="center")
 
         self.tree.column("match_id", width=260, anchor="center")
         self.tree.column("date", width=120, anchor="center")
+        self.tree.column("match_type", width=140, anchor="center")
+        self.tree.column("match_format", width=140, anchor="center")
         self.tree.column("opposition", width=250, anchor="center")
         self.tree.column("venue", width=120, anchor="center")
+        self.tree.column("result", width=140, anchor="center")
 
         self.search_match()
 
@@ -1434,8 +1440,11 @@ class DeleteMatchPage(BaseWindow):
                 values=(
                     match_obj.match_id,
                     match_obj.match_date,
+                    match_obj.match_type,
+                    match_obj.match_format,
                     match_obj.opposition,
-                    Venue.get_value(match_obj.venue)
+                    Venue.get_value(match_obj.venue),
+                    Result.get_value(match_obj.result)
                 )
             )
 
