@@ -641,12 +641,10 @@ class MatchScorecard(BaseWindow):
 
         #Adding C and WK symbols next to corresponding player
         for p in team_players:
-            raw_name = p.get("player_name", "")
-            display_name = raw_name
             if str(p.get("player_id")) == str(captain_id):
-                display_name += " (C)"
+                p["player_name"] = f'{p.get("player_name", "")} (*)'
             if str(p.get("player_id")) == str(wk_id):
-                display_name += " (WK)"
+                p["player_name"] = f'{p.get("player_name", "")} (†)'
 
         #--------------------------------------------BATTING SCORECARD-------------------------------------------------#
 
@@ -967,7 +965,7 @@ class MatchScorecard(BaseWindow):
             batting_data.append({
                 "player_id": row["player_id"].get(),
                 "position": row["position"].get(),
-                "player_name": clean_name(["player_name"].get()),
+                "player_name": clean_name(row["player_name"].get()),
                 "player_role": row["player_role"].get(),
                 "batting_style": row["batting_style"].get(),
                 "how_out": HowOut.get_key(row["how_out"].get()),
