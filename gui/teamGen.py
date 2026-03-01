@@ -155,8 +155,6 @@ class TeamCompositionPage(BaseWindow):
 
         form = tk.Frame(main_frame)
         form.pack(pady=0)
-        #tk.Label(form, text= "SELECT TEAM COMPOSITION:", font=("Arial", 12)).grid(row=0, padx=20, pady=10)
-
 
         self.batters_var = tk.IntVar()
         self.create_dropdown(form, text="BATTERS", variable=self.batters_var, values=list(range(12)), row=1)
@@ -180,22 +178,25 @@ class TeamCompositionPage(BaseWindow):
 
     def save_team_composition(self):
         try:
+            #Convert dropdown values to integers
             batters = int(self.batters_var.get())
             spinners = int(self.spinners_var.get())
             pacers = int(self.pacers_var.get())
             all_rounders = int(self.all_rounders_var.get())
             wk = int(self.wk_var.get())
-
         except ValueError:
+            #If any dropdown is not selected properly, show error
             messagebox.showerror("ERROR", "ALL DROPDOWNS MUST BE SELECTED")
             return
 
+        #Calculate total number of selected players
         total = batters + spinners + pacers + all_rounders + wk
 
-        if total != 11:
+        if total != 11: #Ensure team has exactly 11 players
             messagebox.showerror("ERROR", "TEAM MUST CONSIST ON ONLY 11 PLAYERS")
             return
 
+        #Check if team matches predefined balanced structure
         balanced_team = (batters== 4 and spinners==2 and pacers==2 and all_rounders==2 and wk==1)
 
         if not balanced_team:
@@ -207,6 +208,7 @@ class TeamCompositionPage(BaseWindow):
         if not confirm_team:
             return
 
+        #Call database method to generate team using selected filters and limits
         generated_team = self.team_generator_db.generate_team(username=self.current_user,
                                     match_type=self.match_type_filter,
                                     match_format=self.match_format_filter,
@@ -217,9 +219,9 @@ class TeamCompositionPage(BaseWindow):
                                     spinner_limit=spinners,
                                     all_rounder_limit=all_rounders,
                                     wk_limit=wk)
-
-        #    for player in generated_team:
-        #    print(player)
+        #TESTING
+        for player in generated_team:
+            print(player)
 
         self.window.withdraw()
         TeamDisplay(tk.Toplevel(self.window), self.window, self.current_user,generated_team)
