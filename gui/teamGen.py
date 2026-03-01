@@ -109,7 +109,7 @@ class FixtureDetailsPage(BaseWindow):
         selected_time_period = TimePeriod.get_key(time_period_value)
         #Convert the time period into a real start date
         start_date = self.get_start_date(selected_time_period)
-        print(f"START DATE: {start_date}")
+        print(f"START DATE: {start_date}") #TESTING
 
         #Dictionary to store all selected filters
         match_filters = {
@@ -120,7 +120,7 @@ class FixtureDetailsPage(BaseWindow):
         }
         #Save filters to the class so they can be accessed later
         self.match_filters = match_filters
-        print(f"MATCH FILTERS: {match_filters}")
+        print(f"MATCH FILTERS: {match_filters}") #TESTING
         self.window.withdraw()
         #Pass selected filters to next page
         TeamCompositionPage(tk.Toplevel(self.window), self.window, self.current_user, self.match_filters)
