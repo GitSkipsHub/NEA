@@ -935,7 +935,6 @@ class MatchScorecard(BaseWindow):
             messagebox.showerror("ERROR", "TOTAL MUST EQUAL SUBTOTAL + EXTRAS.")
             return
 
-
         #Store summary values for the batting scorecard
         batting_summary = {
                 "subtotal": subtotal,
@@ -946,7 +945,7 @@ class MatchScorecard(BaseWindow):
         #Loop through each player's batting row
         for row in self.batting_entries:
             try:
-                runs_scored = int(row["runs_scored"].get())
+                runs_scored = row["runs_scored"].get()
                 balls = row["balls"].get()
                 fours = row["fours"].get()
                 sixes = row["sixes"].get()
