@@ -101,7 +101,6 @@ class FixtureDetailsPage(BaseWindow):
         if not match_type_value or not match_format_value or not venue_value or not time_period_value:
             messagebox.showerror("Error", "Please fill in all required fields")
             return
-
         confirm_match_filters = messagebox.askyesno("CONFIRM CHOICE", "DO YOU WISH TO PROCEED WITH THESE MATCH FILTERS?")
         if not confirm_match_filters:
             return
@@ -110,6 +109,7 @@ class FixtureDetailsPage(BaseWindow):
         selected_time_period = TimePeriod.get_key(time_period_value)
         #Convert the time period into a real start date
         start_date = self.get_start_date(selected_time_period)
+        print(f"START DATE: {start_date}")
 
         #Dictionary to store all selected filters
         match_filters = {
@@ -120,7 +120,7 @@ class FixtureDetailsPage(BaseWindow):
         }
         #Save filters to the class so they can be accessed later
         self.match_filters = match_filters
-
+        print(f"MATCH FILTERS: {match_filters}")
         self.window.withdraw()
         #Pass selected filters to next page
         TeamCompositionPage(tk.Toplevel(self.window), self.window, self.current_user, self.match_filters)
