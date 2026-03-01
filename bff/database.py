@@ -61,11 +61,9 @@ class AccountDB:
         self.db = Database()
         self.collection = self.db.get_collection("account")
 
-
     def create_account(self, username: str, hashed_password: str):
         try:
             account = Account(username=username, hashed_password=hashed_password)
-            self.collection.create_index("username", unique=True) #makes username primary key
             result = self.collection.insert_one(account.to_dict())
             #This is used to  return True only if MongoDB confirms the document was successfully inserted
             return result is not None #insert id is None is insert failed
@@ -82,8 +80,6 @@ class AccountDB:
         #Returns True if account found and False is account not found
         #Account is not None = True | None is not None = False
 
-
-
 class PlayerDB:
 
     def __init__(self):
@@ -92,64 +88,54 @@ class PlayerDB:
 
     def create_player(self, username: str, player_data: Dict):
         try:
-            #Add system fields
+            player_data = dict(player_data)
             player_data["username"] = username
             player_data["created_date"] = datetime.now()
             player_data["last_updated"] = datetime.now()
 
-            #Manually map each field into the Player constructor
             player = Player(player_id="", **player_data)
-
-            result = self.collection.insert_one(player.to_dict()) #Insert the player dictionary into the MongoDB collection
-            return result.inserted_id is not None # inserted_id will only exist if the document was successfully created
-            #Return True if insertion worked, otherwise False
+            result = self.collection.insert_one(player.to_dict())
+            return result.inserted_id is not None
 
         except Exception as e:
             print(f"Error creating Player: {e}")
 
     def search_player(self, username, search_term: str = "") -> List[Dict]:
         search_term = search_term.strip() #Removes whitespaces
-
+        query = {"username": username} #Restricts mongo query to players within that profile
         if search_term:
-            query = { "username": username,
-                "$or": [
+            query["$or"] = [
                 {"first_name": {"$regex": search_term, "$options": "i"}}, #Finds value matching regular expression where option = case-insensitive
                 {"last_name": {"$regex": search_term, "$options": "i"}}
-            ]}
-        else:
-            query = {"username": username} #Restricts mongo query to players within that profile
-
-        return list(self.collection.find(query).sort("last_name", 1)) #Sorts results in ascending order of last name
+            ]
+        return list(self.collection.find(query).sort("last_name", 1))
 
     def get_all_players(self, username: str) -> List[Dict]:
-        return list(self.collection.find({"username": username})) #returns all players within that account
+        return list(self.collection.find({"username": username}))
 
     def update_player(self, username: str, player_id, update_data):
         try:
-            #Update the last_updated field to track when the record was modified
             update_data["last_updated"] = datetime.now()
             result = self.collection.update_one(
                 {"username": username, "_id": ObjectId(player_id)},
-                {"$set": update_data} #Only update the specified fields instead of replacing the whole document
+                {"$set": update_data}
             )
-            return result.modified_count == 1 #If exactly one document was modified, return True (update successful)
+            return result.modified_count == 1
         except InvalidId:
-            return False #If the player_id is not a valid ObjectId format, prevent program crash
+            return False
         except PyMongoError as e:
-            print(f"Database error updating {e}") #Catch any other MongoDB-related errors and print them for debugging
+            print(f"Database error updating {e}")
             return False
 
     def delete_player(self, username: str, player_id: str) -> bool:
         try:
-            #Tries to delete one document that matches both the username and the ObjectId of the player
             result = self.collection.delete_one({
                 "username": username,
-                "_id": ObjectId(player_id) #Convert string ID into MongoDB ObjectId
+                "_id": ObjectId(player_id)
             })
-            #Deleted_count will be 1 if a document was successfully deleted --> True/False
             return result.deleted_count == 1
-        except Exception as e: #Catches any unexpected errors
-            print(f"Error deleting player {e}") #Prints the error for debugging purposes
+        except Exception as e:
+            print(f"Error deleting player {e}")
             return False
 
 class MatchDB:
@@ -159,6 +145,7 @@ class MatchDB:
 
     def create_match(self, username: str, match_data: Dict) -> Optional[str]:
         try:
+            match_data = dict(match_data)
             match_data["username"] = username
             match_data["created_date"] = datetime.now()
             match_data["last_updated"] = datetime.now()
@@ -171,40 +158,41 @@ class MatchDB:
 
     def update_match(self, username: str, match_id, update_data):
         try:
-            #Update timestamp whenever a match is modified
             update_data["last_updated"] = datetime.now()
-            #Update the match document using username + match_id
             result = self.collection.update_one(
                 {"username": username, "_id": ObjectId(match_id)},
-                {"$set": update_data}  #Only update specified fields
+                {"$set": update_data}
             )
-            #Return True if exactly one document was updated
             return result.modified_count == 1
         except InvalidId:
-            #Return False if match_id is not a valid ObjectId
             return False
         except PyMongoError as e:
-            #Catch other database-related errors
             print(f"Database error as {e}")
             return False
 
     def search_match(self, username: str, filters: Dict[str, Any] ) -> List[Dict]:
-        #Base query ensures user only sees their own matches
         query: Dict[str, Any] = {"username": username}
-        #If opposition filter is provided, apply case-insensitive partial search
+        # if filters.get("match_date"):
+        #     query["match_date"] = filters["match_date"]
+        # if filters.get("venue"):
+        #     query["venue"] = filters["venue"]
+        # if filters.get("result"):
+        #     query["result"] = filters["result"]
+        # if filters.get("match_type"):
+        #     query["match_type"] = filters["match_type"]
+        # if filters.get("match_format"):
+        #     query["match_format"] = filters["match_format"]
         if filters.get("opposition"):
             query["opposition"] = {"$regex" : filters["opposition"],"$options": "i"}
-        #Return matching documents sorted by most recent match_date first
+
         return list(self.collection.find(query).sort("match_date", -1))
 
     def find_match(self, username: str, match_id: str):
         try:
-            #Find a single match document using username + match_id
             return self.collection.find_one(
                 {"username": username, "_id": ObjectId(match_id)}
             )
         except InvalidId:
-            #Return None if match_id format is invalid
             return None
 
     def get_all_matches(self, username:str) -> List[Dict]:
@@ -212,14 +200,11 @@ class MatchDB:
 
     def delete_match(self, username: str, match_id: str) -> bool:
         try:
-            #Delete match document using username + match_id
             result = self.collection.delete_one(
                 {"username": username, "_id": ObjectId(match_id)}
             )
-            #Return True if exactly one document was deleted
             return result.deleted_count == 1
         except Exception as e:
-            #Catch unexpected errors during deletion
             print(f"Error deleting match {e}")
             return False
 
@@ -232,7 +217,7 @@ class TeamGeneratorDB:
                       batter_limit: int, pacer_limit: int, spinner_limit: int, all_rounder_limit: int, wk_limit: int):
 
         limits = [batter_limit, pacer_limit, spinner_limit, all_rounder_limit, wk_limit]
-        if any(type(x) is not int for x in limits) or any(x < 0 for x in limits):
+        if any(type(x) is not int for x in limits) or any(x < -1 for x in limits):
             raise ValueError ("Limits must be positive integers")
 
         pipeline = [
@@ -397,6 +382,9 @@ class TeamGeneratorDB:
                                 'player_name': {
                                     '$first': '$ar_events.player_name'
                                 },
+                                'player_role': {
+                                    '$first': '$ar_events.player_role'
+                                },
                                 'total_runs': {
                                     '$sum': {
                                         '$ifNull': [
@@ -419,6 +407,15 @@ class TeamGeneratorDB:
                             }
                         }, {
                             '$limit': all_rounder_limit
+                        }, {
+                            '$project': {
+                                '_id': 0,
+                                'player_id': '$player_id',
+                                'player_name': 1,
+                                'player_role': 1,
+                                'total_runs': 1,
+                                'total_wickets': 1
+                            }
                         }
                     ],
                     'wicket_keepers': [
@@ -441,6 +438,9 @@ class TeamGeneratorDB:
                                 '_id': '$wk_events.player_id',
                                 'player_name': {
                                     '$first': '$wk_events.player_name'
+                                },
+                                'player_role': {
+                                    '$first': '$wk_events.player_role'
                                 },
                                 'total_runs': {
                                     '$sum': {
@@ -476,6 +476,15 @@ class TeamGeneratorDB:
                             }
                         }, {
                             '$limit': wk_limit
+                        }, {
+                            '$project': {
+                                '_id': 0,
+                                'player_id': '$player_id',
+                                'player_name': 1,
+                                'player_role': 1,
+                                'total_runs': 1,
+                                'total_wickets': 1
+                            }
                         }
                     ]
                 }
