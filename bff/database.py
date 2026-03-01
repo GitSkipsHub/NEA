@@ -249,9 +249,9 @@ class TeamGeneratorDB:
             }, {
                 '$match': {
                     'username': username,
-                    'venue': venue,
-                    'match_type': match_type,
                     'match_format': match_format,
+                    'match_type': match_type,
+                    'venue': venue,
                     'match_date_dt': {
                         '$gte': from_date
                     }
@@ -290,7 +290,7 @@ class TeamGeneratorDB:
                                 'player_name': 1,
                                 'player_role': 1,
                                 'total_runs': 1,
-                                'player_id': '$_id'
+                                'player_id': '$player_id'
                             }
                         }
                     ],
@@ -328,7 +328,7 @@ class TeamGeneratorDB:
                         }, {
                             '$project': {
                                 '_id': 0,
-                                'player_id': '$_id',
+                                'player_id': '$player_id',
                                 'player_name': 1,
                                 'player_role': 1,
                                 'total_wickets': 1
@@ -369,7 +369,7 @@ class TeamGeneratorDB:
                         }, {
                             '$project': {
                                 '_id': 0,
-                                'player_id': '$_id',
+                                'player_id': '$player_id',
                                 'player_name': 1,
                                 'player_role': 1,
                                 'total_wickets': 1
@@ -381,54 +381,16 @@ class TeamGeneratorDB:
                             '$project': {
                                 'ar_events': {
                                     '$concatArrays': [
-                                        {
-                                            '$map': {
-                                                'input': {
-                                                    '$filter': {
-                                                        'input': '$batting_scorecard',
-                                                        'as': 'b',
-                                                        'cond': {
-                                                            '$eq': [
-                                                                '$$b.player_role', 'ALL_ROUNDER'
-                                                            ]
-                                                        }
-                                                    }
-                                                },
-                                                'as': 'batter',
-                                                'in': {
-                                                    'player_id': '$$batter.player_id',
-                                                    'player_name': '$$batter.player_name',
-                                                    'player_role': '$$batter.player_role',
-                                                    'runs': '$$batter.runs_scored'
-                                                }
-                                            }
-                                        }, {
-                                            '$map': {
-                                                'input': {
-                                                    '$filter': {
-                                                        'input': '$bowling_scorecard',
-                                                        'as': 'w',
-                                                        'cond': {
-                                                            '$eq': [
-                                                                '$$w.player_role', 'ALL_ROUNDER'
-                                                            ]
-                                                        }
-                                                    }
-                                                },
-                                                'as': 'bowler',
-                                                'in': {
-                                                    'player_id': '$$bowler.player_id',
-                                                    'player_name': '$$bowler.player_name',
-                                                    'player_role': '$$bowler.player_role',
-                                                    'wickets': '$$bowler.wickets'
-                                                }
-                                            }
-                                        }
+                                        '$batting_scorecard', '$bowling_scorecard'
                                     ]
                                 }
                             }
                         }, {
                             '$unwind': '$ar_events'
+                        }, {
+                            '$match': {
+                                'ar_events.player_role': 'ALL_ROUNDER'
+                            }
                         }, {
                             '$group': {
                                 '_id': '$ar_events.player_id',
@@ -436,13 +398,18 @@ class TeamGeneratorDB:
                                     '$first': '$ar_events.player_name'
                                 },
                                 'total_runs': {
-                                    '$sum': '$ar_events.runs'
+                                    '$sum': {
+                                        '$ifNull': [
+                                            '$ar_events.runs_scored', 0
+                                        ]
+                                    }
                                 },
                                 'total_wickets': {
-                                    '$sum': '$ar_events.wickets'
-                                },
-                                'player_role': {
-                                    '$first': '$ar_events.player_role'
+                                    '$sum': {
+                                        '$ifNull': [
+                                            '$ar_events.wickets', 0
+                                        ]
+                                    }
                                 }
                             }
                         }, {
@@ -452,15 +419,6 @@ class TeamGeneratorDB:
                             }
                         }, {
                             '$limit': all_rounder_limit
-                        }, {
-                            '$project': {
-                                '_id': 0,
-                                'player_id': '$_id',
-                                'player_name': 1,
-                                'player_role': 1,
-                                'total_runs': 1,
-                                'total_wickets': 1
-                            }
                         }
                     ],
                     'wicket_keepers': [
@@ -468,56 +426,16 @@ class TeamGeneratorDB:
                             '$project': {
                                 'wk_events': {
                                     '$concatArrays': [
-                                        {
-                                            '$map': {
-                                                'input': {
-                                                    '$filter': {
-                                                        'input': '$batting_scorecard',
-                                                        'as': 'b',
-                                                        'cond': {
-                                                            '$eq': [
-                                                                '$$b.player_role', 'WKT_KEEPER'
-                                                            ]
-                                                        }
-                                                    }
-                                                },
-                                                'as': 'batter',
-                                                'in': {
-                                                    'player_id': '$$batter.player_id',
-                                                    'player_name': '$$batter.player_name',
-                                                    'player_role': '$$batter.player_role',
-                                                    'runs': '$$batter.runs_scored'
-                                                }
-                                            }
-                                        }, {
-                                            '$map': {
-                                                'input': {
-                                                    '$filter': {
-                                                        'input': '$fielding_scorecard',
-                                                        'as': 'f',
-                                                        'cond': {
-                                                            '$eq': [
-                                                                '$$f.player_role', 'WKT_KEEPER'
-                                                            ]
-                                                        }
-                                                    }
-                                                },
-                                                'as': 'wk',
-                                                'in': {
-                                                    'player_id': '$$wk.player_id',
-                                                    'player_name': '$$wk.player_name',
-                                                    'player_role': '$$wk.player_role',
-                                                    'catches': '$$wk.catches',
-                                                    'runouts': '$$wk.runouts',
-                                                    'stumpings': '$$wk.stumpings'
-                                                }
-                                            }
-                                        }
+                                        '$batting_scorecard', '$fielding_scorecard'
                                     ]
                                 }
                             }
                         }, {
                             '$unwind': '$wk_events'
+                        }, {
+                            '$match': {
+                                'wk_events.player_role': 'WKT_KEEPER'
+                            }
                         }, {
                             '$group': {
                                 '_id': '$wk_events.player_id',
@@ -525,17 +443,30 @@ class TeamGeneratorDB:
                                     '$first': '$wk_events.player_name'
                                 },
                                 'total_runs': {
-                                    '$sum': '$wk_events.runs'
+                                    '$sum': {
+                                        '$ifNull': [
+                                            '$wk_events.runs_scored', 0
+                                        ]
+                                    }
                                 },
                                 'total_dismissals': {
                                     '$sum': {
                                         '$add': [
-                                            '$wk_events.catches', '$wk_events.runouts', '$wk_events.stumpings'
+                                            {
+                                                '$ifNull': [
+                                                    '$wk_events.catches', 0
+                                                ]
+                                            }, {
+                                                '$ifNull': [
+                                                    '$wk_events.runouts', 0
+                                                ]
+                                            }, {
+                                                '$ifNull': [
+                                                    '$wk_events.stumpings', 0
+                                                ]
+                                            }
                                         ]
                                     }
-                                },
-                                'player_role': {
-                                    '$first': '$wk_events.player_role'
                                 }
                             }
                         }, {
@@ -545,15 +476,6 @@ class TeamGeneratorDB:
                             }
                         }, {
                             '$limit': wk_limit
-                        }, {
-                            '$project': {
-                                '_id': 0,
-                                'player_id': '$_id',
-                                'player_name': 1,
-                                'player_role': 1,
-                                'total_runs': 1,
-                                'total_dismissals': 1
-                            }
                         }
                     ]
                 }
@@ -561,7 +483,7 @@ class TeamGeneratorDB:
                 '$project': {
                     'combined': {
                         '$concatArrays': [
-                            '$batters', '$wicket_keepers', '$all_rounders', '$spinners', '$pacers',
+                            '$batters', '$pacers', '$spinners', '$all_rounders', '$wicket_keepers'
                         ]
                     }
                 }
