@@ -76,26 +76,28 @@ class FixtureDetailsPage(BaseWindow):
         save_btn.pack(side="right", padx=20, pady=20)
 
     def get_start_date(self, period_key: str) -> datetime:
+        # Get the current date and time in UTC
         now = datetime.now(timezone.utc)
         if period_key == "LM":
-            return now - timedelta(days=30)
+            return now - timedelta(days=30) #subtract 30 days from today
         if period_key == "L3M":
-            return now - timedelta(days=90)
+            return now - timedelta(days=90) #subtract 90 days from today
         if period_key == "L6M":
-            return now - timedelta(days=180)
+            return now - timedelta(days=180) #subtract 180 days from today
         if period_key == "L12M":
-            return now - timedelta(days=365)
+            return now - timedelta(days=365) #subtract 365 days from today
 
         raise ValueError ("Invalid time period")
 
 
     def save_match_filters(self):
-
+        #Get the selected values from the dropdown menus
         match_type_value = self.match_type_var.get()
         match_format_value = self.match_format_var.get()
         venue_value = self.venue_var.get()
         time_period_value = self.period_var.get()
 
+        #Check if any required field is empty
         if not match_type_value or not match_format_value or not venue_value or not time_period_value:
             messagebox.showerror("Error", "Please fill in all required fields")
             return
@@ -104,9 +106,12 @@ class FixtureDetailsPage(BaseWindow):
         if not confirm_match_filters:
             return
 
+        #Convert the selected time period display value to enum key
         selected_time_period = TimePeriod.get_key(time_period_value)
+        #Convert the time period into a real start date
         start_date = self.get_start_date(selected_time_period)
 
+        #Dictionary to store all selected filters
         match_filters = {
             "match_type": MatchType.get_key(match_type_value),
             "match_format": MatchFormat.get_key(match_format_value),
@@ -114,9 +119,11 @@ class FixtureDetailsPage(BaseWindow):
             "start_date": start_date
         }
 
+        #Save filters to the class so they can be accessed later
         self.match_filters = match_filters
 
         self.window.withdraw()
+        #Pass selected filters to next page
         TeamCompositionPage(tk.Toplevel(self.window), self.window, self.current_user, self.match_filters)
 
     def go_back(self):
