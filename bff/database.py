@@ -217,7 +217,7 @@ class TeamGeneratorDB:
                       batter_limit: int, pacer_limit: int, spinner_limit: int, all_rounder_limit: int, wk_limit: int):
 
         limits = [batter_limit, pacer_limit, spinner_limit, all_rounder_limit, wk_limit]
-        if any(type(x) is not int for x in limits) or any(x < -1 for x in limits):
+        if any(type(x) is not int for x in limits) or any(x < 0 for x in limits):
             raise ValueError ("Limits must be positive integers")
 
         pipeline = [
