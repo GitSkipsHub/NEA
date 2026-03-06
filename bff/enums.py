@@ -23,17 +23,17 @@ class BaseEnum(Enum):
         # Returns list containing all values defined in the class
 
 #PLAYER ROLE & TYPE ENUMS
-class PlayerRole(Enum):
+class PlayerRole(BaseEnum):
     BATTER = "BATTER"
     BOWLER = "BOWLER"
     ALL_ROUNDER = "ALL ROUNDER"
     WKT_KEEPER = "WICKET-KEEPER BATTER"
 
-class BattingStyle(Enum):
+class BattingStyle(BaseEnum):
     RH = "RIGHT HAND"
     LH = "LEFT HAND"
 
-class BowlingStyle(Enum):
+class BowlingStyle(BaseEnum):
     RAP = "RIGHT ARM PACE"
     RAOS = "RIGHT ARM OFF SPIN"
     RALS = "RIGHT ARM LEG SPIN"
@@ -44,22 +44,22 @@ class BowlingStyle(Enum):
 
 
 #---MATCH FILTER ENUMS---#
-class MatchType(Enum):
+class MatchType(BaseEnum):
     LEAGUE = "LEAGUE"
     CUP = "CUP"
     FRIENDLY = "FRIENDLY"
 
-class MatchFormat(Enum):
+class MatchFormat(BaseEnum):
     T20 = "T20"
     FORTY_OVERS = "40 OVERS"
     ODI = "ODI (50 OVERS)"
 
-class Venue(Enum):
+class Venue(BaseEnum):
     HOME = "HOME"
     AWAY = "AWAY"
     NEUTRAL = "NEUTRAL"
 
-class TimePeriod(Enum):
+class TimePeriod(BaseEnum):
     LM = "LAST MONTH"
     L3M = "LAST 3 MONTHS"
     L6M = "LAST 6 MONTHS"
@@ -67,7 +67,7 @@ class TimePeriod(Enum):
 
 
 #MATCH RECORD ENUMS
-class HowOut(Enum):
+class HowOut(BaseEnum):
     BOWLED = "BOWLED"
     LBW = "LBW"
     CAUGHT = "CAUGHT"
@@ -81,13 +81,13 @@ class HowOut(Enum):
     DID_NOT_BAT = "DID NOT BAT"
     OTHER = "OTHER"
 
-class TossResult(Enum):
+class TossResult(BaseEnum):
     LOST_BOWL = "LOST THE TOSS & BOWLED"
     LOST_BAT = "LOST THE TOSS & BATTED"
     WON_BOWL = "WON THE TOSS & BOWLED"
     WON_BAT = "WON THE TOSS & BATTED"
 
-class Result(Enum):
+class Result(BaseEnum):
     WON = "WON"
     LOST = "LOST"
     TIE = "TIE"
