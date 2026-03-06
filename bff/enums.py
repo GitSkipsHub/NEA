@@ -43,12 +43,6 @@ class BowlingStyle(Enum):
     NONE = "NONE"
 
 
-class TimePeriod(Enum):
-    LM = "LAST MONTH"
-    L3M = "LAST 3 MONTHS"
-    L6M = "LAST 6 MONTHS"
-    L12M = "LAST YEAR"
-
 #---MATCH FILTER ENUMS---#
 class MatchType(Enum):
     LEAGUE = "LEAGUE"
@@ -64,6 +58,13 @@ class Venue(Enum):
     HOME = "HOME"
     AWAY = "AWAY"
     NEUTRAL = "NEUTRAL"
+
+class TimePeriod(Enum):
+    LM = "LAST MONTH"
+    L3M = "LAST 3 MONTHS"
+    L6M = "LAST 6 MONTHS"
+    L12M = "LAST YEAR"
+
 
 #MATCH RECORD ENUMS
 class HowOut(Enum):
