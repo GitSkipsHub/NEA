@@ -82,25 +82,6 @@ class RegistrationWindow(BaseWindow):
             messagebox.showerror("ERROR", "USERNAME MUST BE AT LEAST 2 CHARACTERS LONG")
             return
 
-        #Regular expression conditions for strong password validation
-        conditions = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
-        #Compile the regular expression into a pattern object
-        pattern = regex.compile(conditions)
-
-        #Check whether the entered password matches the pattern
-        valid_password = regex.search(pattern, password)
-
-        #If the password does NOT meet the required conditions
-        if not valid_password:
-            messagebox.showerror(
-                "ERROR", "PASSWORD NOT STRONG ENOUGH\n\n PASSWORD CONDITIONS:\n"
-                         " - Have at least one number \n\n"
-                         " - Have at least one uppercase letter\n\n"
-                         " - Have at least one lowercase letter\n\n"
-                         " - Have at least one special character ($, @, #, %)\n\n"
-                         " - Be at least 8 characters long")
-            return
-
         if not confirm_password:
             messagebox.showerror("ERROR", "CONFIRM PASSWORD")
             return
