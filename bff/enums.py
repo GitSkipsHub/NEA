@@ -5,7 +5,7 @@ class BaseEnum(Enum):
     @classmethod #Method called on the class itself, not just on an instance.
     def get_value(cls, key: str): #Retrieve the enumeration value based on its key name
         try:
-            return cls(key).value
+            return cls[key].value
         except KeyError:
             raise ValueError(f"{key} is not a valid {cls.name} key") #If given key does not exist within enum
 
