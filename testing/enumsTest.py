@@ -24,8 +24,6 @@ try:
 except ValueError as e:
     print(f"VALUE ERROR: {e}")
 
-print(PlayerRole.WKT_KEEPER.value)
-
 
 
 
