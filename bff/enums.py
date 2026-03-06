@@ -5,16 +5,16 @@ class BaseEnum(Enum):
     @classmethod #Method called on the class itself, not just on an instance.
     def get_value(cls, key: str): #Retrieve the enumeration value based on its key name
         try:
-            return cls[key].value
+            return cls(key).value
         except KeyError:
-            raise ValueError(f"{key} is not a valid {cls.__name__} key") #If given key does not exist within enum
+            raise ValueError(f"{key} is not a valid {cls.name} key") #If given key does not exist within enum
 
     @classmethod
     def get_key(cls, value: str): #Retrieve the enumeration key name based on its value
         try:
             return cls(value).name
         except ValueError:
-            raise ValueError(f"{value} is not a valid {cls.__name__} value.") #If given value does not exist within the enum
+            raise ValueError(f"{value} is not a valid {cls.name} value.") #If given value does not exist within the enum
 
     @classmethod
     def list_values(cls): #cls denotes which specific enum it is e.g. PlayerRole, TimePeriod etc.
