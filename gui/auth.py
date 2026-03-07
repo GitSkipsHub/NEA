@@ -83,7 +83,7 @@ class RegistrationWindow(BaseWindow):
             return
 
         #Regular expression conditions for strong password validation
-        conditions = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+        conditions = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*£¢-]).{8,}$"
         #Compile the regular expression into a pattern object
         pattern = regex.compile(conditions)
 
@@ -97,7 +97,7 @@ class RegistrationWindow(BaseWindow):
                          " - Have at least one number \n\n"
                          " - Have at least one uppercase letter\n\n"
                          " - Have at least one lowercase letter\n\n"
-                         " - Have at least one special character ($, @, #, %)\n\n"
+                         " - Have at least one special character (£, $,  @, #, %)\n\n"
                          " - Be at least 8 characters long")
             return
 
