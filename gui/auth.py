@@ -82,7 +82,7 @@ class RegistrationWindow(BaseWindow):
             messagebox.showerror("ERROR", "USERNAME MUST BE AT LEAST 2 CHARACTERS LONG")
             return
 
-        if len(password) < 2:
+        if len(password) < 8:
             messagebox.showerror("ERROR", "PASSWORD MUST BE AT LEAST 8 CHARACTERS LONG")
             return
 
