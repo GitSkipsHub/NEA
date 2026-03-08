@@ -36,7 +36,7 @@ from bff.models import (Account, Player, Match)
 
 #CREATED DUMMY PLAYER OBJECT
 dummy_player = Player(
-    player_id="temp_id", #not stored in Mongo as MongoDB uses _id
+    player_id="pId01", #not stored in Mongo as MongoDB uses _id
     username="username01",
     first_name="Virat",
     last_name="Kohli",
@@ -50,6 +50,24 @@ dummy_player = Player(
 player_dict = dummy_player.to_dict()
 for key, value in player_dict.items():
     print(f"PLAYER DICT --> {key}: {value}")
+
+
+# #CREATED DUMMY PLAYER OBJECT
+# dummy_player = Player(
+#     player_id="temp_id", #not stored in Mongo as MongoDB uses _id
+#     username="username01",
+#     first_name="Virat",
+#     last_name="Kohli",
+#     date_of_birth="1988-11-05",
+#     player_role="BATTER",
+#     batting_style="RIGHT_HAND",
+#     bowling_style="RAP"
+# )
+#
+# #TEST 1
+# player_dict = dummy_player.to_dict()
+# for key, value in player_dict.items():
+#     print(f"PLAYER DICT --> {key}: {value}")
 #
 # #TEST 2
 # fake_mongo_player = player_dict.copy()
