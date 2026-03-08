@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 import bcrypt
 
-@dataclass()
+@dataclass
 class Account:
     username: str
     hashed_password: str
