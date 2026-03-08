@@ -1,5 +1,5 @@
-from bff.models import Account, Match
-from bff.database import AccountDB, MatchDB
+from bff.models import Account, Match, Player
+from bff.database import AccountDB, MatchDB, PlayerDB
 
 # #CREATE DATABASE INSTANCE
 # account_db = AccountDB()
@@ -35,33 +35,56 @@ from bff.database import AccountDB, MatchDB
 #     print("Password Verified:", is_correct)
 
 
+#CREATED DUMMY PLAYER OBJECT
+dummy_player = Player(
+    player_id="pId01",
+    username="username01",
+    first_name="Virat",
+    last_name="Kohli",
+    date_of_birth="1988-11-05",
+    player_role="BATTER",
+    batting_style="RIGHT_HAND",
+    bowling_style="RAP"
+)
+
+#TEST 1
+player_dict = dummy_player.to_dict()
+# CREATE PLAYER DB INSTANCE
+player_db = PlayerDB()
+
+# TEST PLAYER CREATION IN DATABASE
+result = player_db.create_player(username="username_01", player_data=player_dict)
+
+print("CREATE PLAYER RESULT:", result)
 
 
-#Create instance of MatchDB
-match_db = MatchDB()
 
-#Dummy match data
-dummy_match = {
-    "match_date": "2026-02-25",
-    "match_format": "T20",
-    "match_type": "Friendly",
-    "venue": "Home",
-    "ground_name": "Edgbaston",
-    "opposition": "India",
-    "result": "Win",
-    "toss_result": "WON_BAT",
-    "team_players": [],
-    "batting_scorecard": [],
-    "bowling_scorecard": [],
-    "fielding_scorecard": []
-}
 
-#Call create_match method
-inserted_id = match_db.create_match("test_user01", dummy_match)
-
-#Print result
-if inserted_id:
-    print("Match inserted successfully.")
-    print("MATCH ID:", inserted_id)
-else:
-    print("Match insertion failed.")
+# #Create instance of MatchDB
+# match_db = MatchDB()
+#
+# #Dummy match data
+# dummy_match = {
+#     "match_date": "2026-02-25",
+#     "match_format": "T20",
+#     "match_type": "Friendly",
+#     "venue": "Home",
+#     "ground_name": "Edgbaston",
+#     "opposition": "India",
+#     "result": "Win",
+#     "toss_result": "WON_BAT",
+#     "team_players": [],
+#     "batting_scorecard": [],
+#     "bowling_scorecard": [],
+#     "fielding_scorecard": []
+# }
+#
+# #Call create_match method
+# inserted_id = match_db.create_match("test_user01", dummy_match)
+#
+# #Print result
+# if inserted_id:
+#     print("Match inserted successfully.")
+#     print("MATCH ID:", inserted_id)
+# else:
+#     print("Match insertion failed.")
