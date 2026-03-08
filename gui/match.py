@@ -242,7 +242,7 @@ class SelectTeamPage(BaseWindow):
         self.match_id = created_match_id
         self.match_db = MatchDB()
         self.player_db = PlayerDB()
-        self.all_players = self.player_db.get_all_players(username)
+        #self.all_players = self.player_db.get_all_players(username)
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(1500, 900)
 

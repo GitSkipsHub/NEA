@@ -359,8 +359,6 @@ class UpdatePlayerWindow(BaseWindow):
         self.search_player()
 
     def search_player(self):
-        #Clear table so results don't stack on top of each other
-        print("SEARCH TREE FUNCTION CALLED & RUNNING")
         #Search player with via search term
         term = self.search_var.get()
         players = self.player_db.search_player(self.current_user, term)
