@@ -9,7 +9,6 @@ class Account:
     hashed_password: str
     created_date: datetime = field(default_factory=datetime.now)
 
-
     @staticmethod
     def hash_password(password: str) -> str: #Hashes password to unique hash string
         return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
