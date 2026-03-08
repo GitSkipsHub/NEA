@@ -10,10 +10,10 @@ class Account:
         self.created_date = created_date
 
     @staticmethod
-    def hash_password(password: str) -> str:
+    def hash_password(password: str) -> str: #Hashes password to unique hash string
         return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     @staticmethod
-    def verify_password(password: str, hash_password: str) -> bool:
+    def verify_password(password: str, hash_password: str) -> bool: #Verifies hashed passwords match
         return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
 
     def to_dict(self) -> Dict[str, Any]: #Converst object into dictionary to store in MongoDB
