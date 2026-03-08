@@ -470,7 +470,6 @@ class UpdatePlayerWindow(BaseWindow):
 class DeletePlayerWindow(BaseWindow):
     def __init__(self, window, parent, username):
         super().__init__(window)
-        self.selected_player_id = None
         self.window = window
         self.parent = parent
         self.current_user = username
@@ -575,20 +574,22 @@ class DeletePlayerWindow(BaseWindow):
             )
 
     def delete_player(self):
-        if not self.selected_player_id:
+        selected = self.tree.selection()
+
+        if not selected:
             messagebox.showerror("ERROR", "SELECT PLAYER FIRST TO DELETE")
             return
+
+        player_id = selected[0]
 
         confirm_deletion = messagebox.askyesno("CONFIRM DELETION?", "ARE YOU SURE YOU WANT TO DELETE THIS PLAYER?")
         if not confirm_deletion:
             return
 
-        deleted_record = self.player_db.delete_player(self.current_user, self.selected_player_id)
+        deleted_record = self.player_db.delete_player(self.current_user, player_id)
 
         if deleted_record:
             messagebox.showinfo("SUCCESS", "PLAYER DELETED SUCCESSFULLY")
-            self.search_player()
-            self.selected_player_id = None
             self.search_player()
 
         else:

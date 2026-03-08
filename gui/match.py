@@ -1460,9 +1460,7 @@ class DeleteMatchPage(BaseWindow):
 
         match_id = selected[0] #First selected row id (we set this to match_id in insert)
 
-        confirm_deletion = messagebox.askyesno("CONFIRM DELETION?",
-                                               "ARE YOU SURE YOU WANT TO DELETE THIS MATCH")
-
+        confirm_deletion = messagebox.askyesno("CONFIRM DELETION?","ARE YOU SURE YOU WANT TO DELETE THIS MATCH")
         if not confirm_deletion:
             return
 
