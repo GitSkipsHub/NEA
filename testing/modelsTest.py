@@ -36,7 +36,7 @@ from bff.models import (Account, Player, Match)
 
 #CREATED DUMMY PLAYER OBJECT
 dummy_player = Player(
-    player_id="pId01", #not stored in Mongo as MongoDB uses _id
+    player_id="pId01",
     username="username01",
     first_name="Virat",
     last_name="Kohli",
