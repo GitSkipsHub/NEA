@@ -358,7 +358,14 @@ class UpdatePlayerWindow(BaseWindow):
 
         self.search_player()
 
+    #Remove all existing rows from the Treeview table --> ensures old results are cleared before new results are inserted
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
     def search_player(self):
+        #Clear table so results don't stack on top of each other
+        self.clear_tree()
         #Search player with via search term
         term = self.search_var.get()
         players = self.player_db.search_player(self.current_user, term)
