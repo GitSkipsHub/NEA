@@ -1,13 +1,14 @@
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from typing import Dict, List, Any
 import bcrypt
 
-
+@dataclass()
 class Account:
-    def __init__(self, username: str, hashed_password: str, created_date: datetime = datetime.now()):
-        self.username = username
-        self.hashed_password = hashed_password
-        self.created_date = created_date
+    username: str
+    hashed_password: str
+    created_date: datetime = field(default_factory=datetime.now)
+
 
     @staticmethod
     def hash_password(password: str) -> str: #Hashes password to unique hash string
