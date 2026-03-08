@@ -4,7 +4,6 @@ from typing import Dict, List, Any
 import bcrypt
 
 
-
 class Account:
     def __init__(self, username: str, hashed_password: str, created_date: datetime = datetime.now()):
         self.username = username
