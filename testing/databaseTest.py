@@ -43,7 +43,7 @@ dummy_player = Player(
     last_name="Kohli",
     date_of_birth="1988-11-05",
     player_role="BATTER",
-    batting_style="RIGHT_HAND",
+    batting_style="RH",
     bowling_style="RAP"
 )
 
