@@ -17,19 +17,13 @@ class Account:
         return bcrypt.checkpw(password.encode('utf-8'), hash_password.encode('utf-8'))
 
     def to_dict(self) -> Dict[str, Any]: #Converst object into dictionary to store in MongoDB
-        return {
-            "username": self.username,
-            "hashed_password": self.hashed_password,
-            "created_date": self.created_date
-        }
+        return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Account": #Converst MongoDB dictionary into object to be used in GUI
-        return cls(
-            username=data.get("username", ""),
-            hashed_password=data.get("hashed_password", ""),
-            created_date=data.get("created_date", datetime.now())
-        )
+    def from_dict(cls, data:Dict[str, Any]) -> 'Account': #Converst MongoDB dictionary into object to be used in GUI
+        data = dict(data)
+        data.pop("_id", None)
+        return cls(**data)
 
 @dataclass
 class Player:
