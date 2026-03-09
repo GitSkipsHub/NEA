@@ -421,7 +421,6 @@ class UpdatePlayerWindow(BaseWindow):
         if not selected:
             messagebox.showerror("ERROR", "SELECT PLAYER FROM THE TABLE FIRST")
             return
-
         #Get updated values from the input fields and remove extra spaces
         fname = self.first_name_edit.get().strip()
         lname = self.last_name_edit.get().strip()
@@ -433,7 +432,6 @@ class UpdatePlayerWindow(BaseWindow):
         if not fname or not lname or not dob or not p_role_value or not bat_style_value or not bowl_style_value:
             messagebox.showerror("ERROR", "FILL IN ALL REQUIRED FIELDS")
             return
-
         #Validate the date format
         try:
             datetime.strptime(dob, "%Y-%m-%d")
@@ -442,7 +440,6 @@ class UpdatePlayerWindow(BaseWindow):
             return
 
         player_id = selected[0] #Assigns selected player's id as player_id
-
         #Convert dropdown display values back into enum keys for database storage
         update_data = {
             "first_name": fname,
