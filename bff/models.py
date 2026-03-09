@@ -82,8 +82,11 @@ class Match:
     last_updated: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> Dict:
-        return asdict(self)
+        d = asdict(self)
+        d.pop("match_id", None)
+        return d
 
     @classmethod
     def from_dict(cls, data: Dict) -> 'Match':
+        data["match_id"] = str(data.pop("_id", ""))
         return cls(**data)
