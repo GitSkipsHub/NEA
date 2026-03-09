@@ -403,7 +403,7 @@ class UpdatePlayerWindow(BaseWindow):
             self.selected_player_id = None
             return
 
-        player_id = selected[0]
+        player_id = selected[0] #Assigns player_id with selected player id
         values = self.tree.item(player_id, "values")
 
         #Populate input fields with selected player's data
@@ -441,8 +441,7 @@ class UpdatePlayerWindow(BaseWindow):
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
-
-        player_id = selected[0]
+        player_id = selected[0] #Assigns player_id with selected player's id
 
         #Convert dropdown display values back into enum keys for database storage
         update_data = {
