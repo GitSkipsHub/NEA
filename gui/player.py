@@ -441,7 +441,7 @@ class UpdatePlayerWindow(BaseWindow):
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
-        player_id = selected[0] #Assigns player_id with selected player's id
+        player_id = selected[0] #Assigns selected player's id as player_id
 
         #Convert dropdown display values back into enum keys for database storage
         update_data = {
