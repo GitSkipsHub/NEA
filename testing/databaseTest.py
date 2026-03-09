@@ -80,7 +80,7 @@ dummy_match = {
 }
 
 #Call create_match method
-inserted_id = match_db.create_match("test_user01", dummy_match)
+inserted_id = match_db.create_match("username_01", dummy_match)
 
 #Print result
 if inserted_id:
