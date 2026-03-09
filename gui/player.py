@@ -416,8 +416,9 @@ class UpdatePlayerWindow(BaseWindow):
         self.bowling_style_edit.set(values[7])
 
     def update_player(self):
+        selected = self.tree.selection()
         #Check if a player has been selected from the table
-        if not self.selected_player_id:
+        if not selected:
             messagebox.showerror("ERROR", "SELECT PLAYER FROM THE TABLE FIRST")
             return
 
@@ -440,6 +441,9 @@ class UpdatePlayerWindow(BaseWindow):
             messagebox.showerror("ERROR", "DOB must be in YYYY-MM-DD format (e.g., 2007-04-19)")
             return
 
+
+        player_id = selected[0]
+
         #Convert dropdown display values back into enum keys for database storage
         update_data = {
             "first_name": fname,
@@ -451,13 +455,13 @@ class UpdatePlayerWindow(BaseWindow):
         }
 
         #Call the database function to update the record
-        updated_record = self.player_db.update_player(self.current_user, self.selected_player_id, update_data)
+        updated_record = self.player_db.update_player(self.current_user, player_id, update_data)
         if updated_record:
             messagebox.showinfo("SUCCESS", "PLAYER UPDATED SUCCESSFULLY")
             #Refreshes Treeview Table
             self.search_player()
             #Reset selected ID after update
-            self.selected_player_id = None
+            #self.selected_player_id = None
             # Clear input fields
             self.first_name_edit.set("")
             self.last_name_edit.set("")
