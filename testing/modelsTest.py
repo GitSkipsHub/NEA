@@ -34,22 +34,22 @@ from bff.models import (Account, Player, Match)
 # #print(Account.from_dict({}))
 #
 
-#CREATED DUMMY PLAYER OBJECT
-dummy_player = Player(
-    player_id="pId01",
-    username="username01",
-    first_name="Virat",
-    last_name="Kohli",
-    date_of_birth="1988-11-05",
-    player_role="BATTER",
-    batting_style="RIGHT_HAND",
-    bowling_style="RAP"
-)
-
-#TEST 1
-player_dict = dummy_player.to_dict()
-for key, value in player_dict.items():
-    print(f"PLAYER DICT --> {key}: {value}")
+# #CREATED DUMMY PLAYER OBJECT
+# dummy_player = Player(
+#     player_id="pId01",
+#     username="username01",
+#     first_name="Virat",
+#     last_name="Kohli",
+#     date_of_birth="1988-11-05",
+#     player_role="BATTER",
+#     batting_style="RIGHT_HAND",
+#     bowling_style="RAP"
+# )
+#
+# #TEST 1
+# player_dict = dummy_player.to_dict()
+# for key, value in player_dict.items():
+#     print(f"PLAYER DICT --> {key}: {value}")
 
 
 # #CREATED DUMMY PLAYER OBJECT
