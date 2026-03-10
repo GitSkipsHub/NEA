@@ -36,27 +36,27 @@ from bff.database import AccountDB, MatchDB, PlayerDB
 
 
 #CREATED DUMMY PLAYER OBJECT
-dummy_player = Player(
-    player_id="pId01",
-    username="username01",
-    first_name="Virat",
-    last_name="Kohli",
-    date_of_birth="1988-11-05",
-    player_role="BATTER",
-    batting_style="RH",
-    bowling_style="RAP"
-)
-
-#TEST 1
-player_dict = dummy_player.to_dict()
-# CREATE PLAYER DB INSTANCE
-player_db = PlayerDB()
-
-# TEST PLAYER CREATION IN DATABASE
-result = player_db.create_player(username="username_01", player_data=player_dict)
-
-print("CREATE PLAYER RESULT:", result)
-
+# dummy_player = Player(
+#     player_id="pId01",
+#     username="username01",
+#     first_name="Virat",
+#     last_name="Kohli",
+#     date_of_birth="1988-11-05",
+#     player_role="BATTER",
+#     batting_style="RH",
+#     bowling_style="RAP"
+# )
+#
+# #TEST 1
+# player_dict = dummy_player.to_dict()
+# # CREATE PLAYER DB INSTANCE
+# player_db = PlayerDB()
+#
+# # TEST PLAYER CREATION IN DATABASE
+# result = player_db.create_player(username="username_01", player_data=player_dict)
+#
+# print("CREATE PLAYER RESULT:", result)
+#
 
 
 

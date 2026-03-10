@@ -441,6 +441,7 @@ class SelectTeamPage(BaseWindow):
         #Get values stored in that row
         values = self.players_tree.item(tree_iid, "values")
 
+        player_id = values[0]
         player_name = values[1]
         player_role = values[2]
         batting_style = values[3]
@@ -478,7 +479,7 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.insert(
             "",
             "end",
-            iid= values[0], # #assigns tree_id as player_id
+            iid= player_id, # #assigns tree_id as player_id
             values=(next_position, player_name, player_role, batting_style, bowling_style)
         )
         self.refresh_leadership_dropdowns()
