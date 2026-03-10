@@ -546,7 +546,7 @@ class SelectTeamPage(BaseWindow):
         #Sort players by batting position
         team_players.sort(key=lambda p: p["position"])
         for player in team_players:
-            print(player)
+            print(player) #TESTS LIST CONTAINS ALL PLAYERS DETAILS
         #Retrieve match document from database
         match_doc = self.match_db.find_match(self.current_user, self.match_id)
         if not match_doc:
