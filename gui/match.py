@@ -410,7 +410,6 @@ class SelectTeamPage(BaseWindow):
 
     def refresh_leadership_dropdowns(self):
         options = []  #List for dropdown names
-        self.name_to_player_id.clear()
         #Loop through players in team table
         for player_id in self.team_tree.get_children():
             row = self.team_tree.item(player_id, "values")
@@ -427,6 +426,7 @@ class SelectTeamPage(BaseWindow):
         # Clear wicket-keeper if no longer valid
         if self.wk_var.get() not in options:
             self.wk_var.set("")
+        print(self.name_to_player_id)
 
 
     def add_player_to_team(self):
@@ -441,7 +441,7 @@ class SelectTeamPage(BaseWindow):
         #Get values stored in that row
         values = self.players_tree.item(tree_iid, "values")
 
-        player_id = values[0] #assigns
+        player_id = values[0] #Assign player_id
         player_name = values[1]
         player_role = values[2]
         batting_style = values[3]
