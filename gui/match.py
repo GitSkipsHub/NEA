@@ -1266,9 +1266,6 @@ class UpdateMatchPage(BaseWindow):
                 )
             )
 
-        #Clear form as well (since no selection)
-        self._clear_form()
-
     def select_on_match(self, event=None):
         #Get selected row from the table
         selected = self.tree.selection()
@@ -1327,24 +1324,20 @@ class UpdateMatchPage(BaseWindow):
             "result": Result.get_key(result_value),
         }
         #Send updated data to database
-        ok = self.match_db.update_match(self.current_user, self.selected_match_id, update_data)
-        if not ok:
+        updated_record = self.match_db.update_match(self.current_user, self.selected_match_id, update_data)
+        if updated_record:
+            messagebox.showinfo("SUCCESS", "MATCH UPDATED SUCCESSFULLY")
+            self.search_match()
+            self.date_edit.set("")
+            self.opp_edit.set("")
+            self.ground_edit.set("")
+            self.match_type_edit.set("")
+            self.match_format_edit.set("")
+            self.venue_edit.set("")
+            self.result_edit.set("")
+        else:
             messagebox.showerror("ERROR", "MATCH UPDATE FAILED")
             return
-
-        messagebox.showinfo("SUCCESS", "MATCH UPDATED SUCCESSFULLY")
-
-        #Refresh table and clear selection
-        self.search_match()
-
-    def _clear_form(self):
-        self.date_edit.set("")
-        self.opp_edit.set("")
-        self.ground_edit.set("")
-        self.match_type_edit.set("")
-        self.match_format_edit.set("")
-        self.venue_edit.set("")
-        self.result_edit.set("")
 
     def go_back(self):
         self.window.destroy()
