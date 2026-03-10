@@ -426,7 +426,7 @@ class SelectTeamPage(BaseWindow):
         # Clear wicket-keeper if no longer valid
         if self.wk_var.get() not in options:
             self.wk_var.set("")
-        print(self.name_to_player_id)
+        print(self.name_to_player_id) #TESTING DICTIONARY
 
 
     def add_player_to_team(self):
