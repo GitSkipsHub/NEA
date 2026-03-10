@@ -8,9 +8,9 @@ root=tk.Tk()
 #StartWindow(root)
 #CreateMatchDetailsPage(root, MatchManagementPage, "kaushal")
 #MatchScorecard(root, SelectTeamPage, "kaushal", match_id="", selected_team="")
-# SelectTeamPage(root, CreateMatchDetailsPage, "kaushal", created_match_id="")
+SelectTeamPage(root, CreateMatchDetailsPage, "kaushal", created_match_id="")
 
 
-MatchScorecard(root, root, "kaushal", match_id="69a317738093e6761e48348e")
+#MatchScorecard(root, root, "kaushal", match_id="69a317738093e6761e48348e")
 
 root.mainloop()

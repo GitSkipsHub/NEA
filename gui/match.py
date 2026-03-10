@@ -260,7 +260,7 @@ class SelectTeamPage(BaseWindow):
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=10, pady=10)
 
-        save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command=self.save_team_and_continue)
+        save_team_btn = tk.Button(footer, text="SAVE TEAM", width=15, command=self.save_team)
         save_team_btn.pack(side="right", padx=20, pady=20)
 
         cancel_btn = tk.Button(footer, text="CANCEL", command=self.cancel_match, width=15)
@@ -410,6 +410,7 @@ class SelectTeamPage(BaseWindow):
 
     def refresh_leadership_dropdowns(self):
         options = []  #List for dropdown names
+        self.name_to_player_id.clear()
         #Loop through players in team table
         for player_id in self.team_tree.get_children():
             row = self.team_tree.item(player_id, "values")
@@ -420,14 +421,13 @@ class SelectTeamPage(BaseWindow):
         #Update dropdown options
         self.captain_dropdown["values"] = options
         self.wk_dropdown["values"] = options
-        print(self.name_to_player_id) #TESTING DICTIONARY
         # Clear captain if no longer valid
-        if self.captain_var.get() not in options:
-            self.captain_var.set("")
-        # Clear wicket-keeper if no longer valid
-        if self.wk_var.get() not in options:
-            self.wk_var.set("")
-
+        # if self.captain_var.get() not in options:
+        #     self.captain_var.set("")
+        # # Clear wicket-keeper if no longer valid
+        # if self.wk_var.get() not in options:
+        #     self.wk_var.set("")
+        print(self.name_to_player_id)
 
 
     def add_player_to_team(self):
@@ -501,7 +501,7 @@ class SelectTeamPage(BaseWindow):
         self.wk_var.set("")
         self.refresh_leadership_dropdowns()
 
-    def save_team_and_continue(self):
+    def save_team(self):
         #Get all selected player IDs from team table
         team_ids = list(self.team_tree.get_children())
 
