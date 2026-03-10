@@ -442,7 +442,7 @@ class SelectTeamPage(BaseWindow):
             "",
             "end",
             iid= player_id, #Pass player_id as iid
-            values=("Position Numeber", player_name, player_role, batting_style, bowling_style)
+            values=("Position Number", player_name, player_role, batting_style, bowling_style)
         )
 
 
