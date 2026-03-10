@@ -421,7 +421,7 @@ class SelectTeamPage(BaseWindow):
         #Get values stored in that row
         values = self.players_tree.item(tree_iid, "values")
 
-        player_id = values[0]
+        player_id = values[0] #Assign player_id
         player_name = values[1]
         player_role = values[2]
         batting_style = values[3]
@@ -441,8 +441,8 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.insert(
             "",
             "end",
-            iid= player_id, # #assigns tree_id as player_id
-            values=("Position No", player_name, player_role, batting_style, bowling_style)
+            iid= player_id, #Pass player_id as iid
+            values=("Position Numeber", player_name, player_role, batting_style, bowling_style)
         )
 
 
