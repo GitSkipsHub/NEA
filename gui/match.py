@@ -421,13 +421,14 @@ class SelectTeamPage(BaseWindow):
         #Update dropdown options
         self.captain_dropdown["values"] = options
         self.wk_dropdown["values"] = options
+        print(self.name_to_player_id) #TESTING DICTIONARY
         # Clear captain if no longer valid
         if self.captain_var.get() not in options:
             self.captain_var.set("")
         # Clear wicket-keeper if no longer valid
         if self.wk_var.get() not in options:
             self.wk_var.set("")
-        #print(self.name_to_player_id)
+
 
 
     def add_player_to_team(self):
