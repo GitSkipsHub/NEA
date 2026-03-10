@@ -410,7 +410,6 @@ class SelectTeamPage(BaseWindow):
 
     def refresh_leadership_dropdowns(self):
         options = []  #List for dropdown names
-        self.name_to_player_id.clear()
         #Loop through players in team table
         for player_id in self.team_tree.get_children():
             row = self.team_tree.item(player_id, "values")
