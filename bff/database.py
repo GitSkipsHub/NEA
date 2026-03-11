@@ -216,6 +216,7 @@ class TeamGeneratorDB:
     def generate_team(self, username: str, match_type: str, match_format: str, venue: str, from_date: datetime,
                       batter_limit: int, pacer_limit: int, spinner_limit: int, all_rounder_limit: int, wk_limit: int):
 
+        #Stores all player limits in a list
         limits = [batter_limit, pacer_limit, spinner_limit, all_rounder_limit, wk_limit]
         if any(type(x) is not int for x in limits) or any(x < 0 for x in limits):
             raise ValueError ("Limits must be positive integers")
@@ -505,5 +506,6 @@ class TeamGeneratorDB:
             }
         ]
 
+        #Run the MongoDB aggregation pipeline to generate the team
         result = list(self.collection.aggregate(pipeline))
         return result
