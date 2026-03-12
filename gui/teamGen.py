@@ -77,7 +77,7 @@ class FixtureDetailsPage(BaseWindow):
 
     def get_start_date(self, period_key: str) -> datetime:
         # Get the current date and time in UTC
-        now = datetime.now(timezone.utc)
+        now = datetime(2026, 2, 21, 14, 23, 21, 231345)
         if period_key == "LM":
             return now - timedelta(days=30) #subtract 30 days from today
         if period_key == "L3M":
