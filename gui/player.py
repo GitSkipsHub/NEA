@@ -504,8 +504,6 @@ class DeletePlayerWindow(BaseWindow):
         search_button = tk.Button(search_frame, text="SEARCH", command=self.search_player, width=15)
         search_button.grid(row=0, column=2, padx=10, pady=10)
 
-        self.search_player()
-
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=30, pady=10)
 

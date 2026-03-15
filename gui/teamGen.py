@@ -151,7 +151,7 @@ class TeamCompositionPage(BaseWindow):
         main_frame = self.create_main_frame()
         self.create_header(main_frame, "TEAM GENERATION")
         self.create_sub_header(main_frame," RECOMMENDED TEAM COMPOSITION:"
-                                           "\n\n4 BATTERS, 3 BOWLERS, 3 ALL_ROUNDERS, 1 WICKET-KEEPER",)
+                                           "\n\n4 BATTERS, 4 BOWLERS, 2 ALL_ROUNDERS, 1 WICKET-KEEPER",)
 
         form = tk.Frame(main_frame)
         form.pack(pady=0)

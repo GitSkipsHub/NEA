@@ -997,7 +997,6 @@ class MatchScorecard(BaseWindow):
             if min(overs, maidens, runs_conceded, wickets, wides, no_balls) <0:
                 messagebox.showerror("ERROR", "VALUES CANNOT BE NEGATIVE")
                 return
-
             if overs %1 >=0.6:
                 messagebox.showerror("ERROR", "OVERS MUST HAVE .0 to .5 ONLY")
                 return
