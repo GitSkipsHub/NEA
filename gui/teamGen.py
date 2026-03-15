@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from gui.baseWindow import BaseWindow
 from bff.database import TeamGeneratorDB
 from bff.enums import (MatchType, MatchFormat, Venue, TimePeriod)
-from gui.teamDisplay import TeamDisplay
+from gui.teamDisplay import TeamDisplayPage
 
 
 class FixtureDetailsPage(BaseWindow):
@@ -224,7 +224,7 @@ class TeamCompositionPage(BaseWindow):
             print(player)
 
         self.window.withdraw()
-        TeamDisplay(tk.Toplevel(self.window), self.window, self.current_user,generated_team)
+        TeamDisplayPage(tk.Toplevel(self.window), self.window, self.current_user,generated_team)
 
     def go_back(self):
         self.window.destroy()

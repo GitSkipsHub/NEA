@@ -110,9 +110,6 @@ class PlayerDB:
             ]
         return list(self.collection.find(query).sort("last_name", 1))
 
-    def get_all_players(self, username: str) -> List[Dict]:
-        return list(self.collection.find({"username": username}))
-
     def update_player(self, username: str, player_id, update_data):
         try:
             update_data["last_updated"] = datetime.now()
@@ -172,16 +169,6 @@ class MatchDB:
 
     def search_match(self, username: str, filters: Dict[str, Any] ) -> List[Dict]:
         query: Dict[str, Any] = {"username": username}
-        # if filters.get("match_date"):
-        #     query["match_date"] = filters["match_date"]
-        # if filters.get("venue"):
-        #     query["venue"] = filters["venue"]
-        # if filters.get("result"):
-        #     query["result"] = filters["result"]
-        # if filters.get("match_type"):
-        #     query["match_type"] = filters["match_type"]
-        # if filters.get("match_format"):
-        #     query["match_format"] = filters["match_format"]
         if filters.get("opposition"):
             query["opposition"] = {"$regex" : filters["opposition"],"$options": "i"}
 
@@ -194,9 +181,6 @@ class MatchDB:
             )
         except InvalidId:
             return None
-
-    def get_all_matches(self, username:str) -> List[Dict]:
-        return list(self.collection.find({"username": username}))
 
     def delete_match(self, username: str, match_id: str) -> bool:
         try:

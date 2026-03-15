@@ -496,9 +496,15 @@ class DeletePlayerWindow(BaseWindow):
 
         tk.Label(search_frame, text="SEARCH NAME: ").grid(row=0, column=0, padx=10, pady=30, sticky="e")
         self.search_var = tk.StringVar()
+
         search_entry = tk.Entry(search_frame, textvariable=self.search_var, width=30)
         search_entry.configure(highlightthickness=3, highlightbackground="dodger blue")
         search_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        search_button = tk.Button(search_frame, text="SEARCH", command=self.search_player, width=15)
+        search_button.grid(row=0, column=2, padx=10, pady=10)
+
+        self.search_player()
 
         table_frame = tk.Frame(main_frame)
         table_frame.pack(fill="both", expand=True, padx=30, pady=10)

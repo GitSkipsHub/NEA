@@ -3,7 +3,7 @@ from tkinter import ttk
 from gui.home import HomePage
 from gui.baseWindow import BaseWindow
 
-class TeamDisplay(BaseWindow):
+class TeamDisplayPage(BaseWindow):
     def __init__(self, window, parent, username, generated_team):
         super().__init__(window)
         self.window = window
