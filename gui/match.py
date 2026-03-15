@@ -1017,7 +1017,6 @@ class MatchScorecard(BaseWindow):
 
 
         fielding_data = []
-
         try:
             byes = int(self.byes.get())
             leg_byes = int(self.leg_byes.get())
