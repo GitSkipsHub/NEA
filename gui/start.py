@@ -28,13 +28,6 @@ class StartWindow(BaseWindow):
         )
         title_label.pack(pady=40)
 
-        # subtitle_label = tk.Label(
-        #     content_frame, text=("Select the best possible XI using real performance data.\n"
-        #                         "Smart analysis to create your winning team!")
-        #
-        # )
-        # subtitle_label.pack(pady=30)
-
         #REGISTER & LOGIN BUTTONS
         buttons = tk.Frame(content_frame)
         buttons.pack(pady=30)

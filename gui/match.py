@@ -177,9 +177,7 @@ class CreateMatchDetailsPage(BaseWindow):
         self.window.withdraw()
         MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
-
     def save_match_details_and_continue(self):
-
         #Strips all inputs
         match_type_value = self.match_type_var.get().strip()
         match_format_value = self.match_format_var.get().strip()
@@ -227,7 +225,6 @@ class CreateMatchDetailsPage(BaseWindow):
         self.window.withdraw()
         SelectTeamPage(tk.Toplevel(self.window), self.window, self.current_user, self.created_match_id)
 
-
     def go_back(self):
         self.window.destroy()
         self.parent.deiconify()
@@ -245,11 +242,9 @@ class SelectTeamPage(BaseWindow):
         #self.all_players = self.player_db.get_all_players(username)
         self.window.title("SS - MATCH MANAGEMENT")
         self.center_window(1500, 900)
-
         self.create_widgets()
 
     def create_widgets(self):
-
         main_frame = self.create_main_frame()
         self.create_header(main_frame, "CREATE MATCH")
         self.create_sub_header(main_frame, "SELECT TEAM")
@@ -288,7 +283,6 @@ class SelectTeamPage(BaseWindow):
                                       xscrollcommand=x_scrollbar.set)
         self.team_tree.pack(side="right", fill="both", expand=True)
         x_scrollbar.config(command=self.team_tree.xview)
-
 
         self.team_tree.heading("position", text="POS")
         self.team_tree.heading("player_name", text="Player Name")
@@ -429,7 +423,6 @@ class SelectTeamPage(BaseWindow):
         #     self.wk_var.set("")
         print(self.name_to_player_id)
 
-
     def add_player_to_team(self):
         #Get selected row from available players table
         selected = self.players_tree.selection()
@@ -459,7 +452,6 @@ class SelectTeamPage(BaseWindow):
             return
 
         used_positions = set()  #data structure where number can only appear once
-
         #Loop through every player currently in the team table
         for i in self.team_tree.get_children():
             #Get the values stored in that row (position, name, role, etc.)
@@ -495,7 +487,7 @@ class SelectTeamPage(BaseWindow):
         self.team_tree.delete(selected[0]) #selected[0] is the iid (unique row ID) of that player
         self.refresh_leadership_dropdowns()
 
-    def clear_team(self):
+    def clear_team(self): #Removes all players from selected team
         self.team_tree.delete(*self.team_tree.get_children())
         self.captain_var.set("")
         self.wk_var.set("")
@@ -577,7 +569,6 @@ class SelectTeamPage(BaseWindow):
         self.parent.deiconify()
 
 
-
 class MatchScorecard(BaseWindow):
     def __init__(self, window, parent, username, match_id,):
         super().__init__(window)
@@ -592,13 +583,10 @@ class MatchScorecard(BaseWindow):
         self.batting_entries = [] #list[dict]
         self.bowling_entries = [] #list[dict]
         self.fielding_entries = [] #list[dict]
-
         self.create_widgets()
 
     def create_widgets(self):
-
         main_frame = self.create_main_frame()
-
         footer = tk.Frame(main_frame)
         footer.pack(fill="x", side="bottom")
 
@@ -650,7 +638,6 @@ class MatchScorecard(BaseWindow):
 
         #--------------------------------------------BATTING SCORECARD-------------------------------------------------#
 
-
         self.create_sub_header(content_frame, "BATTING SCORECARD")
 
         batting_table = tk.Frame(content_frame)
@@ -692,11 +679,9 @@ class MatchScorecard(BaseWindow):
             position.grid(row=r, column=0, padx=4, pady=3)
             position.configure(background="dodger blue")
 
-
             player_name = (tk.Label(batting_table, textvariable=row["player_name"], width=20, anchor="center",))
             player_name.grid(row=r, column=1,padx=4, pady=3)
             player_name.configure(background="dodger blue")
-
 
             ttk.Combobox(
                 batting_table,
@@ -751,9 +736,7 @@ class MatchScorecard(BaseWindow):
         total_entry.grid(row=totals_row, column=6, padx=4, pady=35)
         total_entry.configure(highlightthickness=2.5, highlightbackground="dodger blue")
 
-
         #--------------------------------------------BOWLING SCORECARD-------------------------------------------------#
-
 
         self.create_sub_header(content_frame, "BOWLING SCORECARD")
 
@@ -819,9 +802,7 @@ class MatchScorecard(BaseWindow):
             no_balls_entry.grid(row=r, column=7, padx=4, pady=3)
             no_balls_entry.configure(highlightbackground="dodger blue", highlightthickness=2.5)
 
-
         #--------------------------------------------FIELDING SCORECARD-------------------------------------------------#
-
 
         self.create_sub_header(content_frame, "FIELDING SCORECARD")
 
@@ -906,7 +887,6 @@ class MatchScorecard(BaseWindow):
         self.window.withdraw()
         MatchManagementPage(tk.Toplevel(self.window), self.window, self.current_user)
 
-
     def save_scorecards(self):
 
         def clean_name(name: str) -> str:
@@ -979,7 +959,6 @@ class MatchScorecard(BaseWindow):
                 "sixes": sixes,
             })
 
-
         bowling_data = []
         for row in self.bowling_entries:
             try:
@@ -1014,7 +993,6 @@ class MatchScorecard(BaseWindow):
                 "wides": wides,
                 "no_balls": no_balls,
             })
-
 
         fielding_data = []
         try:
@@ -1086,7 +1064,6 @@ class MatchScorecard(BaseWindow):
 
         else:
             messagebox.showerror("ERROR", "FAILED TO SAVE SCORECARD")
-
 
     def go_back(self):
         self.window.destroy()
@@ -1283,7 +1260,6 @@ class UpdateMatchPage(BaseWindow):
         self.match_format_edit.set(values[6])
         self.result_edit.set(values[7])
 
-
     def update_match(self):
         #Ensure a match has been selected from the table
         if not self.selected_match_id:
@@ -1349,10 +1325,8 @@ class DeleteMatchPage(BaseWindow):
         self.parent = parent
         self.current_user = username
         self.match_db = MatchDB()
-
         self.window.title("SS - DELETE MATCH")
         self.center_window(1100, 750)
-
         self.create_widgets()
 
     def create_widgets(self):
@@ -1369,7 +1343,6 @@ class DeleteMatchPage(BaseWindow):
         delete_btn = tk.Button(footer, text="DELETE", width=15, command=self.delete_match)
         delete_btn.pack(side="right", padx=20, pady=20)
 
-        # small search box (optional)
         search_frame = tk.Frame(main_frame)
         search_frame.pack(pady=10)
 

@@ -12,9 +12,7 @@ class TeamDisplayPage(BaseWindow):
         self.generated_team = generated_team
         self.window.title("SS - TEAM GENERATION")
         self.center_window(1000, 600)
-
         self.create_widgets()
-
 
     def create_widgets(self):
         main_frame = self.create_main_frame()

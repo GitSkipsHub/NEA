@@ -18,7 +18,6 @@ class FixtureDetailsPage(BaseWindow):
         self.center_window(800, 600)
         self.create_widgets()
 
-
     def create_widgets(self):
         main_frame = self.create_main_frame()
         self.create_header(main_frame, "TEAM GENERATION")
@@ -89,7 +88,6 @@ class FixtureDetailsPage(BaseWindow):
 
         raise ValueError ("Invalid time period")
 
-
     def save_match_filters(self):
         #Get the selected values from the dropdown menus
         match_type_value = self.match_type_var.get()
@@ -143,9 +141,7 @@ class TeamCompositionPage(BaseWindow):
         self.start_date = match_filters["start_date"]
         self.window.title("SS - TEAM GENERATION")
         self.center_window(900, 700)
-
         self.create_widgets()
-
 
     def create_widgets(self):
         main_frame = self.create_main_frame()

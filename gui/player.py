@@ -102,37 +102,6 @@ class CreatePlayerWindow(BaseWindow):
         self.dob_input.configure(highlightthickness=3, highlightbackground="dodger blue")
         self.dob_input.grid(column=1, row=2, pady=10)
 
-        # tk.Label(form, text="PLAYER ROLE: ").grid(column=0, row=3, pady=10, sticky="e")
-        # self.player_role_var = tk.StringVar()
-        # player_role_values = PlayerRole.list_values()
-        # ttk.Combobox(form,
-        #              textvariable=self.player_role_var,
-        #              values=player_role_values,
-        #              state="readonly",
-        #              width=20,
-        #              ).grid(column=1, row=3, pady=10)
-        #
-        # tk.Label(form, text="BATTING STYLE: ").grid(column=0, row=4, pady=10, sticky="e")
-        # self.batting_style_var = tk.StringVar()
-        # batting_style_values = BattingStyle.list_values()
-        # ttk.Combobox(form,
-        #              textvariable=self.batting_style_var,
-        #              values=batting_style_values,
-        #              state="readonly",
-        #              width=20,
-        #              ).grid(column=1, row=4, pady=10)
-        #
-        # tk.Label(form, text="BOWLING STYLE: ").grid(column=0, row=5, pady=10, sticky="e")
-        # self.bowling_style_var = tk.StringVar()
-        # bowling_style_values = BowlingStyle.list_values()
-        # ttk.Combobox(form,
-        #              textvariable=self.bowling_style_var,
-        #              values=bowling_style_values,
-        #              state="readonly",
-        #              width=20,
-        #              ).grid(column=1, row=5, pady=10)
-
-
         self.player_role_var = tk.StringVar()
         self.create_dropdown(
             parent=form,
@@ -160,11 +129,8 @@ class CreatePlayerWindow(BaseWindow):
             row=5,
         )
 
-
         back_btn = self.create_back_btn(footer, self.go_back)
         back_btn.pack(side=tk.LEFT, padx=20, pady=20)
-
-        #tk.Button(footer, text="SAVE", width=15,).pack(side=tk.RIGHT, padx=20, pady=20)
 
         save_btn = tk.Button(footer, text="SAVE", command= self.save_player, width=15 )
         save_btn.pack(side="right", padx=20, pady=20)
